@@ -1,8 +1,18 @@
 # EarthMC Stats
 The most popular EarthMC Discord Bot is now open source!
 
-**Note**
-> Duplicated code between Aurora and Nova is slowly being replaced by helper classes found in the `common` folder.
+### About
+EarthMC Stats was first created 
+
+### Notes
+- EarthMC Stats currently uses DiscordJS version `13.6.0`.
+- CommonJS is still in use by EMCS, though migrating to ESM is planned!
+- Duplicated code is slowly being phased out in favour of helper classes found in the `common` folder.
+- This repo is meant for viewing and attribution, hosting it yourself will not work.
+
+### Resources
+> [Invite the bot](https://emctoolkit.vercel.app/invite)<br>
+> [NPM Library](https://www.npmjs.com/package/earthmc)<br>
 
 ## Disclaimer
 This project has the [Attribution-NonCommercial-ShareAlike 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
@@ -12,22 +22,18 @@ This project has the [Attribution-NonCommercial-ShareAlike 4.0](https://creative
 **Adapt** - Remix, transform, and build upon the material
 
 ### Under the following terms:
-<img align="left" width="52" height="52" src="https://creativecommons.org/images/deed/attribution_icon_blue_x2.png">
+<img align="left" width="54" height="54" src="https://creativecommons.org/images/deed/attribution_icon_blue_x2.png">
 
 **Attribution** <br>
 You must give appropriate credit, provide a link to the license, and indicate if changes were made.<br>
 You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
 
-<img align="left" width="52" height="52" src="https://creativecommons.org/images/deed/nc_blue_x2.png">
+<img align="left" width="54" height="54" src="https://creativecommons.org/images/deed/nc_blue_x2.png">
 
 **NonCommercial** <br>
 You may not use the material for commercial purposes.
 
-<img align="left" width="52" height="52" src="https://creativecommons.org/images/deed/sa_blue_x2.png">
+<img align="left" width="54" height="54" src="https://creativecommons.org/images/deed/sa_blue_x2.png">
 
 **ShareAlike** <br>
 If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
-
-## Resources
-> [Invite the bot](https://emctoolkit.vercel.app/invite)<br>
-> [NPM Library](https://www.npmjs.com/package/earthmc)<br>

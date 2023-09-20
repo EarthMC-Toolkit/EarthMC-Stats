@@ -14,15 +14,15 @@ const prod = process.env.PROD == "true"
 console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
 
 const Flags = Discord.Intents.FLAGS
-const intentArr = [ 
-    Flags.GUILDS,Flags.GUILD_MESSAGES, Flags.GUILD_MEMBERS,
-    Flags.DIRECT_MESSAGES, Flags.DIRECT_MESSAGE_REACTIONS
+const intents = [ 
+    Flags.GUILDS, 
+    Flags.GUILD_MESSAGES, 
+    Flags.GUILD_MEMBERS,
+    Flags.DIRECT_MESSAGES, 
+    Flags.DIRECT_MESSAGE_REACTIONS
 ]
 
-const client = new Discord.Client({ 
-    intents: intentArr,
-    allowedMentions: { repliedUser: false }
-})
+const client = new Discord.Client({ intents, allowedMentions: { repliedUser: false } })
 
 client.login(process.env.DISCORD_BOT_TOKEN).then(t => {
     client.slashCommands = new Discord.Collection()
@@ -40,7 +40,6 @@ const { initializeApp, cert } = require('firebase-admin/app'),
 initializeApp({ credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        // replaces `\` and `n` character pairs w/ single `\n` character
         privateKey: JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
     }) 
 })

@@ -21,6 +21,6 @@
         "linebreak-style": ["error", "windows"],
         "semi": ["error", "never"],
         "no-constant-condition": "off",
-        "no-inner-declarations": "warn"
+        "no-inner-declarations": "off"
     }
 }

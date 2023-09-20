@@ -104,19 +104,20 @@ module.exports = {
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
             }
               
-            var liveLocationEmbed = new Discord.MessageEmbed().setTimestamp()
-            .setColor("DARK_VIVID_PINK")
-            .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-            .setFooter(fn.devsFooter(client))
-            .setTitle("Location Info | " + foundPlayerOld.account)
-            .setDescription("Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (foundPlayerOld.y - 1) + "\nZ: " + foundPlayerOld.z + 
+            const liveLocationEmbed = new Discord.MessageEmbed().setTimestamp()
+              .setColor("DARK_VIVID_PINK")
+              .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+              .setFooter(fn.devsFooter(client))
+              .setTitle("Location Info | " + foundPlayerOld.account)
+              .setDescription("Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (foundPlayerOld.y - 1) + "\nZ: " + foundPlayerOld.z + 
                             "\n\nDynmap Link: " + "[" + foundPlayerOld.x + ", " + foundPlayerOld.z + "]" + 
                             "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerOld.x + "&y=64&z=" + foundPlayerOld.z + ")")
               
-            var lastValidLocation = { x: 0, y: 0, z: 0 },
-                timedOut = false,
-                fiveMin = 5*60*1000,
-                countDownDate = Date.now() + fiveMin
+            let lastValidLocation = { x: 0, y: 0, z: 0 },
+                timedOut = false
+
+            const fiveMin = 5*60*1000,
+                  countDownDate = Date.now() + fiveMin
 
             async function livePosFunc() { 
                 const townydata = await db.Aurora.getOnlinePlayerData()
