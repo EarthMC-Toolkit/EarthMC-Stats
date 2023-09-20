@@ -1,0 +1,26 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "no-console": "off",
+        "no-useless-escape": "off",
+        "no-unused-vars": "warn",
+        "no-undef": "warn",
+        "no-var-requires": "off",
+        "no-unreachable": ["error"],
+        "no-unexpected-multiline": ["error"],
+        "prefer-const": "warn",
+        "linebreak-style": ["error", "windows"],
+        "semi": ["error", "never"],
+        "no-constant-condition": "off",
+        "no-inner-declarations": "warn"
+    }
+}

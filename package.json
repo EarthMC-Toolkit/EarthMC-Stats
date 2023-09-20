@@ -1,0 +1,29 @@
+{
+  "name": "emc-stats",
+  "version": "2.4.0",
+  "description": "A discord bot providing info on the EarthMC Minecraft server.",
+  "license": "CC-BY-NC-SA",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "13.16.0",
+    "dotenv": "^16.3.1",
+    "earthmc": "^8.1.0",
+    "firebase": "10.3.1",
+    "firebase-admin": "^11.10.1",
+    "koyeb.js": "^4.2.3",
+    "memory-cache": "0.2.0",
+    "moment": "^2.29.4",
+    "striptags": "^3.2.0",
+    "undici": "^5.24.0"
+  },
+  "scripts": {
+    "start": "node --gc_interval=240 --max-old-space-size=960 index.js"
+  },
+  "engines": {
+    "node": "16.20.2",
+    "npm": "9.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.49.0"
+  }
+}

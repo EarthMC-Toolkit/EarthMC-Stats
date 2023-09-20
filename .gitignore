@@ -1,0 +1,6 @@
+/node_modules
+/bot/archive
+firebase/firebase-key.json
+
+.env
+.slugignore
