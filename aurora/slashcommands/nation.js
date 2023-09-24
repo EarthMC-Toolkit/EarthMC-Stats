@@ -10,26 +10,26 @@ module.exports = {
     name: "nation",
     description: "Displays info for a nation.",
     run: async (client, interaction) => {
-        var nationEmbed = new Discord.MessageEmbed().setColor("AQUA").setTimestamp()
-        
-        if (!interaction.options.getSubcommand()) {
-            return await interaction.reply({embeds: [
-                new Discord.MessageEmbed()
-                    .setColor("RED")
-                    .setTitle("No Arguments Given")
-                    .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")
-            ], ephemeral: true})
-        }
+        const nationEmbed = new Discord.MessageEmbed().setColor("AQUA").setTimestamp()
+        const subCmd = interaction.options.getSubcommand()
+
+        if (!subCmd) return await interaction.reply({embeds: [
+            new Discord.MessageEmbed()
+                .setColor("RED")
+                .setTitle("No Arguments Given")
+                .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")
+            ], ephemeral: true
+        })
 
         await interaction.deferReply()
 
-        var townsWithDuplicates = [],
-            nationsWithoutDuplicates = []
+        const townsWithDuplicates = [],
+              nationsWithoutDuplicates = []
         
         database.Aurora.getNations().then(async nations => {
             if (!nations) nations = await emc.Aurora.Nations.all().catch(err => console.log(err))
 
-            if (interaction.options.getSubcommand() == "list") {
+            if (subCmd == "list") {
                 let comparator = interaction.options.getString("comparator")
 
                 if (comparator != null) {
@@ -139,8 +139,8 @@ module.exports = {
                         .editInteraction(interaction)
                 }
             }
-            else if (interaction.options.getSubcommand() == "activity" && interaction.options.getString("name") != null) {
-                var nation = nations.find(n => n.name.toLowerCase() == interaction.options.getString("name").toLowerCase())
+            else if (subCmd == "activity" && interaction.options.getString("name") != null) {
+                const nation = nations.find(n => n.name.toLowerCase() == interaction.options.getString("name").toLowerCase())
 
                 if (!nation) {
                     nationEmbed.setTitle("Invalid Nation")
@@ -196,7 +196,7 @@ module.exports = {
                         .editInteraction(interaction)
                 })
             } // /n <nation>
-            else if (interaction.options.getSubcommand() == "lookup" && interaction.options.getString("name") != null) {
+            else if (subCmd == "lookup" && interaction.options.getString("name") != null) {
                 const nation = nations.find(n => n.name.toLowerCase() == interaction.options.getString("name").toLowerCase())
                 if (!nation) {
                     nationEmbed.setTitle("Invalid Nation")
@@ -231,29 +231,33 @@ module.exports = {
 
                 nations = fn.defaultSort(nations)
 
-                var nationRank = (nations.findIndex(n => n.name == nation.name)) + 1,
-                    kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
+                const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1,
+                      kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
 
                 //#region Embed Stuff
                 if (nation.discord) nationEmbed.setURL(nation.discord)
 
+                const capitalX = nation.capital.x
+                const capitalZ = nation.capital.z
+
                 nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
                            .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
+                           .setFooter(fn.devsFooter(client))
                            .addField("King", kingPrefix + nation.king.replace(/_/g, "\\_"), true)
                            .addField("Capital", nation.capital.name, true)
-                           .addField("Location", "[" + nation.capital.x + ", " + nation.capital.z + "]" + 
-                                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + nation.capital.x + "&y=64&z=" + nation.capital.z + ")")
+                           .addField("Location", "[" + capitalX + ", " + capitalZ + "]" + 
+                                     "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + capitalX + "&y=64&z=" + capitalZ + ")")
                            .addField("Chunks", nation.area.toString(), true)
                            .addField("Residents", nationResLength.toString(), true)
-                           .setFooter(fn.devsFooter(client))
                            .addField("Nation Bonus", fn.auroraNationBonus(nationResLength).toString())
 
                 const onlinePlayers = await emc.Aurora.Players.online().catch(() => {})
                 if (onlinePlayers) {
                     // Filter nation residents by which are online
-                    const onlineNationResidents = fn.removeDuplicates(nation.residents.filter(resident => onlinePlayers.find(op => resident == op.name)))
+                    const onlineNationResidents = fn.removeDuplicates(
+                        nation.residents.filter(resident => onlinePlayers.find(op => resident == op.name)))
                     
-                    nationEmbed.addFields(fn.embedField(
+                    if (onlineNationResidents.length >= 1) nationEmbed.addFields(fn.embedField(
                         "Online Residents [" + onlineNationResidents.length + "]", 
                         "```" + onlineNationResidents.join(", ") + "```"
                     ))
@@ -261,8 +265,8 @@ module.exports = {
                 //#endregion
 
                 //#region Recent news logic
-                var newsChannel = client.channels.cache.get(fn.AURORA.newsChannel),
-                    newsChannelMessages = await newsChannel?.messages.fetch()
+                const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel),
+                      newsChannelMessages = await newsChannel?.messages.fetch()
 
                 const filterNews = msg => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
 
@@ -288,11 +292,17 @@ module.exports = {
                     }
 
                     const nationTownsString = nation.towns.join(", ").toString().replace(/^\s+|\s+$/gm, "")
-                    nationEmbed.addField("Towns [" + nation.towns.length + "]", "```" + nationTownsString + "```")
+                    nationEmbed.addFields(fn.embedField(
+                        "Towns [" + nation.towns.length + "]", 
+                        "```" + nationTownsString + "```"
+                    ))
                     
                     if (recentNews) {
                         const news = new News(recentNews)
-                        nationEmbed.addField("Recent News", news.message + (news?.images[0] ? " ([Image](" + news.images[0] + "))" : ""))
+                        nationEmbed.addFields(fn.embedField(
+                            "Recent News", 
+                            news.message + (news?.images[0] ? " ([Image](" + news.images[0] + "))" : "")
+                        ))
                     }
                     
                     const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail] 
