@@ -1,39 +1,15 @@
 # EarthMC Stats
 The most popular EarthMC Discord Bot is now open source!
 
-### About
-Currently, EMCS is capable of 
-
-### History
-In 2019, a Discord Bot was created by [LuciferianThomas](https://github.com/LuciferianThomas) for the very popular **EarthMC Live** news server, 
-which would help offline players see town and nation info, as well as get queue updates and see the server status.
-
-In early 2020 however, Towny data was no longer available and so the original and *only* bot at the time, ceased to function.<br>
-To make things worse, notorious player '**Aceshooter**' had implemented a backdoor into **EarthMC Live** and subsequently leaked a mass amount of messages from servers where the bot had read permissions.
-
-As a victim of this leak, LuciferianThomas left EarthMC midway through 2020, leaving the behind the tainted remnants of the EarthMC Live bot.
-
-Here is where EarthMC Stats steps in!<br>
-Popular player `Warriorrr` and soon to be prime minister of **Britain** on **Terra Nova** had brought this code to light and discussed it with other members of Britian, who soon came to the decision to reignite the bot, having it exclusive to their discord. <br>
-
-In just a couple of weeks, councillor `Owen3H` from the town of **Glasgow** had found a way to rely on data from EarthMC's [Dynamic Map]() instead of Towny -
-though the bot was still significantly broken, the backdoor was removed and a huge overhaul began to take place.
-
-/////////////////////<br>
-MORE LORE HERE<br>
-/////////////////////<br>
-
-EarthMC Stats has kept growing in popularity ever since, hitting 1.5k servers in 2023!<br>
-As of today, `Owen3H` is the sole maintainer of EarthMC Stats and a plethora of [other tools](https://github.com/EarthMC-Toolkit).
-
 ### Notes
 - EarthMC Stats currently uses DiscordJS version `13.6.0`.
 - CommonJS is still in use by EMCS, though migrating to ESM is planned!
 - Duplicated code is slowly being phased out in favour of helper classes found in the `common` folder.
+- To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - please don't mess with this.
 - This repo is meant for viewing and attribution, hosting it yourself will not work.
 
 ### Resources
-> [Support discord](https://discord.gg/AVtgkcRgFs)<br>
+> [Support/Development Discord](https://discord.gg/AVtgkcRgFs)<br>
 > [Invite the bot](https://emctoolkit.vercel.app/invite)<br>
 > [NPM Library](https://www.npmjs.com/package/earthmc)<br>
 
