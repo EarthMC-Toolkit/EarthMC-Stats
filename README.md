@@ -1,6 +1,9 @@
 # EarthMC Stats
 The most popular EarthMC Discord Bot is now open source!
 
+EarthMC Stats provides useful commands and info relating to players, towns, nations, alliances and more.<br>
+This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/package/earthmc) which handles caching and parsing of Dynmap data.
+
 ### Notes
 - EarthMC Stats currently uses DiscordJS version `13.6.0`.
 - CommonJS is still in use by EMCS, though migrating to ESM is planned!
@@ -11,7 +14,6 @@ The most popular EarthMC Discord Bot is now open source!
 ### Resources
 > [Support/Development Discord](https://discord.gg/AVtgkcRgFs)<br>
 > [Invite the bot](https://emctoolkit.vercel.app/invite)<br>
-> [NPM Library](https://www.npmjs.com/package/earthmc)<br>
 
 ## Disclaimer
 This project has the [Attribution-NonCommercial-ShareAlike 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
