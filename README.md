@@ -5,7 +5,7 @@ EarthMC Stats provides useful commands and info relating to players, towns, nati
 This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/package/earthmc) which handles caching and parsing of Dynmap data.
 
 ### Notes
-- EarthMC Stats currently uses DiscordJS version `13.6.0`.
+- EarthMC Stats currently uses DiscordJS version `13.16.0`.
 - CommonJS is still in use by EMCS, though migrating to ESM is planned!
 - Duplicated code is slowly being phased out in favour of helper classes found in the `common` folder.
 - To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - please don't mess with this.
