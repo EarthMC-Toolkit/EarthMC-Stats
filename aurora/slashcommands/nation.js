@@ -287,21 +287,26 @@ module.exports = {
                             .filter(alliance => alliance.nations.map(e => e.toLowerCase())
                             .includes(nation.name.toLowerCase())).map(a => a.allianceName) 
 
-                        if (nationAlliances?.length > 0)
-                            nationEmbed.addField("Alliances [" + nationAlliances.length + "]", "```" + nationAlliances.join(", ") + "```")
+                        const len = nationAlliances?.length
+                        if (len > 0) nationEmbed.addFields(fn.embedField(
+                            `Alliances [${len}]`, 
+                            "```" + nationAlliances.join(", ") + "```"
+                        ))
                     }
 
                     const nationTownsString = nation.towns.join(", ").toString().replace(/^\s+|\s+$/gm, "")
                     nationEmbed.addFields(fn.embedField(
-                        "Towns [" + nation.towns.length + "]", 
+                        `Towns [${nation.towns.length}]`, 
                         "```" + nationTownsString + "```"
                     ))
                     
                     if (recentNews) {
-                        const news = new News(recentNews)
+                        const news = new News(recentNews),
+                              img = news?.images[0]
+
                         nationEmbed.addFields(fn.embedField(
                             "Recent News", 
-                            news.message + (news?.images[0] ? " ([Image](" + news.images[0] + "))" : "")
+                            news.message + (img ? " ([Image](" + img + "))" : "")
                         ))
                     }
                     

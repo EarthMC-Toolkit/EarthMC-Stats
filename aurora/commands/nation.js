@@ -388,10 +388,12 @@ module.exports = {
                     if (alliances) {
                         const nationAlliances = alliances
                             .filter(alliance => alliance.nations.map(e => e.toLowerCase())                            
-                            .includes(nation.name.toLowerCase())).map(a => a.allianceName)
+                            .includes(nation.name.toLowerCase()))
+                            .map(a => a.allianceName)
 
-                        if (nationAlliances.length > 0) nationEmbed.addFields(fn.embedField(
-                            "Alliances [" + nationAlliances.length + "]", 
+                        const len = nationAlliances.length
+                        if (len > 0) nationEmbed.addFields(fn.embedField(
+                            `Alliances [${len}]`, 
                             "```" + nationAlliances.join(", ") + "```"
                         ))
                     }
@@ -404,10 +406,11 @@ module.exports = {
                     
                     if (recentNews) {
                         const news = new News(recentNews),
-                              img = news.images[0]
+                              img = news?.images[0]
 
                         nationEmbed.addFields(fn.embedField(
-                            "Recent News", news.message + (img ? " ([Image](" + img + "))" : "")
+                            "Recent News",
+                            news.message + (img ? " ([Image](" + img + "))" : "")
                         ))
                     }
 
