@@ -15,7 +15,7 @@ const checkEditor = async interaction => {
 
     if (!fn.botDevs.includes(author.id) && !isEditor) {
         return interaction.reply({embeds: [new Discord.MessageEmbed()
-            .setTitle("That command is for editors only!")
+            .setTitle("That command is for editors only!\nIf you are an editor, you're probably in the wrong channel.")
             .setAuthor({ name: author.user.username, iconURL: author.displayAvatarURL() })
             .setColor("RED")
             .setTimestamp()
