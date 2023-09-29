@@ -18,10 +18,6 @@ This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/
 - To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - please don't mess with this.
 - This repo is meant for viewing and attribution, hosting it yourself will not work.
 
-## Resources
-> [Support/Development Discord](https://discord.gg/AVtgkcRgFs)<br>
-> [Invite the bot](https://emctoolkit.vercel.app/invite)<br>
-
 ## Disclaimer
 This project has the [Attribution-NonCommercial-ShareAlike 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
 
