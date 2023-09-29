@@ -2,8 +2,8 @@
 <img width="150" height="150" src="https://media.discordapp.net/attachments/974491955864150046/974492170616721428/emcstatslogov2.png?ex=651587ce&is=6514364e&hm=7494656827478535d3422e140136ecfe401865245b0a653d54859ec042c90ef3&=&width=423&height=423">
 
 # EarthMC Stats 
-![Discord](https://img.shields.io/discord/966271635894190090?style=flat-square&label=Join%20the%20discord&color=%235347f5&link=https%3A%2F%2Fdiscord.gg%2FAVtgkcRgFs)
-![Static Badge](https://img.shields.io/badge/1.7k_guilds-%23128237?style=flat-square&label=Invite%20the%20bot&link=https%3A%2F%2Femctoolkit.vercel.app%2Finvite)
+[![Discord](https://img.shields.io/discord/966271635894190090?style=flat-square&label=Join%20the%20discord&color=%235347f5)](https://discord.com/invite/AVtgkcRgFs)
+[![Static Badge](https://img.shields.io/badge/1.7k_guilds-%23128237?style=flat-square&label=Invite%20the%20bot)](https://emctoolkit.vercel.app/invite)
 
 The most popular Discord bot for **EarthMC** is now open source!
 
