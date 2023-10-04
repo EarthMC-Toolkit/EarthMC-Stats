@@ -132,13 +132,13 @@ async function initUpdates() {
         liveTownless()
     }, oneMinute)
 
-    // Send news and alliances to API.
+    // Send alliances to API.
     setInterval(() => updateAPI(false, true), 3 * oneMinute)
 
     // Update Aurora every 3 minutes (same as Dynmap)
     setInterval(() => updateData(false, true, false), 3.5 * oneMinute)
 
-    // Update Nova and API news (for both maps) every 10m.
+    // Update Nova and send API news (for both maps) every 10m.
     setInterval(async () => {
         await updateData(false, false, true)
         await updateAPI(true, false)
@@ -150,7 +150,7 @@ async function updateNews() {
     api.sendNews(client, 'nova')
 }
 
-async function updateData(botStarting=false, updateAurora=true, updateNova=false) {
+async function updateData(botStarting = false, updateAurora = true, updateNova = false) {
     const pArr = await database.getPlayers(botStarting).catch(() => {})
     const players = pArr ? await purgeInactive(pArr) : []
 

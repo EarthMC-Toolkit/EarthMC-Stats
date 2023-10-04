@@ -25,7 +25,7 @@ module.exports = {
             if (!towns) towns = await Aurora.Towns.all().catch(err => console.log(err))
 
             towns = towns.map(t => {
-                t.name = formatString(t.name, true)
+                t.name = formatString(t.name, false)
                 return t
             })
 

@@ -28,7 +28,7 @@ module.exports = {
             if (!towns) towns = await emc.Aurora.Towns.all().catch(err => console.log(err))
 
             towns = towns.map(t => {
-                t.name = emc.formatString(t.name, true)
+                t.name = emc.formatString(t.name, false)
                 return t
             })
 
@@ -91,15 +91,18 @@ module.exports = {
                 else if (comparator == "chunks" || comparator == "land" ||  comparator == "area") 
                     towns.sort((a, b) => { return b.area - a.area}) 
                 else if (comparator == "name" || comparator == "alphabetical") {
-                    towns.sort((a, b) => {                       
-                        if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
-                        if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
+                    towns.sort((a, b) => {      
+                        const [aName, bName] = [a.name.toLowerCase(), b.name.toLowerCase()]                 
+                        if (bName < aName) return 1
+                        if (bName > aName) return -1
                         
-                        if (b.residents.length > a.residents.length) return 1
-                        if (b.residents.length < a.residents.length) return -1
+                        const [aResLen, bResLen] = [a.residents.length, b.residents.length]
+                        if (bResLen > aResLen) return 1
+                        if (bResLen < aResLen) return -1
 
-                        if (b.area > a.area) return 1
-                        if (b.area < a.area) return -1
+                        const [aArea, bArea] = [a.area, b.area]
+                        if (bArea > aArea) return 1
+                        if (bArea < aArea) return -1
 
                         return 0
                     })
@@ -179,8 +182,7 @@ module.exports = {
 
                 towns = fn.defaultSort(towns)
 
-                let onlineResidents = [],
-                    claimBonus = 0
+                let onlineResidents = []
 
                 const townRank = (towns.findIndex(t => t.name == town.name)) + 1,
                       mayor = town.mayor.replace(/_/g, "\\_")
@@ -223,47 +225,76 @@ module.exports = {
                     townEmbed.addFields(fn.embedField("Nation", nationString, true))
                 }
 
+                const townAreaStr = `${town.area} / `
                 if (town.nation != "No Nation") {
                     const nationBonus = fn.auroraNationBonus(townNation.residents.length)
-                    claimBonus = nationBonus + (townResidentsLength * 8)
-                    townEmbed.addField("Town Size", town.area + " / " + Math.min(claimBonus, fn.maxTownSize) + " [NationBonus: " + nationBonus + "]")
+                    const claimBonus = Math.min(nationBonus + (townResidentsLength * 8), fn.maxTownSize)
+
+                    townEmbed.addFields(fn.embedField(
+                        "Town Size", 
+                        `${townAreaStr}${claimBonus} [NationBonus: ${nationBonus}]`
+                    ))
                 } else {
-                    claimBonus = townResidentsLength * 8
-                    townEmbed.addField("Town Size", town.area + " / " + Math.min(claimBonus, fn.maxTownSize))
+                    const claimBonus = Math.min(townResidentsLength * 8, fn.maxTownSize)
+                    townEmbed.addFields(fn.embedField("Town Size", townAreaStr + claimBonus))
                 }
 
-                townEmbed.addField("Location", "[" + town.x + ", " + town.z + "]" + "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + town.x + "&y=64&z=" + town.z + ")", true)
-                         .setFooter(fn.devsFooter(client))
-                         .setThumbnail('attachment://aurora.png')
-                         .setTimestamp()
+                townEmbed.addFields(fn.embedField(
+                    "Location", 
+                    `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
+                    true
+                ))
+
+                townEmbed.setFooter(fn.devsFooter(client))
+                    .setThumbnail('attachment://aurora.png')
+                    .setTimestamp()
 
                 if (!town.ruined) {
-                    // RESIDENTS
                     if (townResidentsLength > 0) {
-                        if (townResidentsLength <= 50) townEmbed.addField("Residents " + `[` + townResidentsLength + `]`, "```" +  town.residents.join(", ") + "```")      
+                        if (townResidentsLength <= 50) {
+                            townEmbed.addFields(fn.embedField(
+                                `Residents [${townResidentsLength}]`, 
+                                "```" + town.residents.join(", ") + "```"
+                            )) 
+                        }    
                         else townEmbed.addFields(fn.embedField("Residents", townResidentsLength.toString()))
                     } 
                     else townEmbed.addFields(fn.embedField("Residents", "There are no residents in this town?")) 
 
-                    // ONLINE RESIDENTS
+                    //#region "Online Residents" field
                     const townyData = await database.Aurora.getOnlinePlayerData()
 
-                    if (!townyData) townEmbed.addField("Online Residents", "No residents are online in " + town.name + ".")
-                    else {
+                    if (!townyData) {
+                        townEmbed.addFields(fn.embedField(
+                            "Online Residents", 
+                            "No residents are online in " + town.name + "."
+                        ))
+                    } else {
                         onlineResidents = fn.removeDuplicates(town.residents.filter(resident => townyData.players.find(op => resident === op.account)))
+                        const onlineResLen = onlineResidents.length
 
-                        if (onlineResidents.length > 0) townEmbed.addField("Online Residents [" + onlineResidents.length + "]", "```" + onlineResidents.join(", ") + "```")
-                        else townEmbed.addField("Online Residents", "No residents are online in " + town.name + ".")
+                        if (onlineResLen > 0) {
+                            townEmbed.addFields(fn.embedField(
+                                `Online Residents [${onlineResLen}]`, 
+                                "```" + onlineResidents.join(", ") + "```"
+                            ))
+                        }
+                        else townEmbed.addFields(fn.embedField(
+                            "Online Residents", 
+                            "No residents are online in " + town.name + "."
+                        ))
                     }
+                    //#endregion
                 }
 
                 const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-                townEmbed.addField("Flags", `
+                townEmbed.addFields(fn.embedField("Flags", `
                     ${town.pvp ? green : red } PVP
                     ${town.mobs ? green : red } Mobs 
-                    ${town.public? green : red } Public
+                    ${town.public ? green : red } Public
                     ${town.explosion ? green : red } Explosions 
-                    ${town.fire ? green : red } Fire Spread`)
+                    ${town.fire ? green : red } Fire Spread
+                `))
 
                 interaction.editReply({embeds: [townEmbed], files: [fn.AURORA.thumbnail]})
             } else {
