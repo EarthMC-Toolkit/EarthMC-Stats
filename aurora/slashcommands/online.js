@@ -104,7 +104,7 @@ module.exports = {
                     //   page = 0
             
                 return await new CustomEmbed(client, "Online Activity | Kings")
-                    .paginate(allData, `Total: ${nations.length}\`\``, "```")
+                    .paginate(allData, `Total: ${nations.length}` + "```", "```")
                     .setPage(0)
                     .setColor(0x556b2f)
                     .editInteraction(interaction)
