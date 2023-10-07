@@ -93,8 +93,7 @@ module.exports = {
                 if (!allNations || allNations.length < 1) 
                     return await interaction.editReply({embeds: [fn.fetchError], ephemeral: true})
 
-                const nations = allNations.filter(n => ops.find(op => op.name == n.king))
-                nations.sort((a, b) => {
+                const nations = allNations.filter(n => ops.find(op => op.name == n.king)).sort((a, b) => {
                     if (a.king.toLowerCase() < b.king.toLowerCase()) return -1
                     if (a.king.toLowerCase() > b.king.toLowerCase()) return 1
                     return 0
@@ -105,7 +104,7 @@ module.exports = {
                     //   page = 0
             
                 return await new CustomEmbed(client, "Online Activity | Kings")
-                    .paginate(allData, `Total: ${nations.length}```, "```")
+                    .paginate(allData, `Total: ${nations.length}\`\``, "```")
                     .setPage(0)
                     .setColor(0x556b2f)
                     .editInteraction(interaction)
