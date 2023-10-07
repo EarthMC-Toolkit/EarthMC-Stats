@@ -2,6 +2,7 @@ const Discord = require('discord.js'),
       fn = require('../../bot/utils/fn'),
       emc = require("earthmc"),
       { SlashCommandBuilder } = require('@discordjs/builders')
+const { CustomEmbed } = require('../../bot/objects/CustomEmbed')
 
 module.exports = {
     name: "online",
@@ -13,11 +14,11 @@ module.exports = {
     run: async (client, interaction) => {
         await interaction.deferReply()
 
-        const onlinePlayers = await emc.Aurora.Players.online().catch(() => {})
-        if (!onlinePlayers) return await interaction.editReply({embeds: [fn.fetchError], ephemeral: true})
+        const ops = await emc.Aurora.Players.online().catch(() => {})
+        if (!ops) return await interaction.editReply({embeds: [fn.fetchError], ephemeral: true})
 
         function displayOnlineStaff() {
-            const onlineStaff = fn.staff.all().filter(sm => onlinePlayers.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+            const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
             return interaction.editReply({embeds: [
                 new Discord.MessageEmbed()
                     .setTitle("Online Activity | Staff")
@@ -32,21 +33,20 @@ module.exports = {
         switch(interaction.options.getSubcommand().toLowerCase()) {
             case "all": {
                 // Alphabetical sort
-                onlinePlayers.sort((a, b) => {
+                ops.sort((a, b) => {
                     if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
                     if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
 
                     return 0
                 })
 
-                const allData = onlinePlayers
-                    .map(op => op.name === op.nickname ? op.name : `${op.name} (${op.nickname})`)
-                    .join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                const allData = ops.map(op => op.name === op.nickname ? op.name : `${op.name} (${op.nickname})`)
+                                   .join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
                 const botembed = [],
-                      len = allData.length
+                      len = allData.length,
+                      page = 0
 
-                const page = 0
                 for (let i = 0; i < len; i++) {
                     botembed[i] = new Discord.MessageEmbed()
                     .setColor(0x556b2f)
@@ -66,7 +66,7 @@ module.exports = {
                 let towns = await emc.Aurora.Towns.all().catch(() => {})
                 if (!towns) return await interaction.editReply({embeds: [fn.fetchError], ephemeral: true})
 
-                towns = towns.filter(t => onlinePlayers.find(op => op.name == t.mayor)).sort((a, b) => {
+                towns = towns.filter(t => ops.find(op => op.name == t.mayor)).sort((a, b) => {
                     if (a.mayor.toLowerCase() < b.mayor.toLowerCase()) return -1
                     if (a.mayor.toLowerCase() > b.mayor.toLowerCase()) return 1
                     return 0
@@ -89,33 +89,28 @@ module.exports = {
                 return await interaction.editReply({embeds: [botembed[page]]}).then(() => fn.paginatorInteraction(interaction, botembed, page))
             }
             case "kings": {
-                let nations = await emc.Aurora.Nations.all().catch(err => console.log(err))
-                if (!nations || nations.length < 1) 
+                const allNations = await emc.Aurora.Nations.all().catch(err => console.log(err))
+                if (!allNations || allNations.length < 1) 
                     return await interaction.editReply({embeds: [fn.fetchError], ephemeral: true})
 
-                nations = nations.filter(n => onlinePlayers.find(op => op.name == n.king))
-                //console.log("\n\nFILTERED: " + nations)
-
+                const nations = allNations.filter(n => ops.find(op => op.name == n.king))
                 nations.sort((a, b) => {
                     if (a.king.toLowerCase() < b.king.toLowerCase()) return -1
                     if (a.king.toLowerCase() > b.king.toLowerCase()) return 1
                     return 0
                 })
             
-                const page = 0, 
-                      allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg),
-                      botembed = [], len = allData.length
+                const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                    //   botembed = [],
+                    //   page = 0
             
-                for (let i = 0; i < len; i++) {
-                    botembed[i] = new Discord.MessageEmbed()
+                return await new CustomEmbed(client, "Online Activity | Kings")
+                    .paginate(allData, `Total: ${nations.length}```, "```")
+                    .setPage(0)
                     .setColor(0x556b2f)
-                    .setTitle("Online Activity | Kings")
-                    .setDescription("Total: " + nations.length + "```" + allData[i] + "```")
-                    .setTimestamp()
-                    .setFooter({text: `Page ${i + 1}/${len}`, iconURL: client.user.avatarURL()})
-                }
+                    .editInteraction(interaction)
                     
-                return await interaction.editReply({embeds: [botembed[page]]}).then(() => fn.paginatorInteraction(interaction, botembed, page))
+                //return await interaction.editReply({embeds: [botembed[page]]}).then(() => fn.paginatorInteraction(interaction, botembed, page))
             }
             default: return await interaction.editReply({embeds: [
                 new Discord.MessageEmbed()

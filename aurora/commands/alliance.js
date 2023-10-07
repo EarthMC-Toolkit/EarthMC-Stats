@@ -712,26 +712,6 @@ async function sendAllianceList(client, message, m, args, type) {
                 alliance["towns"] = accumulator.towns
             }
 
-            // alliances.forEach(alliance => {
-            //     let allianceResidents = 0,
-            //         allianceArea = 0,
-            //         allianceTowns = 0
-                
-            //     // Add up all from an alliance's nations.
-            //     for (let allianceNation of alliance.nations) {
-            //         const foundNation = nations.find(nation => nation.name == allianceNation)                       
-            //         if (!foundNation) continue
-
-            //         allianceResidents += foundNation.residents.length
-            //         allianceArea += foundNation.area
-            //         allianceTowns += foundNation.towns.length
-            //     }
-                    
-            //     alliance["residents"] = allianceResidents
-            //     alliance["towns"] = allianceTowns
-            //     alliance["area"] = allianceArea
-            // })
-
             let foundAlliances = [],
                 searching = false
             
