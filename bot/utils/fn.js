@@ -241,21 +241,56 @@ const alphabetSort = (arr, key) => arr.sort((a, b) => {
     return (bVal < aVal) ? 1 : (bVal > aVal ? -1 : 0)
 })
 
-function defaultSort(arr) {
+const sortByKey = (arr, key) => {
+    arr.sort(function(a, b) {
+        if (a[key].toLowerCase() < b[key].toLowerCase()) return -1
+        if (a[key].toLowerCase() > b[key].toLowerCase()) return 1
+        return 0
+    })
+}
+
+function sortOrdered(arr, keys) {
     arr.sort((a, b) => {
-        if (b.residents.length > a.residents.length) return 1
-        if (b.residents.length < a.residents.length) return -1
+        for (const { key, callback } of keys) {
+            const aVal = a[key]
+            const bVal = b[key]
 
-        if (b.area > a.area) return 1
-        if (b.area < a.area) return -1
+            const aValue = callback ? callback(aVal) : aVal
+            const bValue = callback ? callback(bVal) : bVal
 
-        if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
-        if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
+            if (aValue < bValue) return 1
+            if (aValue > bValue) return -1
+        }
 
         return 0
     })
+}
 
-    return arr
+function defaultSort(arr) {
+    return sortOrdered(arr, [{
+        key: 'residents',
+        callback: k => k.length
+    }, {
+        key: 'area'
+    }, {
+        key: 'name',
+        callback: k => k.toLowerCase()
+    }])
+
+    // arr.sort((a, b) => {
+    //     if (b.residents.length > a.residents.length) return 1
+    //     if (b.residents.length < a.residents.length) return -1
+
+    //     if (b.area > a.area) return 1
+    //     if (b.area < a.area) return -1
+
+    //     if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
+    //     if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
+
+    //     return 0
+    // })
+
+    // return arr
 }
 
 const maxTownSize = 940
@@ -318,6 +353,8 @@ module.exports = {
     staff,
     staffListEmbed,
     alphabetSort,
+    sortByKey,
+    sortOrdered,
     defaultSort, 
     attachmentFromFile,
     novaNationBonus,

@@ -1,14 +1,7 @@
 const Discord = require('discord.js'),
       fn = require('../../bot/utils/fn'),
       { Aurora } = require("earthmc")
-
-const sortByKey = (arr, key) => {
-    arr.sort(function(a, b) {
-        if (a[key].toLowerCase() < b[key].toLowerCase()) return -1
-        if (a[key].toLowerCase() > b[key].toLowerCase()) return 1
-        return 0
-    })
-}
+const { CustomEmbed } = require('../../bot/objects/CustomEmbed')
 
 module.exports = {
     name: "online",
@@ -39,27 +32,21 @@ module.exports = {
         switch(args[0].toLowerCase()) {
             case "all": {
                 // Alphabetical sort
-                sortByKey(onlinePlayers, 'name')
+                fn.sortByKey(onlinePlayers, 'name')
 
-                let i = 0, page = 1
+                let page = 1
                 if (isNaN(page)) page = 0
                 else page--
 
-                const allData = onlinePlayers.map(op => op.name != op.nickname 
-                    ? op.name + " (" + op.nickname + ")" : op.name)
-                .join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                const allData = onlinePlayers.map(
+                    op => op.name != op.nickname ? `${op.name} (${op.nickname})` : op.name
+                ).join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
-                const botembed = []
-                const len = allData.length
-
-                for (; i < len; i++) {
-                    botembed[i] = embed()
-                    .setTitle("(Aurora) Online Activity | All")
-                    .setDescription("```" + allData[i] + "```")
-                    .setFooter({text: `Page ${i + 1}/${len}`, iconURL: client.user.avatarURL()})
-                }
-
-                return await m.edit({embeds: [botembed[page]]}).then(msg => fn.paginator(message.author.id, msg, botembed, page))
+                return await new CustomEmbed(client, "(Aurora) Online Activity | All")
+                    .setPage(page)
+                    .setColor(0x556b2f)
+                    .paginate(allData, "```", "```")
+                    .editMessage(m)
             }
             case "staff":
             case "mods": {
@@ -74,56 +61,39 @@ module.exports = {
                     arr.filter(t => onlinePlayers.find(op => op.name == t.mayor)))
                 
                 if (!towns) return
-                sortByKey(towns, 'mayor')
+                fn.sortByKey(towns, 'mayor')
             
-                let i = 0, page = 1
+                let page = 1
                 if (req.split(" ")[0]) page = parseInt(req.split(" ")[0])
                 if (isNaN(page)) page = 0
                 else page--
             
-                const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg),
-                      botembed = []
-                    
-                const len = allData.length
-                for (; i < len; i++) {
-                    botembed[i] = new Discord.MessageEmbed()
+                const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                return await new CustomEmbed(client, "(Aurora) Online Activity | Mayors")
+                    .setPage(page)
                     .setColor(0x556b2f)
-                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                    .setTitle("(Aurora) Online Activity | Mayors")
-                    .setDescription("Total: " + towns.length + "```" + allData[i] + "```")
-                    .setTimestamp()
-                    .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
-                }
-                    
-                return await m.edit({embeds: [botembed[page]]}).then(msg => fn.paginator(message.author.id, msg, botembed, page))
+                    .paginate(allData, `Total: ${towns.length}$` + "```", "```")
+                    .editMessage(m)
             }
             case "kings": {
-                const nations = await Aurora.Nations.all().then(arr =>
-                    arr.filter(n => onlinePlayers.find(op => op.name == n.king)))
+                const allNations = await Aurora.Nations.all().catch(err => console.log(err))
+                if (!allNations || allNations.length < 1) 
+                    return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
-                if (!nations) return
-                sortByKey(nations, 'king')
+                const nations = allNations.filter(n => onlinePlayers.find(op => op.name == n.king))
+                fn.sortByKey(nations, 'king')
             
-                let i = 0, page = 1
+                let page = 1
                 if (req.split(" ")[0]) page = parseInt(req.split(" ")[0])
                 if (isNaN(page)) page = 0
                 else page--
             
-                const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg),
-                      botembed = [], 
-                      len = allData.length
-            
-                for (; i < len; i++) {
-                    botembed[i] = new Discord.MessageEmbed()
+                const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                return await new CustomEmbed(client, "(Aurora) Online Activity | Kings")
+                    .setPage(page)
                     .setColor(0x556b2f)
-                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                    .setTitle("(Aurora) Online Activity | Kings")
-                    .setDescription("Total: " + nations.length + "```" + allData[i] + "```")
-                    .setTimestamp()
-                    .setFooter({text: `Page ${i + 1}/${len}`, iconURL: client.user.avatarURL()})
-                }
-                    
-                return await m.edit({embeds: [botembed[page]]}).then(msg => fn.paginator(message.author.id, msg, botembed, page))
+                    .paginate(allData, `Total: ${nations.length}` + "```", "```")
+                    .editMessage(m)
             }
             default: return await m.edit({embeds: [
                 new Discord.MessageEmbed()
