@@ -54,7 +54,7 @@ module.exports = {
                 if (!allTowns || allTowns.length < 1) 
                     return await interaction.editReply({embeds: [fn.fetchError], ephemeral: true})
 
-                const towns = towns.filter(t => ops.find(op => op.name == t.mayor))
+                const towns = allTowns.filter(t => ops.find(op => op.name == t.mayor))
                 fn.sortByKey(towns, 'mayor')
             
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
