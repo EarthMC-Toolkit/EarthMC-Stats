@@ -86,8 +86,8 @@ module.exports = {
                                 
                             }, Object.create(null))
 
-                            nationsWithoutDuplicates.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
                             const allData = nationsWithoutDuplicates
+                                .sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
                                 .map(nation => nation.nation + " - " + nation.onlineResidents.length)                                     
                                 .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
@@ -100,18 +100,15 @@ module.exports = {
                     else if (comparator == "residents") nations.sort((a, b) => b.residents.length - a.residents.length)  
                     else if (comparator == "chunks" || comparator == "land" || comparator == "area") nations.sort((a, b) => b.area - a.area)
                     else if (comparator == "alphabetical" || comparator == "name") {
-                        nations.sort((a, b) => {
-                            if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
-                            if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
-
-                            if (b.residents.length > a.residents.length) return 1
-                            if (b.residents.length < a.residents.length) return -1
-
-                            if (b.area > a.area) return 1
-                            if (b.area < a.area) return -1
-
-                            return 0
-                        })
+                        fn.sortByOrder(nations, [{
+                            key: 'name',
+                            callback: k => k.toLowerCase()
+                        }, {
+                            key: 'residents',
+                            callback: k => k.length
+                        }, {
+                            key: 'area'
+                        }])
                     }
                     else nations = fn.defaultSort(nations)
 

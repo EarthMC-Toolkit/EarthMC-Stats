@@ -249,7 +249,7 @@ const sortByKey = (arr, key) => {
     })
 }
 
-function sortOrdered(arr, keys) {
+function sortByOrder(arr, keys) {
     arr.sort((a, b) => {
         for (const { key, callback } of keys) {
             const aVal = a[key]
@@ -267,7 +267,7 @@ function sortOrdered(arr, keys) {
 }
 
 function defaultSort(arr) {
-    return sortOrdered(arr, [{
+    return sortByOrder(arr, [{
         key: 'residents',
         callback: k => k.length
     }, {
@@ -354,7 +354,7 @@ module.exports = {
     staffListEmbed,
     alphabetSort,
     sortByKey,
-    sortOrdered,
+    sortByOrder,
     defaultSort, 
     attachmentFromFile,
     novaNationBonus,

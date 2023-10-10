@@ -61,7 +61,7 @@ module.exports = {
                 const foundPlayerNickname = striptags(foundPlayer.name)
                       
                 if (foundPlayer.account !== foundPlayerNickname)
-                    locationEmbed.addField("Nickname", foundPlayerNickname)
+                    locationEmbed.addFields(fn.embedField("Nickname", foundPlayerNickname))
                 
                 locationEmbed.addField("Coordinates", "X: " + foundPlayer.x + "\nY: " + (foundPlayer.y - 1) + "\nZ: " + foundPlayer.z)
                 locationEmbed.addField("Dynmap Link", "[" + foundPlayer.x + ", " + foundPlayer.z + "]" + "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + foundPlayer.x + "&y=64&z=" + foundPlayer.z + ")")
