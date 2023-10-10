@@ -247,6 +247,8 @@ const sortByKey = (arr, key) => {
         if (a[key].toLowerCase() > b[key].toLowerCase()) return 1
         return 0
     })
+
+    return arr
 }
 
 function sortByOrder(arr, keys) {
@@ -264,6 +266,8 @@ function sortByOrder(arr, keys) {
 
         return 0
     })
+
+    return arr
 }
 
 function defaultSort(arr) {
