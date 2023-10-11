@@ -144,9 +144,9 @@ async function initUpdates() {
         await updateAPI(true, false)
     }, 10 * oneMinute)
 
-    setInterval(async () => {
-        await updateFallenTowns(AURORA)
-    }, oneMinute)
+    // setInterval(async () => {
+    //     await updateFallenTowns(AURORA)
+    // }, oneMinute)
 }
 
 async function updateNews() {
