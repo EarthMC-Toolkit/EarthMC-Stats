@@ -33,6 +33,11 @@ class CustomEmbed extends Discord.MessageEmbed {
         this.setFooter(fn.devsFooter(client))
     }
 
+    addField(name, value, inline) {
+        this.fields.push({ name, value, inline })
+        return this
+    }
+
     setType(type) {
         if (this.color) return
  

@@ -22,18 +22,18 @@ module.exports = {
         ).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
         
         database.Aurora.getTowns().then(async towns => {
-            if (!towns) towns = await Aurora.Towns.all().catch(err => console.log(err))
-
-            towns = towns.map(t => {
+            if (!towns) towns = await Aurora.Towns.all().then(arr => arr.map(t => {
                 t.name = formatString(t.name, false)
                 return t
-            })
+            })).catch(err => console.log(err))
 
-            var townEmbed = new Discord.MessageEmbed(),
-                onlineResidents = [],
+            const townEmbed = new Discord.MessageEmbed()
+            let onlineResidents = [],
                 claimBonus = 0
 
-            if (args[0].toLowerCase() == "list") {
+            const opt = args[0]
+
+            if (opt.toLowerCase() == "list") {
                 if (args[1] != null) {
                     if (args[1].toLowerCase() == "online") {
                         const onlinePlayers = await Aurora.Players.online().catch(() => {})
@@ -145,8 +145,8 @@ module.exports = {
 
                 sendList(client, m, args[1], towns)
             }
-            else if (args[0].toLowerCase() == "activity" && args[1] != null) {
-                var town = towns.find(t => t.name.toLowerCase() == args[1].toLowerCase())
+            else if (opt.toLowerCase() == "activity" && args[1] != null) {
+                const town = towns.find(t => t.name.toLowerCase() == args[1].toLowerCase())
 
                 if (!town) return m.edit({embeds: [
                     new Discord.MessageEmbed()
@@ -201,7 +201,7 @@ module.exports = {
                         .editMessage(m)
                 }).catch(() => {})
             }
-            else if (args.length > 3 || args.length == null || args[0] == null) {
+            else if (args.length > 3 || args.length == null || opt == null) {
                 return await m.edit({embeds: [
                     new Discord.MessageEmbed()
                     .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
@@ -212,12 +212,12 @@ module.exports = {
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
             }
             else { // /t <town>
-                const town = towns.find(t => t.name.toLowerCase() == args[0].toLowerCase())
+                const town = towns.find(t => t.name.toLowerCase() == opt.toLowerCase())
 
                 if (!town) return m.edit({embeds: [
                     new Discord.MessageEmbed()
                     .setTitle("Invalid town name!")
-                    .setDescription(args[0] + " doesn't seem to be a valid town name, please try again.")
+                    .setDescription(opt + " doesn't seem to be a valid town name, please try again.")
                     .setTimestamp().setColor("RED")
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
@@ -232,7 +232,7 @@ module.exports = {
                     
                 townEmbed.setColor(town.ruined ? "ORANGE" : colour)
                          .setTitle(("Town Info | " + townName + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
-                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 
                 const townNation = await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation),
                       townResidentsLength = town.residents.length
@@ -276,7 +276,7 @@ module.exports = {
                     ))
                 }
                 else {
-                    townEmbed.addFields(fn.embedField("Town Size", town.area + " / " + Math.min(multiplier, fn.maxTownSize)))
+                    townEmbed.addFields(fn.embedField("Town Size", `${town.area} / ${Math.min(multiplier, fn.maxTownSize)}`))
                 }
 
                 townEmbed.setTimestamp()
@@ -290,7 +290,12 @@ module.exports = {
                 if (!town.ruined) {
                     // RESIDENTS
                     if (townResidentsLength > 0) {
-                        if (townResidentsLength <= 50) townEmbed.addField("Residents " + `[` + townResidentsLength + `]`, "```" +  town.residents.join(", ") + "```")      
+                        if (townResidentsLength <= 50) {
+                            townEmbed.addFields(fn.embedField(
+                                `Residents [${townResidentsLength}]`, 
+                                "```" + town.residents.join(", ") + "```"
+                            ))    
+                        }  
                         else townEmbed.addFields(fn.embedField("Residents", townResidentsLength.toString()))
                     } 
                     else townEmbed.addFields(fn.embedField("Residents", "There are no residents in this town?"))
