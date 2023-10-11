@@ -286,8 +286,8 @@ function updateFallenTownCache(data) {
  * @param { AURORA | NOVA } map 
  */
 async function updateFallenTowns(map) {
-    const mapData = await map.db.getTownyData()
-    if (!mapData || !mapData.sets["townyPlugin.markerset"]) return
+    // const mapData = await map.db.getTownyData()
+    // if (!mapData || !mapData.sets["townyPlugin.markerset"]) return
 
     let townsArray = await map.emc.Towns.all().catch(() => {})
     if (!townsArray) return console.log("Could not update map data! Failed to fetch towns.")
@@ -300,43 +300,43 @@ async function updateFallenTowns(map) {
         return t
     })
     
-    const townFlowChannel = client.channels.cache.get("1161579122494029834"),
-          msgs = await townFlowChannel.messages.fetch(),
-          ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
+    const townFlowChannel = client.channels.cache.get("1161579122494029834")
+          //msgs = await townFlowChannel.messages.fetch()
+          //ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
 
-    townsArray.forEach(town => {
-        if (!ruinNames.includes(town.name) && town.ruined) {
-            const ruinEmbed = new Discord.MessageEmbed()
-                .setTitle("A town has ruined!")
-                .addFields(fn.embedField(
-                    "Town Name", 
-                    town.name + (town.capital ? " :star:" : ""), 
-                    true
-                ))
-                .setFooter(fn.devsFooter(client))
-                .setThumbnail(client.user.avatarURL())
-                .setTimestamp()
-                .setColor("ORANGE")
+    // townsArray.forEach(town => {
+    //     if (!ruinNames.includes(town.name) && town.ruined) {
+    //         const ruinEmbed = new Discord.MessageEmbed()
+    //             .setTitle("A town has ruined!")
+    //             .addFields(fn.embedField(
+    //                 "Town Name", 
+    //                 town.name + (town.capital ? " :star:" : ""), 
+    //                 true
+    //             ))
+    //             .setFooter(fn.devsFooter(client))
+    //             .setThumbnail(client.user.avatarURL())
+    //             .setTimestamp()
+    //             .setColor("ORANGE")
 
-            const mayor = town.mayor.replace(/_/g, "\\_")
-            if (mayor) ruinEmbed.addFields(fn.embedField("Mayor", mayor, true))
+    //         const mayor = town.mayor.replace(/_/g, "\\_")
+    //         if (mayor) ruinEmbed.addFields(fn.embedField("Mayor", mayor, true))
 
-            const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-            ruinEmbed.addFields(
-                fn.embedField("Town Size", town.area.toString(), true), 
-                fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
-                fn.embedField("Flags", `
-                    ${town.pvp ? green : red } PVP
-                    ${town.mobs ? green : red } Mobs 
-                    ${town.public ? green : red } Public
-                    ${town.explosion ? green : red } Explosions 
-                    ${town.fire ? green : red } Fire Spread
-                `)
-            )
+    //         const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
+    //         ruinEmbed.addFields(
+    //             fn.embedField("Town Size", town.area.toString(), true), 
+    //             fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
+    //             fn.embedField("Flags", `
+    //                 ${town.pvp ? green : red } PVP
+    //                 ${town.mobs ? green : red } Mobs 
+    //                 ${town.public ? green : red } Public
+    //                 ${town.explosion ? green : red } Explosions 
+    //                 ${town.fire ? green : red } Fire Spread
+    //             `)
+    //         )
 
-            townFlowChannel.send({embeds: [ruinEmbed]})
-        }
-    })
+    //         townFlowChannel.send({embeds: [ruinEmbed]})
+    //     }
+    // })
 
     // If cache is empty, update it.
     if (fallenTownCache.length < 1) updateFallenTownCache(townsArray)  
