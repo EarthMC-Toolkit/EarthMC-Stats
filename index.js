@@ -275,159 +275,6 @@ async function updateAlliances(map) {
     })
 }
 
-//#region Fallen Towns
-var fallenTownCache = []
-function updateFallenTownCache(data) { 
-    fallenTownCache = data
-    console.log(`${fn.time()} | Updated fallen town cache.`)
-}
-
-/**
- * @param { AURORA | NOVA } map 
- */
-async function updateFallenTowns(map) {
-    // const mapData = await map.db.getTownyData()
-    // if (!mapData || !mapData.sets["townyPlugin.markerset"]) return
-
-    let townsArray = await map.emc.Towns.all().catch(() => {})
-    if (!townsArray) return console.log("Could not update map data! Failed to fetch towns.")
-
-    townsArray = townsArray.map(t => {
-        const NPCRegex = /^NPC[0-9]{1,5}$/,
-              ruined = (NPCRegex.test(t.mayor) || !t.residents || t.residents == "") ? true : false
-
-        t["ruined"] = ruined
-        return t
-    })
-    
-    const townFlowChannel = client.channels.cache.get("1161579122494029834")
-          //msgs = await townFlowChannel.messages.fetch()
-          //ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
-
-    // townsArray.forEach(town => {
-    //     if (!ruinNames.includes(town.name) && town.ruined) {
-    //         const ruinEmbed = new Discord.MessageEmbed()
-    //             .setTitle("A town has ruined!")
-    //             .addFields(fn.embedField(
-    //                 "Town Name", 
-    //                 town.name + (town.capital ? " :star:" : ""), 
-    //                 true
-    //             ))
-    //             .setFooter(fn.devsFooter(client))
-    //             .setThumbnail(client.user.avatarURL())
-    //             .setTimestamp()
-    //             .setColor("ORANGE")
-
-    //         const mayor = town.mayor.replace(/_/g, "\\_")
-    //         if (mayor) ruinEmbed.addFields(fn.embedField("Mayor", mayor, true))
-
-    //         const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-    //         ruinEmbed.addFields(
-    //             fn.embedField("Town Size", town.area.toString(), true), 
-    //             fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
-    //             fn.embedField("Flags", `
-    //                 ${town.pvp ? green : red } PVP
-    //                 ${town.mobs ? green : red } Mobs 
-    //                 ${town.public ? green : red } Public
-    //                 ${town.explosion ? green : red } Explosions 
-    //                 ${town.fire ? green : red } Fire Spread
-    //             `)
-    //         )
-
-    //         townFlowChannel.send({embeds: [ruinEmbed]})
-    //     }
-    // })
-
-    // If cache is empty, update it.
-    if (fallenTownCache.length < 1) updateFallenTownCache(townsArray)  
-    else {
-        updateFallenTownCache(townsArray)
-
-        // Create arrays from comparing cache to current
-        // Name and mayor have to be changed for it to be "fallen"
-        const fallenTowns = fallenTownCache.filter(ft => 
-            !townsArray.find(town => town.name == ft.name) && 
-            !townsArray.find(town => town.mayor == ft.mayor)
-        )
-
-        const fallenTownsLen = fallenTowns.length   
-        if (fallenTownsLen > 0) {                    
-            // If London has fallen, it is most likely an error.
-            if (fallenTowns.find(town => town.name == "London")) 
-                townFlowChannel.send("<@331822092477792256> Dynmap most likely failed.")
-            
-            for (let i = 0; i < fallenTownsLen; i++) {
-                const town = fallenTowns[i],
-                      residentBatch1 = [], 
-                      residentBatch2 = [],
-                      mayor = town.mayor.replace(/_/g, "\\_")
-
-                const fallenTownEmbed = new Discord.MessageEmbed()
-                    .setTitle("A town has fallen!")
-                    .setFooter(fn.devsFooter(client))
-                    .setThumbnail(client.user.avatarURL())
-                    .setTimestamp()
-                    .setColor("GREEN")
-                    .addFields(
-                        fn.embedField("Town Name", town.name + (town.capital ? " :star:" : ""), true),
-                        fn.embedField("Nation", town.nation, true)
-                    )
-
-                const townResidentsLen = town.residents.length
-                for (let j = 0; j < townResidentsLen; j++) {
-                    const currentResident = town.residents[j]
-                    const curResIndex = town.residents.indexOf(currentResident)
-
-                    const batch = (curResIndex <= 50 ? residentBatch1 : residentBatch2)
-                    batch.push(" " + currentResident)
-                }
-    
-                fallenTownEmbed.addFields(fn.embedField("Mayor", 
-                    `${ townResidentsLen >= 28 ? "Lord " 
-                    : townResidentsLen >= 24 ? "Duke "
-                    : townResidentsLen >= 20 ? "Earl "
-                    : townResidentsLen >= 14 ? "Count "
-                    : townResidentsLen >= 10 ? "Viscount "
-                    : townResidentsLen >= 6 ? "Baron "
-                    : townResidentsLen >= 2 ? "Chief "
-                    : townResidentsLen == 1 ? "Hermit " : "" }`
-                    +  mayor, true
-                ))
-    
-                fallenTownEmbed.addFields(
-                    fn.embedField("Town Size", town.area.toString(), true),
-                    fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/nova/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
-                )
-
-                const residentBatch1String = residentBatch1.toString().replace(/^\s+|\s+$/gm, "")
-                if (residentBatch1.length >= 1) {
-                     // If second batch is empty, only send first batch
-                    if (residentBatch2.length <= 0) {
-                        fallenTownEmbed.addFields(
-                            fn.embedField(`Residents [${townResidentsLen}]`,
-                             "```" + residentBatch1String + "```"
-                        ))
-                    }
-                    else if (residentBatch2.length >= 1) { // Second batch not empty, send both.
-                        const residentBatch2String = residentBatch2.toString().replace(/^\s+|\s+$/gm, "")
-
-                        fallenTownEmbed.addFields(
-                            fn.embedField("Residents", townResidentsLen),
-                            fn.embedField("Resident List [1-50]", "```" + residentBatch1String + "```"),
-                            fn.embedField("Resident List [51-" + townResidentsLen + "]", "```" + residentBatch2String + "```")
-                        )
-                    }
-                }
-                else fallenTownEmbed.addFields(fn.embedField("Residents", "There are no residents in this town?"))
-
-                townFlowChannel.send({ embeds: [fallenTownEmbed] })
-            }
-        }
-        else console.log(fn.time() + " | No towns have fallen.")
-    }
-}
-//#endregion
-
 // Updates: Player info or remove if purged
 /**
  * @param { any[] } players 
@@ -662,6 +509,159 @@ async function liveQueue() {
 
                 queueEmbedArray.forEach(qMsg => qMsg.edit({embeds: [embed]}).catch(() => {}))
             }).catch(() => {})
+        }
+    }
+}
+
+var fallenTownCache = []
+function updateFallenTownCache(data) { 
+    fallenTownCache = data
+    console.log(`${fn.time()} | Updated fallen town cache.`)
+}
+
+/**
+ * @param { AURORA | NOVA } map 
+ */
+async function updateFallenTowns(map) {
+    const townsArray = await map.emc.Towns.all().then(arr => arr.map(t => {
+        const NPCRegex = /^NPC[0-9]{1,5}$/
+        t["ruined"] = (NPCRegex.test(t.mayor) || !t.residents || t.residents == "") ? true : false
+
+        return t
+    })).catch(() => null)
+
+    if (!townsArray) return console.log("Could not update map data! Failed to fetch towns.")
+          //msgs = await townFlowChannel.messages.fetch()
+          //ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
+
+    //#region Send ruined towns
+    // townsArray.forEach(town => {
+    //     if (!ruinNames.includes(town.name) && town.ruined) {
+    //         const ruinEmbed = new Discord.MessageEmbed()
+    //             .setTitle("A town has ruined!")
+    //             .addFields(fn.embedField(
+    //                 "Town Name", 
+    //                 town.name + (town.capital ? " :star:" : ""), 
+    //                 true
+    //             ))
+    //             .setFooter(fn.devsFooter(client))
+    //             .setThumbnail(client.user.avatarURL())
+    //             .setTimestamp()
+    //             .setColor("ORANGE")
+
+    //         const mayor = town.mayor.replace(/_/g, "\\_")
+    //         if (mayor) ruinEmbed.addFields(fn.embedField("Mayor", mayor, true))
+
+    //         const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
+    //         ruinEmbed.addFields(
+    //             fn.embedField("Town Size", town.area.toString(), true), 
+    //             fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
+    //             fn.embedField("Flags", `
+    //                 ${town.pvp ? green : red } PVP
+    //                 ${town.mobs ? green : red } Mobs 
+    //                 ${town.public ? green : red } Public
+    //                 ${town.explosion ? green : red } Explosions 
+    //                 ${town.fire ? green : red } Fire Spread
+    //             `)
+    //         )
+
+    //         townFlowChannel.send({embeds: [ruinEmbed]})
+    //     }
+    // })
+    //#endregion
+
+    /**
+     * @type { Discord.TextChannel }
+     */
+    const townFlowChannel = client.channels.cache.get("1161579122494029834")
+
+    // If cache is empty, update it.
+    if (fallenTownCache.length < 1) updateFallenTownCache(townsArray)  
+    else {
+        updateFallenTownCache(townsArray)
+
+        // Name and mayor have to be changed for it to be "fallen"
+        const fallenTowns = fallenTownCache.filter(cached => cached.ruined && !townsArray.find(cur =>
+            cur.name == cached.name && 
+            cur.mayor == cached.mayor
+        ))
+
+        const fallenTownsLen = fallenTowns.length
+        if (fallenTownsLen < 1) {
+            console.log(fn.time() + " | No towns have fallen.")
+            return
+        }
+
+        for (let i = 0; i < fallenTownsLen; i++) {
+            const town = fallenTowns[i],
+                  residentBatch1 = [], 
+                  residentBatch2 = [],
+                  mayor = town.mayor.replace(/_/g, "\\_")
+
+            const fallenTownEmbed = new Discord.MessageEmbed()
+                .setTitle("A town has fallen!")
+                .setFooter(fn.devsFooter(client))
+                .setThumbnail(client.user.avatarURL())
+                .setTimestamp()
+                .setColor("GREEN")
+                .addFields(
+                    fn.embedField("Town Name", town.name + (town.capital ? " :star:" : ""), true),
+                    fn.embedField("Nation", town.nation, true)
+                )
+
+            const townResidentsLen = town.residents.length
+            for (let j = 0; j < townResidentsLen; j++) {
+                const currentResident = town.residents[j]
+                const curResIndex = town.residents.indexOf(currentResident)
+
+                const batch = (curResIndex <= 50 ? residentBatch1 : residentBatch2)
+                batch.push(" " + currentResident)
+            }
+
+            fallenTownEmbed.addFields(fn.embedField("Mayor", 
+                `${ townResidentsLen >= 28 ? "Lord " 
+                : townResidentsLen >= 24 ? "Duke "
+                : townResidentsLen >= 20 ? "Earl "
+                : townResidentsLen >= 14 ? "Count "
+                : townResidentsLen >= 10 ? "Viscount "
+                : townResidentsLen >= 6 ? "Baron "
+                : townResidentsLen >= 2 ? "Chief "
+                : townResidentsLen == 1 ? "Hermit " : "" }`
+                +  mayor, true
+            ))
+
+            fallenTownEmbed.addFields(
+                fn.embedField("Town Size", town.area.toString(), true),
+                fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/nova/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
+            )
+
+            if (residentBatch1.length < 1) {
+                fallenTownEmbed.addFields(fn.embedField("Residents", "There are no residents in this town?"))
+            } else {
+                const residentBatch1String = residentBatch1.toString().replace(/^\s+|\s+$/gm, "")
+
+                 // If second batch is empty, only send first batch
+                if (residentBatch2.length <= 0) {
+                    fallenTownEmbed.addFields(
+                        fn.embedField(`Residents [${townResidentsLen}]`,
+                         "```" + residentBatch1String + "```"
+                    ))
+                }
+                else if (residentBatch2.length >= 1) { // Second batch not empty, send both.
+                    const residentBatch2String = residentBatch2.toString().replace(/^\s+|\s+$/gm, "")
+
+                    fallenTownEmbed.addFields(
+                        fn.embedField("Residents", townResidentsLen),
+                        fn.embedField("Resident List [1-50]", "```" + residentBatch1String + "```"),
+                        fn.embedField(`Resident List [51-${townResidentsLen}]`, "```" + residentBatch2String + "```")
+                    )
+                }
+            }
+
+            townFlowChannel.send({ 
+                content: "<@&1161647212061806683>",
+                embeds: [fallenTownEmbed] 
+            })
         }
     }
 }
