@@ -28,7 +28,7 @@ module.exports = {
         await resHelper.init(name, true)
 
         // Townless
-        if (!resHelper.dbResident) {
+        if (!resHelper.apiResident) {
             if (!resHelper.player?.name) return interaction.editReply({embeds: [
                 new Discord.MessageEmbed()
                     .setTitle(name + " isn't a registered player name, please try again.")
