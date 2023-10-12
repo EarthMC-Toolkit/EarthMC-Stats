@@ -20,18 +20,20 @@ class ResidentHelper extends BaseHelper {
         this.embed.setColor('#A405BA')
     }
 
-    async fetchAllResidents() {
+    async fetchResidents() {
         const arr = await (this.isNova ? database.Nova : database.Aurora).getResidents()
-        if (arr) return arr
-
-        return await (this.isNova ? emc.Nova : emc.Aurora).Residents.all()
+        return arr ? arr : await (this.isNova ? emc.Nova : emc.Aurora).Residents.all()
     }
 
+    /**
+     * @param { string[] } args 
+     * @param { boolean } isInteraction 
+     */
     async init(args, isInteraction = false) {
         const arg1 = isInteraction ? args : args[0]
 
-        const allResidents = await this.fetchAllResidents()
-        this.dbResident = allResidents.find(r => r.name.toLowerCase() == arg1.toLowerCase())
+        const residents = await this.fetchResidents()
+        this.dbResident = residents.find(r => r.name.toLowerCase() == arg1.toLowerCase())
 
         const resName = this.dbResident?.name || arg1
         const ops = await (this.isNova ? emc.Nova : emc.Aurora).Players.online().catch(() => {})
@@ -41,10 +43,10 @@ class ResidentHelper extends BaseHelper {
 
         if (!this.isNova) {
             try {
-                const res = await emc.OfficialAPI.resident(resName || arg1)
-                if (!res && res.name !== "NotFoundError") {
-                    this.apiResident = res
-                }
+                const res = await emc.OfficialAPI.resident((resName || arg1).toLowerCase())
+                this.apiResident = res
+
+                console.log(res)
             } catch (e) {
                 console.log(e)
             }
