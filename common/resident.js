@@ -44,18 +44,17 @@ class ResidentHelper extends BaseHelper {
         if (!this.isNova) {
             try {
                 const res = await emc.OfficialAPI.resident((resName || arg1).toLowerCase())
+                console.log(res)
+
                 const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
 
                 let rank = resTown.strings.mayor == res.name ? "Mayor" : "Resident"
                 if (rank == "Mayor" && resTown.status.isCapital) 
                     rank = "Nation Leader" 
 
-                this.apiResident = { 
-                    ...res,
-                    rank
-                }
-
-                console.log(res)
+                console.log(rank)
+                res.rank = rank
+                this.apiResident = res
             } catch (e) {
                 console.log(e)
             }
