@@ -44,7 +44,16 @@ class ResidentHelper extends BaseHelper {
         if (!this.isNova) {
             try {
                 const res = await emc.OfficialAPI.resident((resName || arg1).toLowerCase())
-                this.apiResident = res
+                const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
+
+                let rank = resTown.strings.mayor == res.name ? "Mayor" : "Resident"
+                if (rank == "Mayor" && resTown.status.isCapital) 
+                    rank = "Nation Leader" 
+
+                this.apiResident = { 
+                    ...res,
+                    rank
+                }
 
                 console.log(res)
             } catch (e) {
@@ -74,10 +83,8 @@ class ResidentHelper extends BaseHelper {
               affiliation = `${res.townName ?? res.town} (${res.townNation ?? res.nation})`
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | ${formattedPlayerName}`)
-        this.embed.addFields(
-            fn.embedField("Affiliation", affiliation, true),
-            fn.embedField("Rank", res.rank, true)
-        )
+        this.embed.addFields(fn.embedField("Affiliation", affiliation, true))
+        if (res.rank) this.embed.addFields(fn.embedField("Rank", res.rank, true))
 
         this.tryAddNickname()
         await this.addCommonFields()
