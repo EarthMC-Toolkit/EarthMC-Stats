@@ -69,14 +69,14 @@ class ResidentHelper extends BaseHelper {
     }
 
     async setupResidentEmbed() {
-        const dbRes = this.dbResident,
-              formattedPlayerName = dbRes.name.replace(/_/g, "\\_"),
-              affiliation = `${dbRes.townName ?? dbRes.town} (${dbRes.townNation ?? dbRes.nation})`
+        const res = this.apiResident ?? this.dbResident,
+              formattedPlayerName = res.name.replace(/_/g, "\\_"),
+              affiliation = `${res.townName ?? res.town} (${res.townNation ?? res.nation})`
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | ${formattedPlayerName}`)
         this.embed.addFields(
             fn.embedField("Affiliation", affiliation, true),
-            fn.embedField("Rank", dbRes.rank, true)
+            fn.embedField("Rank", res.rank, true)
         )
 
         this.tryAddNickname()
