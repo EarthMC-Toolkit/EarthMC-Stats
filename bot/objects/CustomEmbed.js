@@ -41,8 +41,16 @@ class CustomEmbed extends Discord.MessageEmbed {
     setType(type) {
         if (this.color) return
  
-        if (type == Type.Nation) this.colour = Colours.AQUA
-        else if (type == Type.Town) this.colour = Colours.GREEN
+        switch(type) {
+            case Type.Nation:
+                this.colour = Colours.AQUA
+                break
+            case Type.Town:
+                this.colour = Colours.GREEN
+                break
+            case Type.Alliance:
+                this.colour = Colours.DARK_BLUE
+        }
 
         return this
     }
@@ -51,9 +59,7 @@ class CustomEmbed extends Discord.MessageEmbed {
      * @param { number } pageNum 
      */
     setPage(pageNum) {
-        if (pageNum < 0) this.page = 0
-        else this.page = pageNum
-
+        this.page = pageNum < 0 ? 0 : pageNum
         return this
     }
 

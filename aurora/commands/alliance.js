@@ -910,13 +910,13 @@ async function sendSingleAlliance(client, message, m, args) {
             allianceEmbed.addFields(fn.embedField("Nations [0]", "There are no nations in this alliance."))
         }
         else allianceEmbed.addFields(fn.embedField(
-            "Nations [" + allianceNationsLen + "]", 
+            `Nations [${allianceNationsLen}]`, 
             "```" + nationsString + "```"
         ))
     }
     else {
         allianceEmbed.addFields(fn.embedField(
-            "Nations [" + allianceNationsLen + "]", 
+            `Nations [${allianceNationsLen}]`, 
             "Too many nations to display! Click the 'view all' button to see the full list."
         ))
 

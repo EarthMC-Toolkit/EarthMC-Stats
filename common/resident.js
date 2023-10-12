@@ -2,7 +2,7 @@ const database = require('../bot/utils/database'),
       emc = require('earthmc'),
       MC = require('../bot/utils/minecraft'),
       striptags = require('striptags'),
-      { BaseHelper, field } = require("./base"),
+      { BaseHelper } = require("./base"),
       fn = require('../bot/utils/fn')
 
 class ResidentHelper extends BaseHelper {
@@ -41,7 +41,10 @@ class ResidentHelper extends BaseHelper {
 
         if (!this.isNova) {
             try {
-                this.apiResident = await emc.OfficialAPI.resident(resName || arg1)
+                const res = await emc.OfficialAPI.resident(resName || arg1)
+                if (!res && res.name !== "NotFoundError") {
+                    this.apiResident = res
+                }
             } catch (e) {
                 console.log(e)
             }
@@ -58,7 +61,7 @@ class ResidentHelper extends BaseHelper {
         const formattedPlayerName = this.player.name.replace(/_/g, "\\_")
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | ${formattedPlayerName}`)
-                  .addFields(field("Town", "None", true))
+                  .addFields(fn.embedField("Affiliation", "No Town", true))
 
         await this.addCommonFields()
     }
@@ -70,8 +73,8 @@ class ResidentHelper extends BaseHelper {
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | ${formattedPlayerName}`)
         this.embed.addFields(
-            field("Affiliation", affiliation, true),
-            field("Rank", dbRes.rank, true)
+            fn.embedField("Affiliation", affiliation, true),
+            fn.embedField("Rank", dbRes.rank, true)
         )
 
         this.tryAddNickname()
@@ -81,11 +84,14 @@ class ResidentHelper extends BaseHelper {
     async addCommonFields() {
         if (this.apiResident) {
             this.addBalance(this.apiResident.stats?.balance)
+            this.addStatus()
             this.addDatesFromAPI()
         }
-        else this.addDatesFromDB()
+        else {
+            this.addStatus()
+            this.addDatesFromDB()
+        }
 
-        this.addStatus()
         await this.addLinkedAcc()
     }
 
@@ -97,12 +103,12 @@ class ResidentHelper extends BaseHelper {
         let tempTs = 0
         if (registeredTs != 0) {
             tempTs = `<t:${fn.secToMs(registeredTs)}:F>`
-            this.embed.addFields(field("Registered", tempTs, true))
+            this.embed.addFields(fn.embedField("Registered", tempTs, true))
         }
             
         if (this.status == "Offline" && lastOnlineTs != 0) {
             tempTs = `<t:${fn.secToMs(lastOnlineTs)}:R>`
-            this.embed.addFields(field("Last Online", tempTs, true))
+            this.embed.addFields(fn.embedField("Last Online", tempTs, true))
         }
     }
 
@@ -111,7 +117,7 @@ class ResidentHelper extends BaseHelper {
         if (!lastOnlineTs || lastOnlineTs == 0) return
 
         if (this.status == "Offline")
-            this.embed.addFields(field("Last Online", `<t:${lastOnlineTs}:R>`, true))
+            this.embed.addFields(fn.embedField("Last Online", `<t:${lastOnlineTs}:R>`, true))
     }
 
     tryAddAvatar = () => {
@@ -126,19 +132,19 @@ class ResidentHelper extends BaseHelper {
 
             // If the player has a nickname, add the Nickname field.
             if (opName !== nickname && nickname.length > 0)
-                this.embed.addFields(field("Nickname", nickname, true))
+                this.embed.addFields(fn.embedField("Nickname", nickname, true))
         }
     }
 
-    addBalance = bal => this.embed.addFields(field("Balance", `${bal ?? 0}G`, true))
-    addStatus = () => this.embed.addFields(field("Status", this.status, true))
+    addBalance = bal => this.embed.addFields(fn.embedField("Balance", `${bal ?? 0}G`, true))
+    addStatus = () => this.embed.addFields(fn.embedField("Status", this.status, true))
 
     addLinkedAcc = async () => {
         if (!this.player?.name) return
 
         const disc = this.pInfo?.discord
         if (disc && disc != "")
-            this.embed.addFields(field("Linked Account", `<@${disc}>`, true))
+            this.embed.addFields(fn.embedField("Linked Account", `<@${disc}>`, true))
     }
 }
 

@@ -39,7 +39,8 @@ module.exports = {
                         const onlinePlayers = await Aurora.Players.online().catch(() => {})
                         if (!onlinePlayers) return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
-                        var onlineTownData = [], onlineTownDataFinal = []
+                        const onlineTownData = [], 
+                              onlineTownDataFinal = []
 
                         const len = towns.length
                         for (let i = 0; i < len; i++) {        
@@ -260,8 +261,8 @@ module.exports = {
                             : townResidentsLength == 1 ? "Hermit " : "" }` +  mayor, true)  ) 
                     }
 
-                    const nationString = !townNation?.discord || townNation.discord == "" 
-                        ? town.nation : "[" + townNation.name + "]" + "(" + townNation.discord + ")"
+                    const discord = townNation?.discord
+                    const nationString = !discord ? town.nation : `[${townNation.name}](${townNation.discord})`
 
                     townEmbed.addFields(fn.embedField("Nation", nationString, true))
                 }
@@ -270,9 +271,9 @@ module.exports = {
                 if (town.nation != "No Nation") {
                     const nationBonus = fn.auroraNationBonus(townNation?.residents.length ?? 0)
                     claimBonus = nationBonus + multiplier
-                    townEmbed.addFields(fn.embedField("Town Size", 
-                        town.area + " / " + Math.min(claimBonus, fn.maxTownSize) + 
-                        " [NationBonus: " + nationBonus + "]"
+                    townEmbed.addFields(fn.embedField(
+                        "Town Size", 
+                        `${town.area} / ${Math.min(claimBonus, fn.maxTownSize)} [NationBonus: ${nationBonus}]`
                     ))
                 }
                 else {
@@ -309,8 +310,8 @@ module.exports = {
                         const onlineResidentsString = onlineResidents.toString().replace(/,/g, ", ")
 
                         if (onlineResidents.length > 0) 
-                            townEmbed.addFields(fn.embedField("Online Residents [" + onlineResidents.length + "]", "```" + onlineResidentsString + "```"))
-                        else townEmbed.addFields(fn.embedField("Online Residents", "No residents are online in " + town.name))
+                            townEmbed.addFields(fn.embedField(`Online Residents [${onlineResidents.length}]`, "```" + onlineResidentsString + "```"))
+                        else townEmbed.addFields(fn.embedField("Online Residents", `No residents are online in ${town.name}`))
                     }
                 }
 

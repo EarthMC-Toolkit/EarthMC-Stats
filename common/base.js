@@ -17,8 +17,6 @@ class BaseHelper {
     }
 }
 
-const field = fn.embedField
 module.exports = {
-    BaseHelper,
-    field
+    BaseHelper
 }
