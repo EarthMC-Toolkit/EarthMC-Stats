@@ -5,14 +5,22 @@ const database = require('../bot/utils/database'),
       { BaseHelper } = require("./base"),
       { secToMs } = require("../bot/utils/fn")
 
+// eslint-disable-next-line no-unused-vars
+const { Player, OAPIResident } = require('earthmc/dist/types')
+
 class ResidentHelper extends BaseHelper {
     dbResident = null
+    
+    /** @type { OAPIResident } */
     apiResident = null
 
+    /** @type { Player } */
     onlinePlayer = null
+
     pInfo = null
 
     player = null
+    
     status = ''
 
     constructor(client, isNova = false) {
@@ -121,8 +129,16 @@ class ResidentHelper extends BaseHelper {
         }
 
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
-        const lastOnlineStr = lastOnlineTs != 0 ? `\nLast Online: <t:${secToMs(lastOnlineTs)}:R>` : ""
-        this.addField("Status", statusStr + lastOnlineStr)
+        this.addField("Status", statusStr, true)
+
+        const registeredStr = registeredTs != 0 ? `**Registered**: <t:${secToMs(registeredTs)}:F>` : ""
+        if (this.status == "Offline") {
+            const lastOnlineStr = lastOnlineTs != 0 ? `**Last Online**: <t:${secToMs(lastOnlineTs)}:R>` : ""
+            this.addField("Dates", `${registeredStr}\n${lastOnlineStr}`, true)
+        }
+        else {
+            if (registeredStr) this.addField("Dates", registeredStr, true)
+        } 
     }
 
     addDatesFromDB = () => {
