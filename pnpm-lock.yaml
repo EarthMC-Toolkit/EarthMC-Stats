@@ -12,8 +12,8 @@ dependencies:
     specifier: ^16.3.1
     version: 16.3.1
   earthmc:
-    specifier: ^8.1.0
-    version: 8.1.0
+    specifier: ^8.2.1
+    version: 8.2.1
   firebase:
     specifier: 10.3.1
     version: 10.3.1
@@ -143,6 +143,11 @@ packages:
     engines: {node: '>=14'}
     dependencies:
       text-decoding: 1.0.0
+    dev: false
+
+  /@fastify/busboy@2.0.0:
+    resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
+    engines: {node: '>=14'}
     dev: false
 
   /@firebase/analytics-compat@0.2.6(@firebase/app-compat@0.2.18)(@firebase/app@0.9.18):
@@ -1246,8 +1251,8 @@ packages:
     dev: false
     optional: true
 
-  /earthmc@8.1.0:
-    resolution: {integrity: sha512-fsnagul8Cm6IKV3SNCNlOtoId+6c6Y+dZ6egA7WVwivmo4VA7xdsI+cIpjWh0wKxfSQtKvNWXQj52QIAMJpOEA==}
+  /earthmc@8.2.1:
+    resolution: {integrity: sha512-mi7p7QrTx6mUjCj5+ZKNByRD8OT5npEpztJNNwsYJsx5z4jQwD271SLSqZyi5FbOTkNNyju5Ak5+p4Lii6jD7Q==}
     engines: {node: '>=16.8.0'}
     dependencies:
       async-mutex: 0.4.0
@@ -2645,7 +2650,7 @@ packages:
     resolution: {integrity: sha512-2rJh4ndI10SjR6v+0LGCRisewxmGH0/+rYcnmhNqlcqNGHBVH58l4p5gtyMV1PU1lC85RhGGRwqWi+DSsd+JoA==}
     dependencies:
       tslib: 2.6.2
-      undici: 5.24.0
+      undici: 5.26.3
     dev: false
 
   /undici@5.24.0:
@@ -2653,6 +2658,13 @@ packages:
     engines: {node: '>=14.0'}
     dependencies:
       busboy: 1.6.0
+    dev: false
+
+  /undici@5.26.3:
+    resolution: {integrity: sha512-H7n2zmKEWgOllKkIUkLvFmsJQj062lSm3uA4EYApG8gLuiOM0/go9bIoC3HVaSnfg4xunowDE2i9p8drkXuvDw==}
+    engines: {node: '>=14.0'}
+    dependencies:
+      '@fastify/busboy': 2.0.0
     dev: false
 
   /uri-js@4.4.1:
