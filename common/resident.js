@@ -45,14 +45,16 @@ class ResidentHelper extends BaseHelper {
             try {
                 const res = await emc.OfficialAPI.resident(arg1.toLowerCase())
 
-                console.log(res)
-                const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
+                if (res.town) {
+                    const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
 
-                let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
-                if (rank == "Mayor" && resTown.status.isCapital) 
-                    rank = "Nation Leader" 
+                    let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
+                    if (rank == "Mayor" && resTown.status.isCapital) 
+                        rank = "Nation Leader" 
+    
+                    res.rank = rank
+                }
 
-                res.rank = rank
                 this.apiResident = res
             } catch (e) {
                 console.log(e)
@@ -91,14 +93,11 @@ class ResidentHelper extends BaseHelper {
     async addCommonFields() {
         if (this.apiResident) {
             this.addBalance(this.apiResident.stats?.balance)
-            this.addStatus()
             this.addDatesFromAPI()
         }
-        else {
-            this.addStatus()
-            this.addDatesFromDB()
-        }
+        else this.addDatesFromDB()
 
+        this.addStatus()
         await this.addLinkedAcc()
     }
 
