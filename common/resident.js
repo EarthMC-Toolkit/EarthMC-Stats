@@ -31,6 +31,7 @@ class ResidentHelper extends BaseHelper {
      */
     async init(args, isInteraction = false) {
         const arg1 = isInteraction ? args : args[0]
+        console.log(arg1)
 
         const residents = await this.fetchResidents()
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1.toLowerCase())
