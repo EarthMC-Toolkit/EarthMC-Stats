@@ -117,23 +117,15 @@ class ResidentHelper extends BaseHelper {
         const timestamps = this.apiResident.timestamps,
               registeredTs = timestamps?.registered,
               lastOnlineTs = timestamps?.lastOnline
-              
-        if (registeredTs != 0) {
-            const ts = `<t:${secToMs(registeredTs)}:F>`
-            this.addField("Registered", ts, true)
-        }
 
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
         this.addField("Status", statusStr, true)
 
-        const registeredStr = registeredTs != 0 ? `**Registered**: <t:${secToMs(registeredTs)}:F>` : ""
-        if (this.status == "Offline") {
-            const lastOnlineStr = lastOnlineTs != 0 ? `**Last Online**: <t:${secToMs(lastOnlineTs)}:R>` : ""
-            this.addField("Dates", `${registeredStr}\n${lastOnlineStr}`, true)
-        }
-        else {
-            if (registeredStr) this.addField("Dates", registeredStr, true)
-        } 
+        if (lastOnlineTs != 0)
+            this.addField("Last Online", `<t:${secToMs(lastOnlineTs)}:R>`, true)
+
+        if (registeredTs != 0)
+            this.addField("Registered", `<t:${secToMs(registeredTs)}:F>`, true)
     }
 
     addDatesFromDB = () => {
@@ -160,14 +152,14 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = bal => this.addField("Balance", `${bal ?? 0}G`, true)
+    addBalance = bal => this.addField("Balance", `${bal ?? 0}G`)
 
     addLinkedAcc = async () => {
         if (!this.player?.name) return
 
         const disc = this.pInfo?.discord
         if (disc && disc != "")
-            this.addField("Linked Account", `<@${disc}>`, true)
+            this.addField("Linked Account", `<@${disc}>`)
     }
 }
 
