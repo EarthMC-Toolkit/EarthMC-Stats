@@ -44,6 +44,7 @@ class ResidentHelper extends BaseHelper {
 
         if (!this.isNova) {
             try {
+                console.log(arg1)
                 const res = await emc.OfficialAPI.resident(arg1.toLowerCase())
 
                 console.log(res)
@@ -56,7 +57,7 @@ class ResidentHelper extends BaseHelper {
                 res.rank = rank
                 this.apiResident = res
             } catch (e) {
-                console.log(e)
+                console.log("Error getting API resident: " + e)
             }
         }
 
