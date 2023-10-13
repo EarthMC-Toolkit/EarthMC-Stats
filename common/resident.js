@@ -31,7 +31,6 @@ class ResidentHelper extends BaseHelper {
      */
     async init(args, isInteraction = false) {
         const arg1 = isInteraction ? args : args[0]
-        console.log(arg1)
 
         const residents = await this.fetchResidents()
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1.toLowerCase())
@@ -44,7 +43,6 @@ class ResidentHelper extends BaseHelper {
 
         if (!this.isNova) {
             try {
-                console.log(arg1)
                 const res = await emc.OfficialAPI.resident(arg1.toLowerCase())
 
                 console.log(res)
@@ -57,7 +55,7 @@ class ResidentHelper extends BaseHelper {
                 res.rank = rank
                 this.apiResident = res
             } catch (e) {
-                console.log("Error getting API resident: " + e)
+                console.log(e)
             }
         }
 
