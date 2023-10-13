@@ -43,7 +43,9 @@ class ResidentHelper extends BaseHelper {
 
         if (!this.isNova) {
             try {
-                const res = await emc.OfficialAPI.resident((resName || arg1).toLowerCase())
+                const res = await emc.OfficialAPI.resident(arg1.toLowerCase())
+
+                console.log(res)
                 const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
 
                 let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
