@@ -5,16 +5,11 @@ const database = require('../bot/utils/database'),
       { BaseHelper } = require("./base"),
       { secToMs } = require("../bot/utils/fn")
 
-// eslint-disable-next-line no-unused-vars
-const { Player, OAPIResident } = require('earthmc/dist/types')
-
 class ResidentHelper extends BaseHelper {
     dbResident = null
     
-    /** @type { OAPIResident } */
     apiResident = null
 
-    /** @type { Player } */
     onlinePlayer = null
 
     pInfo = null
@@ -151,7 +146,7 @@ class ResidentHelper extends BaseHelper {
 
     tryAddAvatar = () => {
         if (!this.player) return
-        this.embed.setThumbnail(`https://visage.surgeplay.com/bust/${this.player.id}.png?y=3&p=4`)
+        this.embed.setThumbnail(`https://visage.surgeplay.com/bust/${this.player.id}.png?width=256&height=256`)
     }
 
     tryAddNickname = () => {
