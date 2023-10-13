@@ -28,25 +28,15 @@ module.exports = {
 
     const apiRes = resHelper.apiResident
 
-    if (!apiRes) {
-        if (!resHelper.player?.name) {
-            return m.edit({embeds: [new Discord.MessageEmbed()
-                .setTitle(args[0] + " isn't a registered player name, please try again.")
-                .setColor("RED")
-                .setFooter(fn.devsFooter(client))
-                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                .setTimestamp()
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-        }
+    if (!apiRes) return m.edit({embeds: [new Discord.MessageEmbed()
+      .setTitle(`${args[0]} isn't a registered player name, please try again.`)
+      .setColor("RED")
+      .setFooter(fn.devsFooter(client))
+      .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+      .setTimestamp()
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        await resHelper.setupTownlessEmbed()
-    }
-    else {
-        // Exists, determine if townless
-        if (apiRes.town) await resHelper.setupResidentEmbed()
-        else await resHelper.setupTownlessEmbed()
-    }
-
+    await resHelper.setupEmbed()
     return await m.edit({embeds: [resHelper.embed]})
   }
 }

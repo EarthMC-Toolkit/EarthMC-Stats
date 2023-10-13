@@ -27,23 +27,16 @@ module.exports = {
         const resHelper = new ResidentHelper(client)
         await resHelper.init(name, true)
 
-        // Townless
-        if (!resHelper.apiResident) {
-            if (!resHelper.player?.name) return interaction.editReply({embeds: [
-                new Discord.MessageEmbed()
-                    .setTitle(name + " isn't a registered player name, please try again.")
-                    .setColor("RED")
-                    .setFooter(fn.devsFooter(client))
-                    .setTimestamp()
-                ], ephemeral: true
-            })
-            
-            await resHelper.setupTownlessEmbed()
-        }
-        else { // Belongs to a town
-            await resHelper.setupResidentEmbed()
-        }
+        const apiRes = resHelper.apiResident
 
+        if (!apiRes) return interaction.editReply({embeds: [new Discord.MessageEmbed()
+            .setTitle(name + " isn't a registered player name, please try again.")
+            .setColor("RED")
+            .setFooter(fn.devsFooter(client))
+            .setTimestamp()
+        ], ephemeral: true})
+            
+        await resHelper.setupEmbed()
         await interaction.editReply({embeds: [resHelper.embed]})
     }, data: new SlashCommandBuilder()
         .setName("resident")
