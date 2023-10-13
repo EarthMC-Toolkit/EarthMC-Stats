@@ -26,8 +26,9 @@ module.exports = {
     const resHelper = new ResidentHelper(client)
     await resHelper.init(args)
 
-    // Townless
-    if (!resHelper.apiResident) {
+    const apiRes = resHelper.apiResident
+
+    if (!apiRes) {
         if (!resHelper.player?.name) {
             return m.edit({embeds: [new Discord.MessageEmbed()
                 .setTitle(args[0] + " isn't a registered player name, please try again.")
@@ -40,8 +41,10 @@ module.exports = {
 
         await resHelper.setupTownlessEmbed()
     }
-    else { // Belongs to a town
-        await resHelper.setupResidentEmbed()
+    else {
+        // Exists, determine if townless
+        if (apiRes.town) await resHelper.setupResidentEmbed()
+        else await resHelper.setupTownlessEmbed()
     }
 
     return await m.edit({embeds: [resHelper.embed]})
