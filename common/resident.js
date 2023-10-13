@@ -105,7 +105,7 @@ class ResidentHelper extends BaseHelper {
 
     async addCommonFields() {
         if (this.apiResident) {
-            this.addBalance(this.apiResident.stats?.balance)
+            this.addBalance(this.apiResident?.balance)
             this.addDatesFromAPI()
         }
         else this.addDatesFromDB()
