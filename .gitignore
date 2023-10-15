@@ -1,6 +1,6 @@
 /node_modules
 /bot/archive
-firebase/firebase-key.json
+/firebase
 
 .env
 .slugignore
