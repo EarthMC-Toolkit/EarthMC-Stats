@@ -13,6 +13,7 @@ export default {
     name: 'interactionCreate',
     async execute(interaction: Discord.BaseInteraction) {
         const [client, username] = [interaction.client, interaction.user.username]
+        console.log('created interaction')
 
         if (interaction.isCommand()) {
             const cmd = client['slashCommands'].get(interaction.commandName)
