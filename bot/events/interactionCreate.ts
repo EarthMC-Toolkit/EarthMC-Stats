@@ -13,7 +13,6 @@ export default {
     name: 'interactionCreate',
     async execute(interaction: Discord.BaseInteraction) {
         const [client, username] = [interaction.client, interaction.user.username]
-        console.log('created interaction')
 
         if (interaction.isCommand()) {
             const cmd = client['slashCommands'].get(interaction.commandName)
@@ -23,13 +22,15 @@ export default {
             return await cmd.run(client, interaction).catch(console.error)
         }
 
-        if (interaction.isUserContextMenuCommand()) {
+        console.log(interaction)
+
+        if (interaction.isContextMenuCommand()) {
             console.log(`${username} triggered a context menu action.`)
 
-            if (interaction.commandName == "Link User") {
+            if (interaction.commandType == 2 && interaction.commandName == "Link User") {
                 console.log('Attempting to link a player')
-                return await showLinkModal(interaction)  
-            }  
+                return await showLinkModal(interaction as Discord.UserContextMenuCommandInteraction)  
+            }
         }
         
         if (interaction.isModalSubmit()) {   
