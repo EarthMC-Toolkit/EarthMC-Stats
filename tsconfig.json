@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "target": "ES2022",
+        "lib": ["ES2022"],
+        "moduleDetection": "force",
+        "moduleResolution": "NodeNext",
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "noEmitOnError": true,
+        "allowJs": true,
+        "esModuleInterop": true,
+        "importHelpers": true,
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true,
+        "outDir": "dist",
+        "types": ["node"],
+        "paths": {
+            "tslib" : ["./node_modules/tslib/tslib.d.ts"]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        "bot/archive"
+    ],
+}

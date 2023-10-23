@@ -1,11 +1,15 @@
 {
+
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "root": true,
     "env": {
         "browser": true,
         "commonjs": true,
         "es2021": true,
         "node": true
     },
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "parserOptions": {
         "ecmaVersion": "latest"
     },
@@ -21,6 +25,7 @@
         "linebreak-style": ["error", "windows"],
         "semi": ["error", "never"],
         "no-constant-condition": "off",
-        "no-inner-declarations": "off"
+        "no-inner-declarations": "off",
+        "@typescript-eslint/no-explicit-any": "off"
     }
 }

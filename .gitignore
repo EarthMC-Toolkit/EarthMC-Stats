@@ -1,6 +1,8 @@
 /node_modules
 /bot/archive
+
 /firebase
+/dist
 
 .env
 .slugignore
