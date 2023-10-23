@@ -5,12 +5,11 @@ import AllianceModal from '../../bot/objects/AllianceModal.js'
 
 const editingChannels = ["971408026516979813"]
 
-/**
- * @param { Discord.CommandInteraction } interaction 
- */
-const checkEditor = async interaction => {
-    const author = interaction.member,
-          isEditor = editingChannels.includes(interaction.channelId) && author.roles.cache.has('966359842417705020')
+const checkEditor = async (interaction: Discord.ChatInputCommandInteraction) => {
+    const author = interaction.member as Discord.GuildMember
+        
+    const isEditor = editingChannels.includes(interaction.channelId) && 
+          author.roles.cache.has('966359842417705020')
 
     if (!fn.botDevs.includes(author.id) && !isEditor) {
         return interaction.reply({embeds: [new Discord.EmbedBuilder()
@@ -22,11 +21,7 @@ const checkEditor = async interaction => {
     }
 }
 
-/**
- * @param { Discord.CommandInteractionOptionResolver } options 
- * @param { boolean } skipCache 
- */
-const getAlliance = async (options, skipCache = true) => {
+const getAlliance = async (options: Discord.CommandInteractionOptionResolver, skipCache = true) => {
     const map = options.getString('map').toLowerCase() == 'nova' ? database.Nova : database.Aurora,
           input = options.getString('name').toLowerCase()
 
@@ -34,7 +29,7 @@ const getAlliance = async (options, skipCache = true) => {
     return alliances?.find(a => a.allianceName.toLowerCase() == input) ?? null
 }
 
-module.exports = {
+export default {
     name: "alliance",
     run: async (client, interaction) => {
         const opts = interaction.options

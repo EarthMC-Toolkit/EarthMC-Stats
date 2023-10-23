@@ -8,6 +8,7 @@ import Discord, { TextChannel } from "discord.js"
 import * as emc from "earthmc"
 import * as fn from "./bot/utils/fn.js"
 import * as database from "./bot/utils/database.js"
+import * as api from "./bot/utils/api.js"
 import Queue from "./bot/objects/Queue.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
@@ -54,7 +55,6 @@ db.settings({ ignoreUndefinedProperties: true })
 //#endregion
 
 //#region Initialize Variables
-import * as api from "./bot/utils/api.js"
 const queueSubbedChannels = db.collection("subs").doc("queue")
 const townlessSubbedChannels = db.collection("subs").doc("townless")
 
@@ -174,12 +174,7 @@ async function updateData(botStarting = false, updateAurora = true, updateNova =
     }
 }
 
-/**
- * @param { any[] } players 
- * @param { AURORA | NOVA } map 
- * @returns 
- */
-async function updateMap(players, map) {
+async function updateMap(players: any[], map: { emc: emc.Map, db: any }) {
     await updateMapData(map)
 
     if (players.length < 1) return
@@ -188,21 +183,16 @@ async function updateMap(players, map) {
 //#endregion
 
 //#region Helper Methods
-/**
- * @param { object } timestamp 
- * @param { Date } now 
- * @returns 
- */
-const purged = (timestamp, now) => {
+const purged = (timestamp: { seconds }, now: Date) => {
     const loDate = new Date(timestamp.seconds * 1000),
           days = fn.daysBetween(loDate, now)
 
     return days > 35
 }
 
-const latinize = str => emc.formatString(str, true)
+const latinize = (str: string) => emc.formatString(str, true)
 
-async function purgeInactive(pArr) {
+async function purgeInactive(pArr: any[]) {
     const now = new Date(),
           len = pArr.length
 
@@ -250,10 +240,7 @@ async function updateAPI(news, alliances) {
 
 const exists = (name, obj, key='nations') => obj[key].includes(name)
 
-/**
- * @param { AURORA | NOVA } map 
- */
-async function updateAlliances(map) {
+async function updateAlliances(map: { emc: emc.Map, db: any }) {
     const nations = await map.emc.Nations.all()
     if (!nations) return console.warn("Couldn't update " + map + " alliances, failed to fetch nations.")
 
@@ -283,12 +270,7 @@ async function updateAlliances(map) {
 }
 
 // Updates: Player info or remove if purged
-/**
- * @param { any[] } players 
- * @param { AURORA | NOVA } map 
- * @returns
- */
-async function updatePlayerData(players, map) {
+async function updatePlayerData(players: any[], map: { emc: emc.Map, db: any }) {
     const mapName = map == AURORA ? 'aurora' : 'nova'
 
     const onlinePlayers = await map.emc.Players.online().catch(() => {})
@@ -334,11 +316,7 @@ async function updatePlayerData(players, map) {
 }
 
 // Updates: Towns, Nations, Residents
-/**
- * @param { AURORA | NOVA } map 
- * @returns 
- */
-async function updateMapData(map) {
+async function updateMapData(map: { emc: emc.Map, db: any }) {
     const towns = await map.emc.Towns.all().catch(console.error)
     if (!towns) return console.log("Could not update map data! 'towns' is null or undefined.")
 
@@ -365,14 +343,14 @@ async function updateMapData(map) {
 
     for (let i = 0; i < tLen; i++) {
         const currentTown = townsArray[i]
-        if (currentTown.ruined) continue
+        if (currentTown['ruined']) continue
 
         const rLen = currentTown.residents.length
         for (let j = 0; j < rLen; j++) {
             const currentResident = currentTown.residents[j]
             let rank = currentTown.mayor == currentResident ? "Mayor" : "Resident"
 
-            if (rank == "Mayor" && currentTown.capital) 
+            if (rank == "Mayor" && currentTown.flags.capital) 
                 rank = "Nation Leader" 
                 
             residentsArray.push({
@@ -411,15 +389,14 @@ async function updateMapData(map) {
 //#endregion
 
 //#region Live Stuff
-const filterLiveEmbeds = (arr, map) => arr.filter(msg => msg.embeds.length >= 1 
-    && msg.embeds[0]?.title?.includes(`Townless Players (${map})`) && msg.author.id == "656231016385478657")
+const filterLiveEmbeds = (arr, map: string) => {
+    return arr.filter(msg => msg.embeds.length >= 1 
+        && msg.embeds[0]?.title?.includes(`Townless Players (${map})`) 
+        && msg.author.id == "656231016385478657"
+    )
+}
 
-/**
- * @param { Discord.Message } msg
- * @param { any[] } arr
- * @param { string } mapName
- */
-const editEmbed = (msg, arr, mapName) => {
+const editEmbed = (msg: Discord.Message, arr: any[], mapName: string) => {
     const names = arr.map(player => player.name).join('\n')
     const newEmbed = new Discord.EmbedBuilder()
         .setTitle(`Live Townless Players (${mapName})`)
@@ -440,8 +417,13 @@ async function liveTownless() {
     const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray,
           len = townlessSubbedChannelIDs.length
 
-    const auroraTownlessPlayers = await emc.Aurora.Players.townless().catch(() => console.error("Error fetching Aurora townless."))
-    const novaTownlessPlayers = await emc.Nova.Players.townless().catch(() => console.error("Error fetching Nova townless."))
+    const promiseArr = await Promise.all([
+        emc.Aurora.Players.townless(), 
+        emc.Nova.Players.townless()
+    ]).catch(e => { console.error(e); return null })
+
+    if (!promiseArr) return
+    const [auroraTownless, novaTownless] = promiseArr
 
     // For every townless subbed channel
     for (let i = 0; i < len; i++) {
@@ -466,8 +448,8 @@ async function liveTownless() {
                 const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora'),
                       novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
 
-                if (auroraTownlessPlayers) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownlessPlayers, 'Aurora'))
-                if (novaTownlessPlayers) novaEmbeds.forEach(msg => editEmbed(msg, novaTownlessPlayers, 'Nova'))
+                if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
+                if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
             }).catch(console.error)
         }
     }
@@ -533,10 +515,7 @@ function updateFallenTownCache(data) {
     console.log(`${fn.time()} | Updated fallen town cache.`)
 }
 
-/**
- * @param { AURORA | NOVA } map 
- */
-async function updateFallenTowns(map) {
+async function updateFallenTowns(map: { emc: any, db: any }) {
     const townsArray = await map.emc.Towns.all().then(arr => arr.map(t => {
         const NPCRegex = /^NPC[0-9]{1,5}$/
         t["ruined"] = (NPCRegex.test(t.mayor) || !t.residents || t.residents == "") ? true : false
@@ -547,6 +526,8 @@ async function updateFallenTowns(map) {
     if (!townsArray) return console.log("Could not update map data! Failed to fetch towns.")
           //msgs = await townFlowChannel.messages.fetch()
           //ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
+
+    const townFlowChannel = client.channels.cache.get("1161579122494029834") as TextChannel
 
     //#region Send ruined towns
     // townsArray.forEach(town => {
@@ -584,8 +565,7 @@ async function updateFallenTowns(map) {
     // })
     //#endregion
 
-    const townFlowChannel = client.channels.cache.get("1161579122494029834") as TextChannel
-
+    //#region Send fallen towns
     // If cache is empty, update it.
     if (fallenTownCache.length < 1) updateFallenTownCache(townsArray)  
     else {
@@ -638,7 +618,7 @@ async function updateFallenTowns(map) {
                 : townResidentsLen >= 6 ? "Baron "
                 : townResidentsLen >= 2 ? "Chief "
                 : townResidentsLen == 1 ? "Hermit " : "" }`
-                +  mayor, true
+                + mayor, true
             ))
 
             fallenTownEmbed.addFields(
@@ -655,7 +635,7 @@ async function updateFallenTowns(map) {
                 if (residentBatch2.length <= 0) {
                     fallenTownEmbed.addFields(
                         fn.embedField(`Residents [${townResidentsLen}]`,
-                         "```" + residentBatch1String + "```"
+                        "```" + residentBatch1String + "```"
                     ))
                 }
                 else if (residentBatch2.length >= 1) { // Second batch not empty, send both.
@@ -675,6 +655,7 @@ async function updateFallenTowns(map) {
             })
         }
     }
+    //#endregion
 }
 //#endregion
 

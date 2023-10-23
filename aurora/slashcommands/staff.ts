@@ -45,7 +45,7 @@ export default {
                 const staff = await getStaff(true)
                 return await interaction.editReply({ embeds: [fn.staffListEmbed(client, staff)] })
             }
-            default: return await interaction.editReply({embeds: [new Discord.EmbedBuilder()
+            default: return await interaction.editReply({ embeds: [new Discord.EmbedBuilder()
                 .setTitle("Invalid Arguments!")
                 .setDescription("Usage: `/staff list` or `/staff online`")
                 .setColor(Discord.Colors.Red)

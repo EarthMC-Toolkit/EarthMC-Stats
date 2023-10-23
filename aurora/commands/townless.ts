@@ -15,8 +15,9 @@ export default {
             .setTitle("<a:loading:966778243615191110> Fetching townless players, this may take a moment.")
         ]})   
                 
-        const townlessPlayers = await Aurora.Players.townless().catch(() => {}) 
-        if (!townlessPlayers) return await m.edit({ embeds: [fn.fetchError] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        const townlessPlayers = await Aurora.Players.townless().catch(() => null) 
+        if (!townlessPlayers) return await m.edit({ embeds: [fn.fetchError] })
+            .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         let page = 1    
 

@@ -9,6 +9,7 @@ import { getLinkedPlayer } from "../../bot/utils/linking.js"
 
 export default {
     name: "nationset",
+    type: 10,
     run: async (_: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
@@ -18,8 +19,8 @@ export default {
             return n
         })
 
-        const nationName = interaction.options.getString("name").toLowerCase(),
-              nationIndex = nations.findIndex(n => n.name.toLowerCase() == nationName)
+        const nationName = interaction.options.getString("name").toLowerCase()
+        const nationIndex = nations.findIndex(n => n.name.toLowerCase() == nationName)
 
         const nation = nations.find(n => n.name.toLowerCase() == nationName)
         let save = false

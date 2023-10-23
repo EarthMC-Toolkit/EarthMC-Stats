@@ -8,15 +8,15 @@ import { request } from "undici"
 const botDevs = ["Owen3H#5737", "263377802647175170"]
 
 // eslint-disable-next-line
-let queueSubbedChannelArray = []
+let queueSubbedChannelArray: string[] = []
 const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
 
 // eslint-disable-next-line
-let newsSubbedChannelArray = []
+let newsSubbedChannelArray: string[] = []
 const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
 
 // eslint-disable-next-line
-let townlessSubbedChannelArray = []
+let townlessSubbedChannelArray: string[] = []
 const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
 
 const errorEmbed = (title: string, desc: string) => new Discord.EmbedBuilder()
@@ -54,13 +54,13 @@ const staffListEmbed = (client: Discord.Client, arr: string[], active = true) =>
     color: Discord.Colors.Green,
 }).setThumbnail(client.user.avatarURL()).setTimestamp()
 
-const auroraNationBonus = residentAmt => residentAmt >= 120 ? 80
+const auroraNationBonus = (residentAmt: number) => residentAmt >= 120 ? 80
     : residentAmt >= 80 ? 60
     : residentAmt >= 60 ? 50
     : residentAmt >= 40 ? 30
     : residentAmt >= 20 ? 10 : 0
 
-const novaNationBonus = residentAmt => residentAmt >= 60 ? 140
+const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
     : residentAmt >= 40 ? 100
     : residentAmt >= 30 ? 60
     : residentAmt >= 20 ? 40
@@ -105,7 +105,7 @@ const removeDuplicates = (arr: any[]) => [...new Set(arr)],
       getUserCount = (client: Discord.Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0),
       isEmpty = (str: string) => (!str || str.length === 0)
 
-const paginator = async (
+const paginator = async(
     author: string, 
     msg: Discord.Message, 
     embedArr: Discord.EmbedBuilder[], 
@@ -144,7 +144,7 @@ const paginator = async (
 /**
  * Helper method to create a paginator on an interaction.
  */
-const paginatorInteraction = async (
+const paginatorInteraction = async(
     interaction: Discord.CommandInteraction, 
     embeds: Discord.EmbedBuilder[], 
     currentPage: number
