@@ -510,9 +510,9 @@ async function liveQueue() {
 }
 
 let fallenTownCache = []
-function updateFallenTownCache(data) { 
+function updateFallenTownCache(data: any[]) { 
     fallenTownCache = data
-    console.log(`${fn.time()} | Updated fallen town cache.`)
+    console.log(`${fn.time()} | Updated fallen town cache. Length: ${data.length}`)
 }
 
 async function updateFallenTowns(map: { emc: any, db: any }) {
@@ -572,10 +572,14 @@ async function updateFallenTowns(map: { emc: any, db: any }) {
         updateFallenTownCache(townsArray)
 
         // Name and mayor have to be changed for it to be "fallen"
-        const fallenTowns = fallenTownCache.filter(cached => cached.ruined && !townsArray.find(cur =>
-            cur.name == cached.name && 
-            cur.mayor == cached.mayor
-        ))
+        const fallenTowns = fallenTownCache.filter(cached => {
+            console.log(cached.ruined)
+
+            cached.ruined && !townsArray.find(cur =>
+                cur.name == cached.name && 
+                cur.mayor == cached.mayor
+            ) 
+        })
 
         const fallenTownsLen = fallenTowns.length
         if (fallenTownsLen < 1) {
