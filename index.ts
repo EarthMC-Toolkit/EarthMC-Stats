@@ -153,7 +153,7 @@ async function initUpdates() {
 
     setInterval(async () => {
         await updateFallenTowns(AURORA)
-    }, oneMinute)
+    }, 2 * oneMinute)
 }
 
 async function updateNews() {
@@ -405,9 +405,14 @@ const editEmbed = (msg: Discord.Message, arr: any[], mapName: string) => {
         .setTimestamp()
 
     let desc = ""
-    if (arr.length < 1) desc = "There are currently no townless players!"
-    else if (arr.toString().length >= 2048) desc = "```" + (names.match(/(?:^.*$\n?){1,30}/mg))[0] + "```"
-    else desc = "```" + arr[0].name + "\n" + names + "```"
+    const arrLen = arr.toString().length
+
+    if (arrLen < 1) desc = "There are currently no townless players!"
+    else {
+        desc = arrLen >= 2048 
+            ? "```" + (names.match(/(?:^.*$\n?){1,30}/mg))[0] + "```"
+            : desc = "```" + arr[0].name + "\n" + names + "```"
+    }
 
     newEmbed.setDescription(desc)
     msg.edit({ embeds: [newEmbed] }).catch(err => console.log(err))
@@ -590,7 +595,7 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
             const fallenTownEmbed = new Discord.EmbedBuilder()
                 .setTitle("A town has fallen!")
                 .setFooter(fn.devsFooter(client))
-                .setThumbnail(client.user.avatarURL())
+                .setThumbnail('attachment://aurora.png')
                 .setTimestamp()
                 .setColor(Discord.Colors.Green)
                 .addFields(
@@ -621,7 +626,7 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
 
             fallenTownEmbed.addFields(
                 fn.embedField("Town Size", town.area.toString(), true),
-                fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/nova/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
+                fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
             )
 
             if (residentBatch1.length < 1) {
@@ -649,7 +654,8 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
 
             townFlowChannel.send({ 
                 content: "<@&1161647212061806683>",
-                embeds: [fallenTownEmbed] 
+                embeds: [fallenTownEmbed],
+                files: [fn.AURORA.thumbnail]
             })
         }
     }

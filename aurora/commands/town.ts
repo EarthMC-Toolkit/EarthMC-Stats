@@ -1,6 +1,6 @@
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
-import { Aurora, formatString } from "earthmc"
+import { Aurora, NotFoundError, formatString } from "earthmc"
 
 import Discord from "discord.js"
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -202,9 +202,11 @@ export default {
                         return "" + resident + " | Unknown"
                     }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                    const townColours = await Aurora.Towns.get(town.name).then(t => t.colourCodes),
-                          colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-
+                    const townColours = await Aurora.Towns.get(town.name).then((t: any) => {
+                        return t instanceof NotFoundError ? null : t.colourCodes
+                    })
+                    
+                    const colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                     new CustomEmbed(client, "Town Info | Activity in " + town.name)
                         .setColor(colour)
                         .setType(EntityType.Town)
@@ -214,8 +216,7 @@ export default {
                 }).catch(() => {})
             }
             else if (args.length > 3 || args.length == null || opt == null) {
-                return await m.edit({embeds: [
-                    new Discord.EmbedBuilder()
+                return await m.edit({embeds: [new Discord.EmbedBuilder()
                     .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
                     .setFooter(fn.devsFooter(client))
                     .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
@@ -236,12 +237,14 @@ export default {
                 towns = fn.defaultSort(towns)
 
                 const townName = town.name
-                const townRank = (towns.findIndex(t => t.name == townName)) + 1,
-                      mayor = town.mayor.replace(/_/g, "\\_")
+                const townRank = (towns.findIndex(t => t.name == townName)) + 1
+                const mayor = town.mayor.replace(/_/g, "\\_")
                 
-                const townColours = await Aurora.Towns.get(townName).then(t => t.colourCodes),
-                      colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-                    
+                const townColours = await Aurora.Towns.get(town.name).then((t: any) => {
+                    return t instanceof NotFoundError ? null : t.colourCodes
+                })
+
+                const colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                 townEmbed.setColor(town.ruined ? Discord.Colors.Orange : colour)
                          .setTitle(("Town Info | " + townName + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
                          .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })

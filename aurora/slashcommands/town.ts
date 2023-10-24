@@ -187,8 +187,11 @@ export default {
                 const townRank = (towns.findIndex(t => t.name == town.name)) + 1,
                       mayor = town.mayor.replace(/_/g, "\\_")
                 
-                const townColours = await emc.Aurora.Towns.get(town.name).then(t => t.colourCodes),
-                      colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+                const townColours = await emc.Aurora.Towns.get(town.name).then((t: any) => {
+                    return t instanceof emc.NotFoundError ? null : t.colourCodes
+                })
+
+                const colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                 
                 townEmbed.setColor(town.ruined ? Discord.Colors.Orange : colour)
                 townEmbed.setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))

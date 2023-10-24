@@ -204,9 +204,11 @@ export default {
                 return interaction.editReply({embeds: [nationEmbed]})
             }
             
-            const capitalColours = await emc.Aurora.Towns.get(nation.capital.name).then(t => t.colourCodes).catch(() => {}),
-                  colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Discord.Colors.Aqua
+            const capitalColours = await emc.Aurora.Towns.get(nation.capital.name).then((t: any) => {
+                return t instanceof emc.NotFoundError ? null : t.colourCodes
+            })
 
+            const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Discord.Colors.Aqua
             nationEmbed.setColor(colour)
             
             //#region Prefixes

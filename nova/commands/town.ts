@@ -1,7 +1,7 @@
 import { Colors, EmbedBuilder } from "discord.js"
 import type { Message, Client } from "discord.js"
 
-import { Nova, formatString } from "earthmc"
+import { Nova, formatString, NotFoundError } from "earthmc"
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 import * as fn from '../../bot/utils/fn.js'
@@ -249,9 +249,11 @@ export default {
                             return "" + resident + " | Unknown"
                         }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                        const townColours = await Nova.Towns.get(town.name).then(t => t.colourCodes),
-                              colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+                        const townColours = await Nova.Towns.get(town.name).then((t: any) => {
+                            return t instanceof NotFoundError ? null : t.colourCodes
+                        })
 
+                        const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                         new CustomEmbed(client, "(Nova) Town Info | Activity in " + town.name)
                             .setColor(colour)
                             .setType(EntityType.Town).setPage(page)
@@ -285,12 +287,14 @@ export default {
                 const townRank = (towns.findIndex(t => t.name == town.name)) + 1,
                       mayor = town.mayor.replace(/_/g, "\\_")
                 
-                const townColours = await Nova.Towns.get(town.name).then(t => t.colourCodes),
-                      colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-                    
+                const townColours = await Nova.Towns.get(town.name).then((t: any) => {
+                    return t instanceof NotFoundError ? null : t.colourCodes
+                })
+
+                const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                 townEmbed.setColor(town.ruined ? Colors.Orange : colour)
-                         .setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
-                         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                    .setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
+                    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 
                 const townNation = await database.Nova.getNation(town.nation).catch(() => {}) ?? await Nova.Nations.get(town.nation),
                       townResidentsLength = town.residents.length

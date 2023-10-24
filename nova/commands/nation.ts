@@ -1,7 +1,7 @@
 import { Colors, EmbedBuilder } from "discord.js"
 import type { Message, Client, NewsChannel } from "discord.js"
 
-import { Nova, formatString } from "earthmc"
+import { NotFoundError, Nova, formatString } from "earthmc"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
@@ -316,12 +316,14 @@ export default {
                         .setDescription(args[0] + " is not a valid nation, please try again.")
                         .setColor(Colors.Red)
 
-                    return m.edit({embeds: [nationEmbed]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                    return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
 
-                const capitalColours = await Nova.Towns.get(nation.capital.name).then(t => t.colourCodes).catch(() => {}),
-                      colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
-
+                const capitalColours = await Nova.Towns.get(nation.capital.name).then((t: any) => {
+                    return t instanceof NotFoundError ? null : t.colourCodes
+                })
+                
+                const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
                 nationEmbed.setColor(colour)
                 
                 //#region Prefixes
