@@ -509,23 +509,23 @@ async function liveQueue() {
     }
 }
 
-let fallenTownCache = []
-function updateFallenTownCache(data: any[]) { 
-    fallenTownCache = data
+let townsCache = []
+function updateTownCache(data: any[]) { 
+    townsCache = data
     console.log(`${fn.time()} | Updated fallen town cache. Length: ${data.length}`)
 }
 
-async function updateFallenTowns(map: { emc: any, db: any }) {
-    const townsArray = await map.emc.Towns.all().then(arr => arr.map(t => {
+async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
+    const towns = await map.emc.Towns.all().then(arr => arr.map(t => {
         const NPCRegex = /^NPC[0-9]{1,5}$/
-        t["ruined"] = (NPCRegex.test(t.mayor) || !t.residents || t.residents == "") ? true : false
+        t["ruined"] = (NPCRegex.test(t.mayor) || (t.residents?.length ?? 0) < 1) ? true : false
 
         return t
     })).catch(() => null)
 
-    if (!townsArray) return console.log("Could not update map data! Failed to fetch towns.")
-          //msgs = await townFlowChannel.messages.fetch()
-          //ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
+    if (!towns) return console.log("Could not update map data! Failed to fetch towns.")
+    // const msgs = await townFlowChannel.messages.fetch()
+    // const ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
 
     const townFlowChannel = client.channels.cache.get("1161579122494029834") as TextChannel
 
@@ -566,19 +566,15 @@ async function updateFallenTowns(map: { emc: any, db: any }) {
     //#endregion
 
     //#region Send fallen towns
-    // If cache is empty, update it.
-    if (fallenTownCache.length < 1) updateFallenTownCache(townsArray)  
-    else {
-        updateFallenTownCache(townsArray)
+    updateTownCache(towns)
 
+    if (townsCache.length > 0) {
         // Name and mayor have to be changed for it to be "fallen"
-        const fallenTowns = fallenTownCache.filter(cached => {
-            console.log(cached.ruined)
-
-            return cached.ruined && !townsArray.some(cur =>
+        const fallenTowns = townsCache.filter(cached => {
+            return cached.ruined && !towns.some(cur =>
                 cur.name == cached.name && 
                 cur.mayor == cached.mayor
-            ) 
+            )
         })
 
         const fallenTownsLen = fallenTowns.length
