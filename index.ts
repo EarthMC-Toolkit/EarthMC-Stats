@@ -566,8 +566,6 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
     //#endregion
 
     //#region Send fallen towns
-    updateTownCache(towns)
-
     if (townsCache.length > 0) {
         // Name and mayor have to be changed for it to be "fallen"
         const fallenTowns = townsCache.filter(cached => {
@@ -655,6 +653,8 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
             })
         }
     }
+
+    updateTownCache(towns)
     //#endregion
 }
 //#endregion
