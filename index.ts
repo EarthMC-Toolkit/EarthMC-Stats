@@ -575,7 +575,7 @@ async function updateFallenTowns(map: { emc: any, db: any }) {
         const fallenTowns = fallenTownCache.filter(cached => {
             console.log(cached.ruined)
 
-            cached.ruined && !townsArray.find(cur =>
+            return cached.ruined && !townsArray.some(cur =>
                 cur.name == cached.name && 
                 cur.mayor == cached.mayor
             ) 
