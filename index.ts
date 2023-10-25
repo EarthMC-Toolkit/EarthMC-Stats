@@ -593,7 +593,7 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
                   mayor = town.mayor.replace(/_/g, "\\_")
 
             const route = await emc.Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
-            const desc = `Route: Type \`/n spawn ${route.nation}\` and head \`${route.direction}\` for \`${route.distance}\` blocks.`
+            const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`
 
             const fallenTownEmbed = new Discord.EmbedBuilder()
                 .setTitle("A town has fallen!")
