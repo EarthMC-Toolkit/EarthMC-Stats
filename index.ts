@@ -592,16 +592,20 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
                   residentBatch2 = [],
                   mayor = town.mayor.replace(/_/g, "\\_")
 
+            const route = await emc.Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
+            const desc = `Route: Type \`/n spawn ${route.nation}\` and head \`${route.direction}\` for \`${route.distance}\` blocks.`
+
             const fallenTownEmbed = new Discord.EmbedBuilder()
                 .setTitle("A town has fallen!")
+                .setDescription(desc)
                 .setFooter(fn.devsFooter(client))
                 .setThumbnail('attachment://aurora.png')
                 .setTimestamp()
                 .setColor(Discord.Colors.Green)
-                .addFields(
-                    fn.embedField("Town Name", town.name + (town.capital ? " :star:" : ""), true),
-                    fn.embedField("Nation", town.nation, true)
-                )
+                .addFields(fn.embedField("Town Name", town.name + (town.capital ? " :star:" : ""), true))
+
+            if (town.nation != "No Nation") 
+                fallenTownEmbed.addFields(fn.embedField("Nation", town.nation, true))
 
             const townResidentsLen = town.residents.length
             for (let j = 0; j < townResidentsLen; j++) {
