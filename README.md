@@ -12,11 +12,16 @@ This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/
 </div>
 
 ## Notes
-- EarthMC Stats currently uses DiscordJS version `13.16.0`.
-- CommonJS is still in use by EMCS, though migrating to ESM is planned!
 - Duplicated code is slowly being phased out in favour of helper classes found in the `common` folder.
 - To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - please don't mess with this.
 - This repo is meant for viewing and attribution, hosting it yourself will not work.
+
+## Features
+✅ Written in **TypeScript** for type-safety and intellisense.<br>
+✅ Uses modern **ESM** format which provides a nicer syntax and better module compatibility.<br>
+✅ **DiscordJS** commands and events have their own files for clarity and maintainability.<br>
+✅ **Firestore** database is used, allowing EMCS to be used seamlessly when EarthMC goes down.<br>
+✅ Fast responses due to an in-memory cache and a fast request implementation provided by [Undici](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise).
 
 ## Disclaimer
 This project has the [Attribution-NonCommercial-ShareAlike 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
