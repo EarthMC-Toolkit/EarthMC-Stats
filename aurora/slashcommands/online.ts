@@ -27,9 +27,10 @@ export default {
     name: "online",
     description: "Get online info for staff, mayors and more.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        //await interaction.deferReply()
+        await interaction.deferReply()
+
         const ops: Player[] | null = await Aurora.Players.online().catch(() => null)
-        if (!ops) return interaction.reply({
+        if (!ops) return interaction.editReply({
             embeds: [fn.fetchError], 
             //ephemeral: true
         })
@@ -45,9 +46,9 @@ export default {
                 
                 return await new CustomEmbed(client, "Online Activity | All")
                     .setPage(0)
-                    .setColor(0x556b2f)
+                    .setColor("#7a770d")
                     .paginate(allData, "```", "```")
-                    .reply(interaction)
+                    .editInteraction(interaction)
             }
             case "mods":
             case "staff":
@@ -55,7 +56,7 @@ export default {
                 break
             case "mayors": {
                 const allTowns = await Aurora.Towns.all().catch(() => {})
-                if (!allTowns || allTowns.length < 1) return await interaction.reply({
+                if (!allTowns || allTowns.length < 1) return await interaction.editReply({
                     embeds: [fn.fetchError], 
                     //ephemeral: true
                 })
@@ -66,13 +67,13 @@ export default {
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Mayors")
                     .setPage(0)
-                    .setColor(0x556b2f)
+                    .setColor("#7a770d")
                     .paginate(allData, `Total: ${towns.length}` + "```", "```")
-                    .reply(interaction)
+                    .editInteraction(interaction)
             }
             case "kings": {
                 const allNations = await Aurora.Nations.all().catch(err => console.log(err))
-                if (!allNations || allNations.length < 1) return await interaction.reply({
+                if (!allNations || allNations.length < 1) return await interaction.editReply({
                     embeds: [fn.fetchError], 
                     //ephemeral: true
                 })
@@ -83,11 +84,11 @@ export default {
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Kings")
                     .setPage(0)
-                    .setColor(0x556b2f)
+                    .setColor("#7a770d")
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
-                    .reply(interaction)
+                    .editInteraction(interaction)
             }
-            default: return await interaction.reply({embeds: [
+            default: return await interaction.editReply({embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Red)
                     .setTitle("Invalid Arguments")
