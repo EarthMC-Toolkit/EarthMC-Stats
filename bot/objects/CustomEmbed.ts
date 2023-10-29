@@ -59,6 +59,11 @@ class CustomEmbed extends EmbedBuilder {
         return this
     }
 
+    setColour(value: ColorResolvable) {
+        this.colour = value
+        return this
+    }
+
     setPage(pageNum: number) {
         this.page = pageNum < 0 ? 0 : pageNum
         return this
