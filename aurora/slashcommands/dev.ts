@@ -12,7 +12,7 @@ export default {
     name: "dev",
     disabled: false,
     description: "Developer restricted commands for bot management.",
-    run: async (_, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
         const service = new Service(serviceID, process.env.AUTH_TOKEN),
               embed = new Discord.EmbedBuilder()
 
@@ -65,6 +65,10 @@ export default {
                     .setColor(Discord.Colors.Gold)
                     .setTitle(":pause_button: Bot service paused.")
                 ]})
+            }
+            case "stats": {
+                const oneMemberGuilds = await client.guilds.cache.filter(g => g.memberCount < 3)
+                return await interaction.reply({ content: `Guilds with less than one member: ${oneMemberGuilds.size}` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Discord.Colors.Red)
