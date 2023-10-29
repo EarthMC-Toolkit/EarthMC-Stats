@@ -1,5 +1,5 @@
-
 import Discord from "discord.js"
+
 import { Aurora } from "earthmc"
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 

@@ -1,6 +1,5 @@
 import Discord from "discord.js"
 
-
 import striptags from 'striptags'
 
 import * as db from "../../bot/utils/database.js"

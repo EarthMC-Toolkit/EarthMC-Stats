@@ -1,6 +1,5 @@
 import Discord from "discord.js"
 
-
 import { Aurora } from "earthmc"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"

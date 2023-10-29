@@ -1,6 +1,5 @@
 import Discord from 'discord.js'
 
-
 import * as fn from '../../bot/utils/fn.js'
 
 import admin from 'firebase-admin'

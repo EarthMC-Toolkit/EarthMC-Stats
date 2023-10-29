@@ -318,13 +318,22 @@ export default {
                     // ONLINE RESIDENTS
                     const townyData = await database.Aurora.getOnlinePlayerData() as any
 
-                    if (!townyData) townEmbed.addFields(fn.embedField("Online Residents", "No residents are online in " + town.name))
+                    if (!townyData) {
+                        townEmbed.addFields(fn.embedField(
+                            "Online Residents", 
+                            "No residents are online in " + town.name
+                        ))
+                    }
                     else {
                         onlineResidents = fn.removeDuplicates(town.residents.filter(resident => townyData.players.find(op => resident === op.account)))
                         const onlineResidentsString = onlineResidents.toString().replace(/,/g, ", ")
 
-                        if (onlineResidents.length > 0) 
-                            townEmbed.addFields(fn.embedField(`Online Residents [${onlineResidents.length}]`, "```" + onlineResidentsString + "```"))
+                        if (onlineResidents.length > 0) { 
+                            townEmbed.addFields(fn.embedField(
+                                `Online Residents [${onlineResidents.length}]`, 
+                                "```" + onlineResidentsString + "```"
+                            ))
+                        }
                         else townEmbed.addFields(fn.embedField("Online Residents", `No residents are online in ${town.name}`))
                     }
                 }
