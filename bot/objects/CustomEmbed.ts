@@ -109,6 +109,15 @@ class CustomEmbed extends EmbedBuilder {
         return this
     }
 
+    async reply(interaction: CommandInteraction) {
+        if (!this.paginated) return await interaction.reply({embeds: [this], components: this.components })
+
+        return await interaction.reply({ 
+            embeds: [this.embeds[this.page]], 
+            components: this.components 
+        }).then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
+    }
+
     async editInteraction(interaction: CommandInteraction) {
         if (!this.paginated) return await interaction.editReply({embeds: [this], components: this.components })
 

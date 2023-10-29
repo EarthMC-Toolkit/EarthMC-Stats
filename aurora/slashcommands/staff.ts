@@ -18,7 +18,7 @@ export default {
     name: "staff",
     description: "Sends a list of current server staff",
     run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
-        await interaction.deferReply()
+        //await interaction.deferReply()
 
         switch (interaction.options.getSubcommand().toLowerCase()) {
             case "online": {
@@ -31,7 +31,7 @@ export default {
                 const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
                 const list = "```" + onlineStaff.join(", ").toString() + "```"
 
-                return await interaction.editReply({embeds: [new Discord.EmbedBuilder()
+                return await interaction.reply({embeds: [new Discord.EmbedBuilder()
                     .setTitle("Online Activity | Staff")
                     .setDescription(onlineStaff.length < 1 ? "No staff are online right now! Try again later." : list)
                     .setThumbnail(client.user.avatarURL())
@@ -42,9 +42,9 @@ export default {
             }
             case "list": {
                 const staff = await getStaff(true)
-                return await interaction.editReply({ embeds: [fn.staffListEmbed(client, staff)] })
+                return await interaction.reply({ embeds: [fn.staffListEmbed(client, staff)] })
             }
-            default: return await interaction.editReply({ embeds: [new Discord.EmbedBuilder()
+            default: return await interaction.reply({ embeds: [new Discord.EmbedBuilder()
                 .setTitle("Invalid Arguments!")
                 .setDescription("Usage: `/staff list` or `/staff online`")
                 .setColor(Discord.Colors.Red)
