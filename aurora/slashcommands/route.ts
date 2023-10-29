@@ -33,12 +33,14 @@ export default {
         const z = interaction.options.getInteger("z")
         
         const route = await Aurora.GPS.fastestRoute({ x, z })
+        const direction = route.direction.charAt(0).toUpperCase() + route.direction.slice(1)
+
         const embed = new EmbedBuilder()
             .setColor("Random")
             .setFields(
                 embedField("Nearest Nation", `/n spawn ${route.nation.name}`,  true),
-                embedField("Distance", `${route.distance} Blocks`, true),
-                embedField("Direction", route.direction, true),
+                embedField("Distance", `${route.distance} blocks`, true),
+                embedField("Direction", direction, true),
             )
 
         return interaction.reply({ embeds: [embed] })

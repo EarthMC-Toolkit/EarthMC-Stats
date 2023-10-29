@@ -1,34 +1,38 @@
-import Discord from 'discord.js'
+import { 
+    ChatInputCommandInteraction,
+    Client,
+    EmbedBuilder,
+    SlashCommandBuilder,
+    Colors
+} from 'discord.js'
 
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import * as fn from '../../bot/utils/fn.js'
-import { Aurora } from "earthmc"
+import { Aurora, Player } from "earthmc"
+
+function displayOnlineStaff(client: Client, interaction: ChatInputCommandInteraction, ops: Player[]) {
+    const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+    return interaction.reply({embeds: [new EmbedBuilder()
+        .setTitle("Online Activity | Staff")
+        .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
+        .setColor(0x556b2f)
+        .setThumbnail(client.user.avatarURL())
+        .setTimestamp()
+        .setFooter(fn.devsFooter(client))
+    ]})
+}
 
 export default {
     name: "online",
     description: "Get online info for staff, mayors and more.",
-    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
-        await interaction.deferReply()
-
-        const ops = await Aurora.Players.online().catch(() => null)
-        if (!ops) return await interaction.editReply({
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+        //await interaction.deferReply()
+        const ops: Player[] | null = await Aurora.Players.online().catch(() => null)
+        if (!ops) return interaction.reply({
             embeds: [fn.fetchError], 
             //ephemeral: true
         })
-
-        function displayOnlineStaff() {
-            const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
-            return interaction.editReply({embeds: [
-                new Discord.EmbedBuilder()
-                    .setTitle("Online Activity | Staff")
-                    .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
-                    .setColor(0x556b2f)
-                    .setThumbnail(client.user.avatarURL())
-                    .setTimestamp()
-                    .setFooter(fn.devsFooter(client))
-            ]})
-        }
 
         switch(interaction.options.getSubcommand().toLowerCase()) {
             case "all": {
@@ -43,15 +47,15 @@ export default {
                     .setPage(0)
                     .setColor(0x556b2f)
                     .paginate(allData, "```", "```")
-                    .editInteraction(interaction)
+                    .reply(interaction)
             }
             case "mods":
             case "staff":
-                displayOnlineStaff()
+                displayOnlineStaff(client, interaction, ops)
                 break
             case "mayors": {
                 const allTowns = await Aurora.Towns.all().catch(() => {})
-                if (!allTowns || allTowns.length < 1) return await interaction.editReply({
+                if (!allTowns || allTowns.length < 1) return await interaction.reply({
                     embeds: [fn.fetchError], 
                     //ephemeral: true
                 })
@@ -64,11 +68,11 @@ export default {
                     .setPage(0)
                     .setColor(0x556b2f)
                     .paginate(allData, `Total: ${towns.length}` + "```", "```")
-                    .editInteraction(interaction)
+                    .reply(interaction)
             }
             case "kings": {
                 const allNations = await Aurora.Nations.all().catch(err => console.log(err))
-                if (!allNations || allNations.length < 1) return await interaction.editReply({
+                if (!allNations || allNations.length < 1) return await interaction.reply({
                     embeds: [fn.fetchError], 
                     //ephemeral: true
                 })
@@ -81,17 +85,17 @@ export default {
                     .setPage(0)
                     .setColor(0x556b2f)
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
-                    .editInteraction(interaction)
+                    .reply(interaction)
             }
-            default: return await interaction.editReply({embeds: [
-                new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Red)
+            default: return await interaction.reply({embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Red)
                     .setTitle("Invalid Arguments")
                     .setDescription("Arguments: `all`, `staff`, `mayors`, `kings`")
                 ], //ephemeral: true
             })
         }
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("online")
         .setDescription("Several commands related to online players.")
         .addSubcommand(subCmd => subCmd.setName('all').setDescription('Lists every online player.'))
