@@ -11,12 +11,14 @@ import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 import * as fn from '../../bot/utils/fn.js'
 import { Aurora, Player } from "earthmc"
 
+const EMBED_COLOUR = "#d67a82"
+
 function displayOnlineStaff(client: Client, interaction: ChatInputCommandInteraction, ops: Player[]) {
     const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
-    return interaction.reply({embeds: [new EmbedBuilder()
+    return interaction.editReply({embeds: [new EmbedBuilder()
         .setTitle("Online Activity | Staff")
         .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
-        .setColor(0x556b2f)
+        .setColor(EMBED_COLOUR)
         .setThumbnail(client.user.avatarURL())
         .setTimestamp()
         .setFooter(fn.devsFooter(client))
@@ -46,7 +48,7 @@ export default {
                 
                 return await new CustomEmbed(client, "Online Activity | All")
                     .setPage(0)
-                    .setColor("#7a770d")
+                    .setColor(EMBED_COLOUR)
                     .paginate(allData, "```", "```")
                     .editInteraction(interaction)
             }
@@ -67,7 +69,7 @@ export default {
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Mayors")
                     .setPage(0)
-                    .setColor("#7a770d")
+                    .setColor(EMBED_COLOUR)
                     .paginate(allData, `Total: ${towns.length}` + "```", "```")
                     .editInteraction(interaction)
             }
@@ -84,7 +86,7 @@ export default {
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Kings")
                     .setPage(0)
-                    .setColor("#7a770d")
+                    .setColor(EMBED_COLOUR)
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
                     .editInteraction(interaction)
             }
