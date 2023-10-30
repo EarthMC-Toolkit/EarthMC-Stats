@@ -66,9 +66,21 @@ export default {
                     .setTitle(":pause_button: Bot service paused.")
                 ]})
             }
-            case "stats": {
-                const oneMemberGuilds = await client.guilds.cache.filter(g => g.memberCount < 10)
-                return await interaction.reply({ content: `Guilds with less than 10 members: ${oneMemberGuilds.size}` })
+            case "purge": {
+                const guildsToLeave = await client.guilds.cache.map(g => g.id)
+                let leaveCounter = 0
+                
+                await interaction.deferReply()
+
+                guildsToLeave.forEach(async id => {
+                    const guild = await client.guilds.fetch(id)
+                    if (guild.memberCount < 5) {
+                        const left = await guild.leave().then(() => true)
+                        if (left) leaveCounter++
+                    }
+                })
+
+                return await interaction.editReply({ content: `Left ${leaveCounter} guilds.` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Discord.Colors.Red)
@@ -81,5 +93,5 @@ export default {
         .addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
-        .addSubcommand(subCmd => subCmd.setName('stats').setDescription('See detailed bot statistics.'))
+        .addSubcommand(subCmd => subCmd.setName('purge').setDescription('Leaves all guilds with 4 or less members.'))
 }
