@@ -1,7 +1,7 @@
 import { 
     Client, ChatInputCommandInteraction,
     GuildMember, Colors, EmbedBuilder,
-    SlashCommandBuilder, GuildPremiumTier
+    SlashCommandBuilder
 } from "discord.js"
 
 import { Service } from 'koyeb.js'
