@@ -24,7 +24,7 @@ export default {
 
         if (!fn.botDevs.includes(member.id)) {
             try {
-                const m = interaction.reply({embeds: [
+                const m = await interaction.reply({embeds: [
                     embed.setTitle("Goofy ah :skull:")
                     .setColor(Colors.Red)
                     .setTimestamp()
@@ -33,9 +33,8 @@ export default {
                         iconURL: interaction.user.displayAvatarURL() 
                     })
                 ]})
-                
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setTimeout(() => (m as any).delete(), 10000)
+            
+                setTimeout(() => m.delete(), 10000)
                 return
             }
             catch(_) { /* empty */ } 

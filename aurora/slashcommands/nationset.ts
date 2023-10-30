@@ -1,4 +1,8 @@
-import Discord from "discord.js"
+import {
+    type Message, type Client,
+    ChatInputCommandInteraction, Colors, 
+    EmbedBuilder, SlashCommandBuilder
+} from "discord.js"
 
 import * as emc from "earthmc"
 import * as fn from '../../bot/utils/fn.js'
@@ -6,10 +10,12 @@ import * as database from "../../bot/utils/database.js"
 
 import { getLinkedPlayer } from "../../bot/utils/linking.js"
 
+const desc = "Used by the nation leader to set custom nation options. (Discord, Flag, Prefix)"
+
 export default {
     name: "nationset",
-    type: 10,
-    run: async (_: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    description: desc,
+    run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
         const mapDB = interaction.options.getString("map").toLowerCase() == "nova" ? database.Nova : database.Aurora
@@ -24,23 +30,22 @@ export default {
         const nation = nations.find(n => n.name.toLowerCase() == nationName)
         let save = false
 
-        if (!nation) return interaction.editReply({embeds: [
-            new Discord.EmbedBuilder()
+        if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
             .setDescription(`${nationName} is not a registered nation, please try again.`)
-            .setColor(Discord.Colors.Red)
+            .setColor(Colors.Red)
             .setTimestamp()
-        ]}).then((m: Discord.Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const userID = interaction.user.id,
               linkedPlayer = await getLinkedPlayer(userID)
 
-        if (!linkedPlayer || (nation.king.toLowerCase() != linkedPlayer.name.toLowerCase() && !fn.botDevs.includes(userID)))
-            return interaction.editReply({embeds: [
-                new Discord.EmbedBuilder()
-                .setDescription("You must be linked and be the owner of this nation in order to edit it.")
-                .setColor(Discord.Colors.Red)
-                .setTimestamp()
-            ]}).then((m: Discord.Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer.name.toLowerCase()
+        if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
+            new EmbedBuilder()
+            .setDescription("You must be linked and be the owner of this nation in order to edit it.")
+            .setColor(Colors.Red)
+            .setTimestamp()
+        ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const value = interaction.options.getString("value")
         const cleared = value.toLowerCase() == "none" || value.toLowerCase() == "clear"
@@ -50,22 +55,21 @@ export default {
                 if (cleared) nation.kingPrefix = ""
                 else nation.kingPrefix = value.substring(0, 10)
 
-                const embed = new Discord.EmbedBuilder()
+                const embed = new EmbedBuilder()
                     .setTitle("Nation Updated | " + nation.name)
                     .setDescription(`The king prefix has been ${cleared ? "cleared" : "set to `" + nation.kingPrefix + "`"}.`)
-                    .setColor(Discord.Colors.Aqua)
+                    .setColor(Colors.Aqua)
                     .setTimestamp()
 
-                await interaction.editReply({embeds: [embed]})
+                await interaction.editReply({ embeds: [embed] })
 
-                embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-                embed.addFields(
-                    fn.embedField("Username", linkedPlayer.name, true),
-                    fn.embedField("ID", linkedPlayer.linkedID, true)
-                )
+                // embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
+                // embed.addFields(
+                //     fn.embedField("Username", linkedPlayer.name, true),
+                //     fn.embedField("ID", linkedPlayer.linkedID, true)
+                // )
                 //await client.channels.cache.get("903771461746044949")?.send({embeds: [embed]})
 
-                save = true
                 break
             }
             case "discord": {
@@ -74,9 +78,9 @@ export default {
                     const inviteRegex = new RegExp(/discord(?:\.com|app\.com|\.gg)[\/invite\/]?(?:[a-zA-Z0-9\-]{2,32})/)
                     if (!inviteRegex.test(value)) {
                         return interaction.editReply({embeds: [
-                            new Discord.EmbedBuilder()
+                            new EmbedBuilder()
                             .setDescription(`${value} is not a valid discord invite, please try again.`)
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                         ]})
                     }
@@ -84,22 +88,21 @@ export default {
                     nation.discord = value
                 }
 
-                const embed = new Discord.EmbedBuilder()
+                const embed = new EmbedBuilder()
                     .setTitle("Nation Updated | " + nation.name)
                     .setDescription(`The nation's discord invite has been ${cleared ? "cleared" : "set to `" + value + "`"}.`) 
-                    .setColor(Discord.Colors.Aqua)
+                    .setColor(Colors.Aqua)
                     .setTimestamp()
 
-                await interaction.editReply({embeds: [embed]})
+                await interaction.editReply({ embeds: [embed] })
 
-                embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-                embed.addFields(
-                    fn.embedField("Username", linkedPlayer.name, true),
-                    fn.embedField("ID", linkedPlayer.linkedID, true)
-                )
+                // embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
+                // embed.addFields(
+                //     fn.embedField("Username", linkedPlayer.name, true),
+                //     fn.embedField("ID", linkedPlayer.linkedID, true)
+                // )
                 //await client.channels.cache.get("903771461746044949")?.send({embeds: [embed]})
 
-                save = true
                 break
             }
             case "flag": {
@@ -107,40 +110,39 @@ export default {
                 else {
                     const imageRegex = new RegExp("(https?://.*.(?:png|jpg|jpeg))")
                     if (!imageRegex.test(value)) return interaction.editReply({embeds: [
-                        new Discord.EmbedBuilder()
+                        new EmbedBuilder()
                             .setDescription(`${value} is not a valid image link, please try again.`)
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                     ]})
                     
                     nation.flag = value
                 }
 
-                const embed = new Discord.EmbedBuilder()
+                const embed = new EmbedBuilder()
                     .setTitle("Nation Updated | " + nation.name)
                     .setDescription(`The nation's flag has been ${cleared ? "cleared." : "changed to:"}`)
-                    .setColor(Discord.Colors.Aqua)
+                    .setColor(Colors.Aqua)
                     .setTimestamp()
                 
                 if (!cleared) embed.setThumbnail(value)
-                await interaction.editReply({embeds: [embed]})
+                await interaction.editReply({ embeds: [embed] })
 
-                embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-                embed.addFields(
-                    fn.embedField("Username", linkedPlayer.name, true),
-                    fn.embedField("ID", linkedPlayer.linkedID, true)
-                )
+                // embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
+                // embed.addFields(
+                //     fn.embedField("Username", linkedPlayer.name, true),
+                //     fn.embedField("ID", linkedPlayer.linkedID, true)
+                // )
                 //await client.channels.cache.get("903771461746044949")?.send({embeds: [embed]})
 
                 break
             }
             default: {
-                interaction.editReply({embeds: [new Discord.EmbedBuilder()
+                save = false
+                return interaction.editReply({embeds: [new EmbedBuilder()
                     .setDescription("<:red_tick:1036290475012915270> Invalid arguments! Options: Prefix, Discord or Flag")
-                    .setColor(Discord.Colors.Red)
-                ]}).then((m: Discord.Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                break
+                    .setColor(Colors.Red)
+                ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
         }
 
@@ -148,13 +150,26 @@ export default {
             nations[nationIndex] = nation
             mapDB.setNations(nations)
         }
-    }, data: new Discord.SlashCommandBuilder().setName("nationset")
-        .setDescription("Sets nation data for a specific nation, can only be used by the nation leader.")
-        .addStringOption(option => option.setName("map").setDescription("Name of the map this nation is in, defaults to Aurora.").setRequired(true))
-        .addStringOption(option => option.setName("name").setDescription("The name of your nation.").setRequired(true))
-        .addStringOption(option => option.setName("type").setDescription("The type of data to set.").setRequired(true)
-            .addChoices({ name: "King Prefix", value: "prefix" }, 
-                        { name: "Discord Invite", value: "discord" },
-                        { name: "Flag", value: "flag" })
-        ).addStringOption(option => option.setName("value").setDescription("The value of the type specified.").setRequired(true))
+    }, data: new SlashCommandBuilder().setName("nationset")
+        .setDescription(desc)
+        .addStringOption(option => option.setName("map")
+            .setDescription("Name of the map this nation is in, defaults to Aurora.")
+            .setRequired(true)
+        )
+        .addStringOption(option => option.setName("name")
+            .setDescription("The name of your nation.")
+            .setRequired(true)
+        )
+        .addStringOption(option => option.setName("type")
+            .setDescription("The type of data to set.").setRequired(true)
+            .addChoices(
+                { name: "King Prefix", value: "prefix" }, 
+                { name: "Discord Invite", value: "discord" },
+                { name: "Flag", value: "flag" }
+            )
+        )
+        .addStringOption(option => option.setName("value")
+            .setDescription("The value of the type specified.")
+            .setRequired(true)
+        )
 }

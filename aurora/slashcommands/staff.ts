@@ -1,4 +1,8 @@
-import Discord from "discord.js"
+import {
+    type Client,
+    type ChatInputCommandInteraction,
+    Colors, EmbedBuilder, SlashCommandBuilder
+} from "discord.js"
 
 import { Aurora } from "earthmc"
 import * as fn from '../../bot/utils/fn.js'
@@ -17,13 +21,13 @@ async function getStaff(activeOnly: boolean) {
 export default {
     name: "staff",
     description: "Sends a list of current server staff",
-    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         //await interaction.deferReply()
 
         switch (interaction.options.getSubcommand().toLowerCase()) {
             case "online": {
                 const ops = await Aurora.Players.online().catch(() => {})
-                if (!ops) return await interaction.editReply({ 
+                if (!ops) return await interaction.reply({ 
                     embeds: [fn.fetchError],
                     //ephemeral: true
                 })
@@ -31,12 +35,12 @@ export default {
                 const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
                 const list = "```" + onlineStaff.join(", ").toString() + "```"
 
-                return await interaction.reply({embeds: [new Discord.EmbedBuilder()
+                return await interaction.reply({embeds: [new EmbedBuilder()
                     .setTitle("Online Activity | Staff")
                     .setDescription(onlineStaff.length < 1 ? "No staff are online right now! Try again later." : list)
                     .setThumbnail(client.user.avatarURL())
                     .setFooter(fn.devsFooter(client))
-                    .setColor(0x556b2f)
+                    .setColor("Random")
                     .setTimestamp()
                 ]})
             }
@@ -44,16 +48,16 @@ export default {
                 const staff = await getStaff(true)
                 return await interaction.reply({ embeds: [fn.staffListEmbed(client, staff)] })
             }
-            default: return await interaction.reply({ embeds: [new Discord.EmbedBuilder()
+            default: return await interaction.reply({ embeds: [new EmbedBuilder()
                 .setTitle("Invalid Arguments!")
                 .setDescription("Usage: `/staff list` or `/staff online`")
-                .setColor(Discord.Colors.Red)
+                .setColor(Colors.Red)
                 .setThumbnail(client.user.avatarURL())
                 .setFooter(fn.devsFooter(client))
                 .setTimestamp()
             ]})
         }
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("staff")
         .setDescription("Show a list of either active or online staff.")
         .addSubcommand(subCmd => subCmd.setName('list').setDescription('List of all active staff members.'))

@@ -1,4 +1,9 @@
-import Discord from "discord.js"
+import {
+    type Client, 
+    type ChatInputCommandInteraction,
+    Colors, EmbedBuilder
+} from "discord.js"
+
 import { MojangLib } from 'earthmc'
 
 import * as fn from "../../bot/utils/fn.js"
@@ -9,7 +14,7 @@ import Queue from "../../bot/objects/Queue.js"
 export default {
     name: "queue",
     description: "Get the current server queue.",
-    run: async (_: Discord.Client, interaction: Discord.CommandInteraction) => {
+    run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
         const aurora = await database.Aurora.getOnlinePlayerData().catch(() => {}),
@@ -20,9 +25,9 @@ export default {
         await queue.init()
 
         const totalMax = (queue.nova.config?.maxcount ?? 200) + (queue.aurora.config?.maxcount ?? 200)
-        const embed = new Discord.EmbedBuilder()
+        const embed = new EmbedBuilder()
             .setTitle("Queue & Player Info")
-            .setColor(Discord.Colors.Green)
+            .setColor(Colors.Green)
             .addFields(
                 fn.embedField("Players In Queue", queue.get()),
                 fn.embedField("Total", `${queue.totalPlayers}/${totalMax}`),
