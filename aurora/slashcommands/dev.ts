@@ -67,8 +67,8 @@ export default {
                 ]})
             }
             case "stats": {
-                const oneMemberGuilds = await client.guilds.cache.filter(g => g.memberCount < 3)
-                return await interaction.reply({ content: `Guilds with less than one member: ${oneMemberGuilds.size}` })
+                const oneMemberGuilds = await client.guilds.cache.filter(g => g.memberCount < 10)
+                return await interaction.reply({ content: `Guilds with less than 10 members: ${oneMemberGuilds.size}` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Discord.Colors.Red)
