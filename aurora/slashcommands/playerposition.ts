@@ -8,27 +8,20 @@ import striptags from 'striptags'
 import * as db from "../../bot/utils/database.js"
 import * as fn from '../../bot/utils/fn.js'
 
-import { type OnlinePlayer } from "earthmc"
-type OP = OnlinePlayer & {
-    account: string
-}
-
 export default {
     name: "playerposition",
     description: "Get a players current location.",
 	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const player = interaction.options.getString("player")
-        if (!player) {
-            return interaction.reply({embeds: [new EmbedBuilder()
-                .setColor(Colors.Red)
-                .setTitle("Error while using /playerposition:")
-                .setDescription("Not enough arguments, please provide a valid playername.")
-                .setTimestamp()
-                .setFooter(fn.devsFooter(client))
-            ], ephemeral: true})
-        }
+        if (!player) return interaction.reply({embeds: [new EmbedBuilder()
+            .setColor(Colors.Red)
+            .setTitle("Error while using /playerposition:")
+            .setDescription("Not enough arguments, please provide a valid playername.")
+            .setTimestamp()
+            .setFooter(fn.devsFooter(client))
+        ], ephemeral: true})
 
-        const townyData = await db.Aurora.getOnlinePlayerData() as any
+        const townyData = await db.Aurora.getOnlinePlayerData()
         if (!townyData) return interaction.reply({embeds: [new EmbedBuilder()
             .setTimestamp()
             .setColor(Colors.Red)
@@ -38,7 +31,7 @@ export default {
             .setFooter(fn.devsFooter(client))
         ]}).then((m: any) => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const ops = townyData.players as OP[]
+        const ops = townyData.players
         const foundPlayer = ops.find(op => op.account.toLowerCase() == player.toLowerCase())
           
         if (foundPlayer && !fn.botDevs.includes(player.toLowerCase())) {
@@ -54,11 +47,11 @@ export default {
             }
 
             const locationEmbed = new EmbedBuilder()
-            .setTitle("Location Info | " + acc)
-            .setThumbnail(`https://crafatar.com/avatars/${acc}/256.png`)
-            .setColor(Colors.DarkVividPink)
-            .setTimestamp()
-            .setFooter(fn.devsFooter(client))
+                .setTitle("Location Info | " + acc)
+                .setThumbnail(`https://crafatar.com/avatars/${acc}/256.png`)
+                .setColor(Colors.DarkVividPink)
+                .setTimestamp()
+                .setFooter(fn.devsFooter(client))
                 
             const foundPlayerNickname = striptags(foundPlayer.name)
             if (acc !== foundPlayerNickname)

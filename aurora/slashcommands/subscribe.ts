@@ -1,52 +1,54 @@
-import Discord from 'discord.js'
+import {
+    type GuildMember, type Client,
+    ChatInputCommandInteraction,
+    Colors, EmbedBuilder, SlashCommandBuilder,
+    PermissionFlagsBits
+} from 'discord.js'
 
 import * as fn from '../../bot/utils/fn.js'
 
 import admin from 'firebase-admin'
 const FieldValue = admin.firestore.FieldValue
-const ManageMsgs = Discord.PermissionsBitField.Flags.ManageMessages
 
-const subscriptionSuccess = new Discord.EmbedBuilder()
+const subscriptionSuccess = new EmbedBuilder()
     .setTitle("Subscription Success!")
     .setTimestamp()
-    .setColor(Discord.Colors.Green)
+    .setColor(Colors.Green)
 
-const invalidUsage = new Discord.EmbedBuilder()
+const invalidUsage = new EmbedBuilder()
     .setTitle("Invalid Usage!")
     .setDescription("Usage: `/subscribe queue`, `/subscribe townless`")
     .setTimestamp()
-    .setColor(Discord.Colors.Red)
+    .setColor(Colors.Red)
 
 export default {
     name: "subscribe",
     description: "Subscribes a channel to receive live data.",
-    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         if (!interaction.guild) interaction.reply({embeds: [
-            new Discord.EmbedBuilder()
+            new EmbedBuilder()
             .setTitle("Error while using /sub:")
             .setDescription("You can't use `/sub` in a direct message!")
-            .setColor(Discord.Colors.Red)
+            .setColor(Colors.Red)
             .setTimestamp()], ephemeral: true
         })
 
-        const member = interaction.member as Discord.GuildMember
+        const member = interaction.member as GuildMember
         const channel = interaction.channel
 
-        if (!member.permissionsIn(channel).has(ManageMsgs)) {
-            return interaction.reply({embeds: [
-                new Discord.EmbedBuilder()
-                    .setDescription("<:red_tick:1036290475012915270> You need either the Manage Messages permission or the Manage Channels permission to subscribe!")
-                    .setColor(Discord.Colors.Red)
-                    .setTimestamp()
-                    .setFooter(fn.devsFooter(client))
-                ], ephemeral: true
-            })
+        if (!member.permissionsIn(channel).has(PermissionFlagsBits.ManageMessages)) {
+            return interaction.reply({embeds: [new EmbedBuilder()
+                .setDescription("<:red_tick:1036290475012915270> You need either the Manage Messages permission or the Manage Channels permission to subscribe!")
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setFooter(fn.devsFooter(client))
+            ], ephemeral: true})
         }
 
         const subCmd = interaction.options.getSubcommand()
-        if (!subCmd) return interaction.reply({ embeds: [
+        if (!subCmd) return interaction.reply({embeds: [
             invalidUsage.setFooter(fn.devsFooter(client))
-        ], ephemeral: true })
+        ], ephemeral: true})
 
         const channelID = channel.id
         const memberID = member.id
@@ -60,19 +62,19 @@ export default {
                     if (!doc.exists) return
                     
                     if (doc.data().channelIDs.includes(channelID)) return interaction.reply({embeds: [
-                        new Discord.EmbedBuilder()
+                        new EmbedBuilder()
                         .setTitle("Subscription Failed")
                         .setDescription("This channel is already subscribed to live queue updates.")
                         .setTimestamp()
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                     ], ephemeral: true})
 
                     await queueSubbedChannels.update({ channelIDs: FieldValue.arrayUnion(channelID) })
                     fn.queueSubbedChannelArray.push(channelID)
 
                     await interaction.channel.send({embeds: [
-                        new Discord.EmbedBuilder()
-                        .setColor(Discord.Colors.Green)
+                        new EmbedBuilder()
+                        .setColor(Colors.Green)
                         .setTitle("Live Queue Count")
                         .setDescription("This message will be edited shortly with queue updates.")
                         .setTimestamp()
@@ -92,16 +94,16 @@ export default {
                     if (!doc.exists) return
     
                     if (doc.data().channelIDs.includes(channelID)) return interaction.reply({embeds: [
-                        new Discord.EmbedBuilder()
+                        new EmbedBuilder()
                         .setTitle("Subscription Failed")
                         .setDescription("This channel is already subscribed to live townless players.")
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                         .setTimestamp()
                     ], ephemeral: true })
                   
-                    const embed = new Discord.EmbedBuilder()
+                    const embed = new EmbedBuilder()
                         .setDescription("This message will be edited shortly with townless players.")
-                        .setColor(Discord.Colors.DarkPurple)
+                        .setColor(Colors.DarkPurple)
                         .setTimestamp()
 
                     await interaction.channel.send({ embeds: [embed.setTitle("Live Townless Players (Nova)")] })
@@ -120,7 +122,7 @@ export default {
                 invalidUsage.setFooter(fn.devsFooter(client))
             ], ephemeral: true })
         }
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("subscribe")
         .setDescription("Subscribes a channel to feeds.")
         .addSubcommand(subCmd => subCmd.setName('queue').setDescription('Subscribes channel to receive live queue updates.'))

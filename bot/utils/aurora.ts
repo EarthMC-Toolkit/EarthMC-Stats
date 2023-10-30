@@ -4,6 +4,11 @@ import cache from 'memory-cache'
 import { request } from "undici"
 import { getFirestore } from 'firebase-admin/firestore'
 
+import { 
+    MapResponse,
+    type PlayersResponse 
+} from "earthmc"
+
 const db = () => getFirestore()
 const auroraDoc = () => db().collection("aurora").doc("data")
 
@@ -13,8 +18,15 @@ const townDataCollection = () => auroraDoc().collection("townData")
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
 
 const auroraUrl = 'https://earthmc.net/map/aurora/'
-const getTownyData = () => request(`${auroraUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`).then(res => res.body.json())
-const getOnlinePlayerData = () => request(`${auroraUrl}standalone/MySQL_update.php?world=earth`).then(res => res.body.json())
+const getTownyData = async () => {
+    const res = await request(`${auroraUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`)
+    return await res.body.json() as MapResponse
+}
+
+const getOnlinePlayerData = async () => {
+    const res = await request(`${auroraUrl}standalone/MySQL_update.php?world=earth`)
+    return await res.body.json() as PlayersResponse
+}
 
 async function getResidents() {
     return cache.get('aurora_residents') ?? residentDataCollection().get().then(async snapshot => { 
