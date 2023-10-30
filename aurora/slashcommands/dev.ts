@@ -81,4 +81,5 @@ export default {
         .addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
+        .addSubcommand(subCmd => subCmd.setName('stats').setDescription('See detailed bot statistics.'))
 }
