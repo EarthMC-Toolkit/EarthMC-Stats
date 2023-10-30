@@ -1,4 +1,8 @@
-import Discord from "discord.js"
+import { 
+    Client, ChatInputCommandInteraction,
+    GuildMember, Colors, EmbedBuilder,
+    SlashCommandBuilder
+} from "discord.js"
 
 import { Service } from 'koyeb.js'
 import * as fn from '../../bot/utils/fn.js'
@@ -12,17 +16,17 @@ export default {
     name: "dev",
     disabled: false,
     description: "Developer restricted commands for bot management.",
-    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const service = new Service(serviceID, process.env.AUTH_TOKEN),
-              embed = new Discord.EmbedBuilder()
+              embed = new EmbedBuilder()
 
-        const member = interaction.member as Discord.GuildMember
+        const member = interaction.member as GuildMember
 
         if (!fn.botDevs.includes(member.id)) {
             try {
                 const m = interaction.reply({embeds: [
                     embed.setTitle("Goofy ah :skull:")
-                    .setColor(Discord.Colors.Red)
+                    .setColor(Colors.Red)
                     .setTimestamp()
                     .setAuthor({ 
                         name: interaction.user.username, 
@@ -40,7 +44,7 @@ export default {
         switch(interaction.options.getSubcommand().toLowerCase()) {
             case "restart": {
                 await interaction.reply({embeds: [embed
-                    .setColor(Discord.Colors.Blue)
+                    .setColor(Colors.Blue)
                     .setTitle(":repeat: Re-deploying the bot service..")
                 ]})
 
@@ -48,7 +52,7 @@ export default {
             }
             case "resume": {
                 await interaction.reply({embeds: [embed
-                    .setColor(Discord.Colors.Green)
+                    .setColor(Colors.Green)
                     .setTitle(":white_check_mark: Bot service resumed.")
                 ]})
 
@@ -57,28 +61,39 @@ export default {
             case "pause": {
                 const paused = await service.pause()
                 if (!paused) return await interaction.reply({embeds: [embed
-                    .setColor(Discord.Colors.Red)
+                    .setColor(Colors.Red)
                     .setTitle("An error occurred while trying to pause the service!")
                 ]})
 
                 return await interaction.reply({embeds: [embed
-                    .setColor(Discord.Colors.Gold)
+                    .setColor(Colors.Gold)
                     .setTitle(":pause_button: Bot service paused.")
                 ]})
             }
-            case "stats": {
-                const oneMemberGuilds = await client.guilds.cache.filter(g => g.memberCount < 3)
-                return await interaction.reply({ content: `Guilds with less than one member: ${oneMemberGuilds.size}` })
+            case "purge": {
+                const guildsToLeave = client.guilds.cache.filter(g => g.memberCount < 5).map(g => g.id)
+                let leaveCounter = 0
+                
+                await interaction.deferReply()
+
+                guildsToLeave.forEach(async id => {
+                    const guild = await client.guilds.fetch(id)
+                    const left = await guild.leave().then(() => true)
+                    if (left) leaveCounter++
+                })
+
+                return await interaction.editReply({ content: `Left ${leaveCounter} guilds.` })
             }
             default: return await interaction.reply({embeds: [embed
-                .setColor(Discord.Colors.Red)
+                .setColor(Colors.Red)
                 .setTitle("Invalid Arguments")
                 .setDescription("Arguments: `pause`, `resume`, `restart`")
             ], ephemeral: true })
         }
-    }, data: new Discord.SlashCommandBuilder().setName("dev")
+    }, data: new SlashCommandBuilder().setName("dev")
         .setDescription("Manage bot services.")
         .addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
+        .addSubcommand(subCmd => subCmd.setName('purge').setDescription('Leaves all guilds with 4 or less members.'))
 }
