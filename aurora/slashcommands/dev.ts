@@ -70,14 +70,14 @@ export default {
                 ]})
             }
             case "purge": {
+                await interaction.deferReply()
+
                 const guildsToLeave = client.guilds.cache.filter(g => g.memberCount < 5).map(g => g.id)
                 let leaveCounter = 0
-                
-                await interaction.deferReply()
 
                 guildsToLeave.forEach(async id => {
                     const guild = await client.guilds.fetch(id)
-                    const left = await guild.leave().then(() => true)
+                    const left = await guild.leave().then(() => true).catch(console.log)
                     if (left) leaveCounter++
                 })
 
