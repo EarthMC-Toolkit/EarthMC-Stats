@@ -350,7 +350,7 @@ function extractTownData(towns: any[]) {
 
 function sendList(
     client: Discord.Client, 
-    interaction: Discord.CommandInteraction, 
+    interaction: Discord.ChatInputCommandInteraction, 
     comparator: string, 
     towns: any[]
 ) {

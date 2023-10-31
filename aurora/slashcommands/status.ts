@@ -1,4 +1,9 @@
-import Discord from "discord.js"
+import {
+    type Client,
+    ChatInputCommandInteraction,
+    Colors, EmbedBuilder
+} from "discord.js"
+
 import { MojangLib } from 'earthmc'
 
 import * as fn from '../../bot/utils/fn.js'
@@ -9,12 +14,12 @@ const status = data => !data ? "Offline :red_circle:" : "Online :green_circle:"
 export default {
     name: "status",
     description: "Displays the current server status.",
-    run: async (client: Discord.Client, interaction: Discord.CommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const embed = new Discord.EmbedBuilder()
+        const embed = new EmbedBuilder()
             .setTitle("EarthMC Status Overview")
-            .setColor(Discord.Colors.Green)
+            .setColor(Colors.Green)
             .setThumbnail("https://cdn.discordapp.com/attachments/586135349978333194/672542598354698273/emclogo.png")
             .setFooter(fn.devsFooter(client))
             .setTimestamp()

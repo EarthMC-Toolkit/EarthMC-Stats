@@ -1,29 +1,35 @@
-import Discord from "discord.js"
+import {
+    type GuildMember,
+    type CommandInteractionOptionResolver,
+    ChatInputCommandInteraction,
+    Colors, EmbedBuilder, SlashCommandBuilder
+} from "discord.js"
+
 import * as database from '../../bot/utils/database.js'
 import * as fn from '../../bot/utils/fn.js'
 import AllianceModal from '../../bot/objects/AllianceModal.js'
 
 const editingChannels = ["971408026516979813"]
 
-const checkEditor = async (interaction: Discord.ChatInputCommandInteraction) => {
-    const author = interaction.member as Discord.GuildMember
+const checkEditor = async (interaction: ChatInputCommandInteraction) => {
+    const author = interaction.member as GuildMember
         
     const isEditor = editingChannels.includes(interaction.channelId) && 
           author.roles.cache.has('966359842417705020')
 
     if (!fn.botDevs.includes(author.id) && !isEditor) {
-        return interaction.reply({embeds: [new Discord.EmbedBuilder()
+        return interaction.reply({embeds: [new EmbedBuilder()
             .setTitle("That command is for editors only!\nIf you are an editor, you're probably in the wrong channel.")
             .setAuthor({ name: author.user.username, iconURL: author.displayAvatarURL() })
-            .setColor(Discord.Colors.Red)
+            .setColor(Colors.Red)
             .setTimestamp()
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
     }
 }
 
-const getAlliance = async (options: Discord.CommandInteractionOptionResolver, skipCache = true) => {
-    const map = options.getString('map').toLowerCase() == 'nova' ? database.Nova : database.Aurora,
-          input = options.getString('name').toLowerCase()
+const getAlliance = async (options: CommandInteractionOptionResolver, skipCache = true) => {
+    const map = options.getString('map').toLowerCase() == 'nova' ? database.Nova : database.Aurora
+    const input = options.getString('name').toLowerCase()
 
     const alliances = await map.getAlliances(skipCache).catch(console.error)
     return alliances?.find(a => a.allianceName.toLowerCase() == input) ?? null
@@ -31,8 +37,8 @@ const getAlliance = async (options: Discord.CommandInteractionOptionResolver, sk
 
 export default {
     name: "alliance",
-    run: async (client, interaction) => {
-        const opts = interaction.options
+    run: async (_, interaction: ChatInputCommandInteraction) => {
+        const opts = interaction.options as CommandInteractionOptionResolver
         const cmd = opts.getSubcommand().toLowerCase()
 
         await checkEditor(interaction) 
@@ -42,8 +48,8 @@ export default {
             case "create": {
                 // Make sure it doesn't exist already.
                 if (foundAlliance) return interaction.reply({embeds: [
-                    new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Red)
+                    new EmbedBuilder()
+                    .setColor(Colors.Red)
                     .setTitle("Error creating alliance!")
                     .setDescription("That alliance already exists.\nChoose another name or disband/rename the current one.")
                     .setTimestamp()
@@ -55,8 +61,8 @@ export default {
             case "edit": {
                 // Make sure it exists already.
                 if (!foundAlliance) return interaction.reply({embeds: [
-                    new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Red)
+                    new EmbedBuilder()
+                    .setColor(Colors.Red)
                     .setTitle("Error editing alliance!")
                     .setDescription("That alliance does not exist.")
                     .setTimestamp()
@@ -79,7 +85,7 @@ export default {
 
         // Handle success message
 
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("alliance")
         .setDescription("Used by editors to create or update an alliance.")
         .addSubcommand(subCmd => subCmd.setName('create').setDescription('Create a new alliance.')

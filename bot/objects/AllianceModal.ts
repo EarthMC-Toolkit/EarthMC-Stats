@@ -54,7 +54,7 @@ class AllianceModal extends Discord.ModalBuilder {
         return new Discord.ActionRowBuilder().addComponents(comp)
     }
 
-    show = (interaction: Discord.CommandInteraction) => {
+    show = (interaction: Discord.ChatInputCommandInteraction) => {
         console.log(`Showing creation wizard for ${this.alliance.name}`)
 
         const key = interaction.member.user.id

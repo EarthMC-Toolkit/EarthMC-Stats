@@ -63,7 +63,7 @@ async function sendAlliances() {
 //     })
 // })//.catch(console.log)
 
-const get = endpoint => request(`https://emctoolkit.vercel.app/api/${endpoint}`).then(res => res.body.json())
+const get = endpoint => fn.jsonReq(`https://emctoolkit.vercel.app/api/${endpoint}`)
 export {
     replaceWithUnix,
     sendNews, sendAlliances,
