@@ -20,7 +20,6 @@ export default {
     description: "Command used to link a player's Discord to their Minecraft username.",
     slashCommand: true,
     aliases: ["unlink"],
-
 	run: async (_: Discord.Client, message: Discord.Message, args: string[]) => {
         if (!fn.botDevs.includes(message.author.id)) return
         

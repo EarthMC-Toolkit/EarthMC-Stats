@@ -1,4 +1,8 @@
-// Util module for interacting with Firestore
+/**
+* @file Util module for interacting with Firestore
+* @author Owen3H
+*/
+
 import * as fn from "./fn.js"
 import cache from 'memory-cache'
 import { request } from "undici"
@@ -166,7 +170,7 @@ async function getAlliances(skipCache = false) {
 
     return skip ?? allianceCollection().get().then(async doc => { 
         return doc.data().allianceArray 
-    }).catch(() => {})
+    }).catch(() => null)
 }
 
 async function setAlliances(alliances: any[]) {

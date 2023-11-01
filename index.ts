@@ -3,7 +3,13 @@ import fs from "fs"
 import dotenv from 'dotenv'
 dotenv.config()
 
-import Discord, { TextChannel } from "discord.js"
+import { 
+    Client, IntentsBitField,
+    TextChannel, Collection,
+    ActivityType, Colors,
+    EmbedBuilder, Message,
+    ContextMenuCommandBuilder
+} from "discord.js"
 
 import * as emc from "earthmc"
 import * as fn from "./bot/utils/fn.js"
@@ -13,6 +19,7 @@ import Queue from "./bot/objects/Queue.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore'
+import { Button } from "./bot/types.js"
 
 const prod = process.env.PROD == "true"
 //#endregion
@@ -20,7 +27,7 @@ const prod = process.env.PROD == "true"
 //#region Initialize Discord
 console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
 
-const Flags = Discord.IntentsBitField.Flags
+const Flags = IntentsBitField.Flags
 const intents = [ 
     Flags.Guilds, 
     Flags.GuildMessages, 
@@ -30,12 +37,12 @@ const intents = [
     Flags.MessageContent
 ]
 
-const client = new Discord.Client({ intents, allowedMentions: { repliedUser: false } })
+const client = new Client({ intents, allowedMentions: { repliedUser: false } })
 
 client.login(process.env.DISCORD_BOT_TOKEN).then(t => {
-    client['slashCommands'] = new Discord.Collection()
-    client['auroraCommands'] = new Discord.Collection()
-    client['novaCommands'] = new Discord.Collection()
+    client['slashCommands'] = new Collection()
+    client['auroraCommands'] = new Collection()
+    client['novaCommands'] = new Collection()
 
     console.log("Logged into Discord with token: " + t)
 }).catch(console.error)
@@ -118,7 +125,7 @@ client.once('ready', async () => {
     setInterval(() => {
         const randomNum = fn.random(watchingActivities, lastActivity)
         client.user.setActivity(watchingActivities[randomNum], { 
-            type: Discord.ActivityType.Watching 
+            type: ActivityType.Watching 
         })
 
         lastActivity = randomNum
@@ -396,11 +403,11 @@ const filterLiveEmbeds = (arr, map: string) => {
     )
 }
 
-const editEmbed = (msg: Discord.Message, arr: any[], mapName: string) => {
+const editEmbed = (msg: Message, arr: any[], mapName: string) => {
     const names = arr.map(player => player.name).join('\n')
-    const newEmbed = new Discord.EmbedBuilder()
+    const newEmbed = new EmbedBuilder()
         .setTitle(`Live Townless Players (${mapName})`)
-        .setColor(Discord.Colors.DarkPurple)
+        .setColor(Colors.DarkPurple)
         .setFooter(fn.devsFooter(client))
         .setTimestamp()
 
@@ -468,10 +475,10 @@ async function liveQueue() {
     const queue = new Queue(server, aurora, nova)
     await queue.init()
 
-    const embed = new Discord.EmbedBuilder()
+    const embed = new EmbedBuilder()
         .setTitle("Queue & Player Info | Live")
         .setThumbnail(client.user.avatarURL())
-        .setColor(Discord.Colors.Green)
+        .setColor(Colors.Green)
 
     const totalMax = (queue.nova.config?.maxcount ?? 100) + (queue.aurora.config?.maxcount ?? 250)
     embed.addFields(
@@ -595,13 +602,13 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
             const route = await emc.Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
             const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`
 
-            const fallenTownEmbed = new Discord.EmbedBuilder()
+            const fallenTownEmbed = new EmbedBuilder()
                 .setTitle("A town has fallen!")
                 .setDescription(desc)
                 .setFooter(fn.devsFooter(client))
                 .setThumbnail('attachment://aurora.png')
                 .setTimestamp()
-                .setColor(Discord.Colors.Green)
+                .setColor(Colors.Green)
                 .addFields(fn.embedField("Town Name", town.name + (town.capital ? " :star:" : ""), true))
 
             if (town.nation != "No Nation") 
@@ -670,6 +677,20 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
 //#endregion
 
 //#region Registry
+async function registerButtons() {
+    client['buttons'] = new Collection()
+    const buttons = fs.readdirSync('./aurora/buttons').filter(file => file.endsWith('.ts'))
+
+    for (const file of buttons) {
+        const buttonFile = await import(`./aurora/buttons/${file}`)
+        const button = buttonFile.default as Button
+
+        if (button.name) {
+            client['buttons'].set(button.name)
+        }
+    }
+}
+
 async function registerCommands() {
     console.log("Registering commands..")
 
@@ -680,7 +701,7 @@ async function registerCommands() {
 
     for (const file of auroraCmds) {
         const command = await import(`./aurora/commands/${file}`).then(cmd => cmd.default)
-
+ 
         if (!command.disabled) 
             client['auroraCommands'].set(command.name, command)
     }
@@ -707,7 +728,7 @@ async function registerCommands() {
         }
     }
 
-    const linkAction = new Discord.ContextMenuCommandBuilder().setName("Link User").setType(2) 
+    const linkAction = new ContextMenuCommandBuilder().setName("Link User").setType(2) 
     data.push(linkAction)
 
     if (prod) await client.application.commands.set(data)

@@ -309,7 +309,7 @@ export default {
                                                  .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
                                 }
                                 
-                                return m.edit({embeds: [allianceEmbed]})
+                                return m.edit({ embeds: [allianceEmbed] })
                             })
                         }
                     })
@@ -382,14 +382,14 @@ export default {
                         }
                     })
                 } else if (arg1 == "set") {
-                    if (!arg2) {
-                        return m.edit({embeds: [
-                            new Discord.EmbedBuilder()
-                            .setTitle(`Please provide a valid option for this command.\nChoices: Leader, Discord, Type or Image/Flag.`)
-                            .setTimestamp()
-                            .setColor(Discord.Colors.Red)
-                        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                    } else if (arg2 == "leader") {
+                    if (!arg2) return m.edit({embeds: [
+                        new Discord.EmbedBuilder()
+                        .setTitle(`Please provide a valid option for this command.\nChoices: Leader, Discord, Type or Image/Flag.`)
+                        .setTimestamp()
+                        .setColor(Discord.Colors.Red)
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                    
+                    if (arg2 == "leader") {
                         database.Aurora.getAlliances().then(async alliances => {
                             const allianceName = args[2],
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -525,11 +525,11 @@ export default {
                             await database.Aurora.setAlliances(alliances)
                             
                             return m.edit({embeds: [new Discord.EmbedBuilder()
-                                    .setTitle("Alliance Updated | " + name(foundAlliance))
-                                    .setDescription(desc)
-                                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                    .setColor(Discord.Colors.DarkBlue)
-                                    .setTimestamp()]
+                                .setTitle("Alliance Updated | " + name(foundAlliance))
+                                .setDescription(desc)
+                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                                .setColor(Discord.Colors.DarkBlue)
+                                .setTimestamp()]
                             }).catch(() => {})
                         })
                     } else if (arg2 == "colours" || arg2 == "colors") {
@@ -538,12 +538,12 @@ export default {
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
     
                             if (!foundAlliance) return m.edit({embeds: [
-                                    new Discord.EmbedBuilder()
-                                    .setTitle("Error updating alliance")
-                                    .setDescription("That alliance does not exist!")
-                                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                    .setColor(Discord.Colors.Red)
-                                    .setTimestamp()]
+                                new Discord.EmbedBuilder()
+                                .setTitle("Error updating alliance")
+                                .setDescription("That alliance does not exist!")
+                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                                .setColor(Discord.Colors.Red)
+                                .setTimestamp()]
                             }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
                             foundAlliance.colours = { 
@@ -661,9 +661,10 @@ export default {
                         .setColor(Discord.Colors.Red)
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                    const alliances = await database.Aurora.getAlliances(),
-                          len = backupData.length,
-                          restored = []
+                    const len = backupData.length
+                    const restored = []
+                    
+                    const alliances = await database.Aurora.getAlliances()
 
                     for (let i = 0; i < len; i++) { 
                         const alliance = backupData[i]
@@ -685,7 +686,8 @@ export default {
                         .setTimestamp()
                     ]}).catch(() => {})
                 }
-                else return m.edit({embeds: [new Discord.EmbedBuilder()
+                
+                return m.edit({embeds: [new Discord.EmbedBuilder()
                     .setTitle("Invalid Usage!")
                     .setDescription("Invalid dev argument: `" + args[0] + "`")
                     .setTimestamp()
@@ -780,38 +782,13 @@ async function sendAllianceList(client, message, m, args, type) {
                         .setColor(Discord.Colors.Red)
                         .setTimestamp()
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                } else {
-                    const botembed = []
-
-                    const type = (a) => a.type == 'mega' ? 'Meganation' : a.type == 'sub' ? 'Sub-Meganation' : 'Normal'
-                    const allData = foundAlliances.map(alliance => 
-                        "**" + name(alliance) + "**" + " (" + type(alliance) + ")" +
-                        "```Leader(s): " + alliance.leaderName + 
-                        "``````Nation(s): " + alliance.nations.length +
-                        "``````Towns: " + alliance.towns +
-                        "``````Residents: " + alliance.residents + 
-                        "``````Area: " + alliance.area + 
-                        "``````Discord Link: " + alliance.discordInvite + "```").join('\n').match(/(?:^.*$\n?){1,3}/mg)
-
-                    const len = allData.length
-                    for (let i = 0; i < len; i++) {
-                        botembed[i] = new Discord.EmbedBuilder()
-                        .setColor(Discord.Colors.DarkBlue)
-                        .setTitle("List of Alliances")
-                        .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                        .setDescription(allData[i])
-                        .setTimestamp()
-                        .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
-                    }
-
-                    return await m.edit({embeds: [botembed[0]]}).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
                 }
-            } else {
+
                 const botembed = []
 
                 const type = (a) => a.type == 'mega' ? 'Meganation' : a.type == 'sub' ? 'Sub-Meganation' : 'Normal'
-                const allData = alliances.map((alliance, index) => 
-                    (index + 1) + ". **" + name(alliance) + "**" + " (" + type(alliance) + ")" +
+                const allData = foundAlliances.map(alliance => 
+                    "**" + name(alliance) + "**" + " (" + type(alliance) + ")" +
                     "```Leader(s): " + alliance.leaderName + 
                     "``````Nation(s): " + alliance.nations.length +
                     "``````Towns: " + alliance.towns +
@@ -832,6 +809,31 @@ async function sendAllianceList(client, message, m, args, type) {
 
                 return await m.edit({embeds: [botembed[0]]}).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
             }
+
+            const botembed = []
+
+            const type = (a) => a.type == 'mega' ? 'Meganation' : a.type == 'sub' ? 'Sub-Meganation' : 'Normal'
+            const allData = alliances.map((alliance, index) => 
+                (index + 1) + ". **" + name(alliance) + "**" + " (" + type(alliance) + ")" +
+                "```Leader(s): " + alliance.leaderName + 
+                "``````Nation(s): " + alliance.nations.length +
+                "``````Towns: " + alliance.towns +
+                "``````Residents: " + alliance.residents + 
+                "``````Area: " + alliance.area + 
+                "``````Discord Link: " + alliance.discordInvite + "```").join('\n').match(/(?:^.*$\n?){1,3}/mg)
+
+            const len = allData.length
+            for (let i = 0; i < len; i++) {
+                botembed[i] = new Discord.EmbedBuilder()
+                .setColor(Discord.Colors.DarkBlue)
+                .setTitle("List of Alliances")
+                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                .setDescription(allData[i])
+                .setTimestamp()
+                .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
+            }
+
+            return await m.edit({embeds: [botembed[0]]}).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
             //#endregion
         })
     })

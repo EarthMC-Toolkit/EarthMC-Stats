@@ -2,18 +2,22 @@ import * as fn from '../../bot/utils/fn.js'
 import * as emc from "earthmc"
 import * as database from "../../bot/utils/database.js"
 
-import Discord from "discord.js"
+import {
+    type Client,
+    ChatInputCommandInteraction,
+    Colors, EmbedBuilder, SlashCommandBuilder
+} from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 export default {
     name: "town",
     description: "Displays info for a town.",
-    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         if (!interaction.options.getSubcommand()) {
             return await interaction.reply({embeds: [
-                new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.Red)
+                new EmbedBuilder()
+                .setColor(Colors.Red)
                 .setTitle("Command Usage")
                 .setDescription("`/town <name>`, `/town list` or `/town activity <name>`")
             ], ephemeral: true})
@@ -29,10 +33,11 @@ export default {
                 return t
             })
 
-            const townEmbed = new Discord.EmbedBuilder(),
+            const townEmbed = new EmbedBuilder(),
                   nameArg = interaction.options.getString("name")
 
-            if (interaction.options.getSubcommand() == "list") {
+            const subCmdName = interaction.options.getSubcommand().toLowerCase()
+            if (subCmdName == "list") {
                 const args2 = interaction.options.getString("comparator")
                 if (!args2) return sendList(client, interaction, null, towns) // Regular '/town list'
                     
@@ -89,30 +94,20 @@ export default {
                 else if (comparator == "chunks" || comparator == "land" ||  comparator == "area") 
                     towns.sort((a, b) => { return b.area - a.area}) 
                 else if (comparator == "name" || comparator == "alphabetical") {
-                    towns.sort((a, b) => {      
-                        const [aName, bName] = [a.name.toLowerCase(), b.name.toLowerCase()]                 
-                        if (bName < aName) return 1
-                        if (bName > aName) return -1
-                        
-                        const [aResLen, bResLen] = [a.residents.length, b.residents.length]
-                        if (bResLen > aResLen) return 1
-                        if (bResLen < aResLen) return -1
-
-                        const [aArea, bArea] = [a.area, b.area]
-                        if (bArea > aArea) return 1
-                        if (bArea < aArea) return -1
-
-                        return 0
-                    })
+                    fn.sortByOrder(towns, [
+                        { key: "name", callback: k => k.toLowerCase() },
+                        { key: "residents", callback: arr => arr.length },
+                        { key: "area" }
+                    ])
                 }
                 else { // /t list <nation>
                     const nation = towns.some(town => town.nation.toLowerCase() == comparator)
                     
                     if (!nation) return interaction.editReply({embeds: [
-                        new Discord.EmbedBuilder()
+                        new EmbedBuilder()
                             .setTitle("Invalid town name!")
                             .setDescription(comparator + " doesn't seem to be a valid town name, please try again.")
-                            .setTimestamp().setColor(Discord.Colors.Red)
+                            .setTimestamp().setColor(Colors.Red)
                         ], //ephemeral: true 
                     })
                         
@@ -121,14 +116,14 @@ export default {
                     towns = fn.defaultSort(towns)
                 }
             }
-            else if (interaction.options.getSubcommand() == "activity" && nameArg != null) {  
+            else if (subCmdName == "activity" && nameArg != null) {  
                 const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
 
                 if (!town) return interaction.editReply({embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                         .setTitle("Invalid town name!")
                         .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
-                        .setTimestamp().setColor(Discord.Colors.Red)
+                        .setTimestamp().setColor(Colors.Red)
                     ], //ephemeral: true
                 })
 
@@ -169,14 +164,14 @@ export default {
                         .editInteraction(interaction)
                 })
             }
-            else if (interaction.options.getSubcommand() == "lookup") { // /t <town>
+            else if (subCmdName == "lookup") { // /t <town>
                 const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
 
                 if (!town) return await interaction.editReply({embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                         .setTitle("Invalid town name!")
                         .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
-                        .setTimestamp().setColor(Discord.Colors.Red)
+                        .setTimestamp().setColor(Colors.Red)
                     ], //ephemeral: true
                 })
 
@@ -191,9 +186,9 @@ export default {
                     return t instanceof emc.NotFoundError ? null : t.colourCodes
                 })
 
-                const colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+                const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                 
-                townEmbed.setColor(town.ruined ? Discord.Colors.Orange : colour)
+                townEmbed.setColor(town.ruined ? Colors.Orange : colour)
                 townEmbed.setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
                 
                 const townNation = await database.Aurora.getNation(town.nation).catch(() => {}) ?? await emc.Aurora.Nations.get(town.nation),
@@ -222,8 +217,8 @@ export default {
                         ))   
                     }
 
-                    const nationString = !townNation?.discord || townNation.discord == "" 
-                        ? town.nation : "[" + townNation.name + "]" + "(" + townNation.discord + ")"
+                    const disc = townNation?.discord
+                    const nationString = !disc ? town.nation : `[${townNation.name}](${disc})`
                          
                     townEmbed.addFields(fn.embedField("Nation", nationString, true))
                 }
@@ -258,7 +253,7 @@ export default {
                             townEmbed.addFields(fn.embedField(
                                 `Residents [${townResidentsLength}]`, 
                                 "```" + town.residents.join(", ") + "```"
-                            )) 
+                            ))
                         }    
                         else townEmbed.addFields(fn.embedField("Residents", townResidentsLength.toString()))
                     } 
@@ -299,30 +294,31 @@ export default {
                     ${town.fire ? green : red } Fire Spread
                 `))
 
-                interaction.editReply({embeds: [townEmbed], files: [fn.AURORA.thumbnail]})
-            } else {
-                return await interaction.editReply({embeds: [
-                    new Discord.EmbedBuilder()
-                        .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
-                        .setFooter(fn.devsFooter(client))
-                        .setTimestamp()
-                        .setColor(Discord.Colors.Red)
-                    ], //ephemeral: true
+                return interaction.editReply({
+                    embeds: [townEmbed],
+                    files: [fn.AURORA.thumbnail]
                 })
             }
+
+            return await interaction.editReply({embeds: [new EmbedBuilder()
+                .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
+                .setFooter(fn.devsFooter(client))
+                .setTimestamp()
+                .setColor(Colors.Red)
+            ]})
         })
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("town")
         .setDescription("Displays info for a town.")
-        .addSubcommand(subcommand => subcommand
+        .addSubcommand(subCmd => subCmd
             .setName('lookup')
             .setDescription('Get detailed information for a town')
             .addStringOption(option => option.setName("name").setDescription("The name of the town to lookup.").setRequired(true)))
-        .addSubcommand(subcommand => subcommand
+        .addSubcommand(subCmd => subCmd
             .setName('activity')
             .setDescription('Gets activity data for members of a town.')
             .addStringOption(option => option.setName("name").setDescription("The name of the town to get activity data for.").setRequired(true)))              
-        .addSubcommand(subcommand => subcommand
+        .addSubcommand(subCmd => subCmd
             .setName('list')
             .setDescription('List towns using various comparators.')
             .addStringOption(option => option.setName("comparator").setDescription("The comparator to use which the list will be filtered by.")))
@@ -349,8 +345,8 @@ function extractTownData(towns: any[]) {
 }
 
 function sendList(
-    client: Discord.Client, 
-    interaction: Discord.ChatInputCommandInteraction, 
+    client: Client, 
+    interaction: ChatInputCommandInteraction, 
     comparator: string, 
     towns: any[]
 ) {
