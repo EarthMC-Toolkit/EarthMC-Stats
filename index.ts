@@ -53,7 +53,8 @@ client.login(process.env.DISCORD_BOT_TOKEN).then(t => {
 //#endregion
 
 //#region Firebase Setup
-initializeApp({ credential: cert({
+initializeApp({
+    credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
@@ -61,7 +62,6 @@ initializeApp({ credential: cert({
 })
    
 const db = getFirestore() // THIS HAS TO BE AFTER initializeApp()
-
 db.settings({ ignoreUndefinedProperties: true })
 //#endregion
 
