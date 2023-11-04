@@ -16,8 +16,7 @@ export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
 const getPlayers = async (skipCache=false) => {
-    const cached = cache.get('players'),
-          skip = !skipCache ? cached : null
+    const skip = !skipCache ? cache.get('players') : null
 
     return skip ?? playerCollection().get().then(async snapshot => { 
         return snapshot.docs.flatMap(doc => doc.data().playerArray)

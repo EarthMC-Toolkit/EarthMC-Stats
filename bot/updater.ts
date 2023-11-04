@@ -1,144 +1,20 @@
-//#region Imports
-import fs from "fs"
-import dotenv from 'dotenv'
-dotenv.config()
+import * as emc from "earthmc"
+import * as api from "../bot/utils/api.js"
+import * as database from "../bot/utils/database.js"
+import * as fn from "../bot/utils/fn.js"
+
+import Queue from "./objects/Queue.js"
+
+import { prod, client, AURORA, NOVA } from "./constants.js"
+import { FieldValue, Timestamp } from "firebase-admin/firestore"
 
 import { 
-    Client, IntentsBitField,
-    TextChannel, Collection,
-    ActivityType, Colors,
-    EmbedBuilder, Message,
-    ContextMenuCommandBuilder
+    Colors, EmbedBuilder, 
+    Message, TextChannel
 } from "discord.js"
 
-import * as emc from "earthmc"
-import * as fn from "./bot/utils/fn.js"
-import * as database from "./bot/utils/database.js"
-import * as api from "./bot/utils/api.js"
-import Queue from "./bot/objects/Queue.js"
-
-import { initializeApp, cert } from 'firebase-admin/app'
-import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore'
-
-import { setClient, setProduction } from "./bot/constants.js"
-//import { Button } from "./bot/types.js"
-
-const prod = process.env.PROD == "true"
-setProduction(prod)
-
-console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
-//#endregion
-
-//#region Initialize Discord
-const Flags = IntentsBitField.Flags
-const intents = [ 
-    Flags.Guilds, 
-    Flags.GuildMessages, 
-    Flags.GuildMembers,
-    Flags.DirectMessages, 
-    Flags.DirectMessageReactions,
-    Flags.MessageContent
-]
-
-const client = new Client({ intents, allowedMentions: { repliedUser: false } })
-setClient(client)
-
-client.login(process.env.DISCORD_BOT_TOKEN).then(t => {
-    client['slashCommands'] = new Collection()
-    client['auroraCommands'] = new Collection()
-    client['novaCommands'] = new Collection()
-
-    console.log("Logged into Discord with token: " + t)
-}).catch(console.error)
-//#endregion
-
-//#region Firebase Setup
-initializeApp({ credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
-    }) 
-})
-   
-const db = getFirestore() // THIS HAS TO BE AFTER initializeApp()
-
-db.settings({ ignoreUndefinedProperties: true })
-//#endregion
-
-//#region Initialize Variables
-const queueSubbedChannels = db.collection("subs").doc("queue")
-const townlessSubbedChannels = db.collection("subs").doc("townless")
-
-const NOVA = { 
-    emc: emc.Nova, 
-    db: database.Nova 
-}
-
-const AURORA = { 
-    emc: emc.Aurora, 
-    db: database.Aurora 
-}
-//#endregion
-
-//#region Event Handler
-const eventFiles = fs.readdirSync('./bot/events').filter(file => file.endsWith('.ts'))
-
-for (const file of eventFiles) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const event = await import(`./bot/events/${file}`).then(ev => ev.default) as any
-
-	if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
-    else client.on(event.name, (...args) => event.execute(...args))
-}
-//#endregion
-
-//#region Client Events
-let lastActivity = -1
-
-client.once('ready', async () => {
-    console.log(`${fn.time()} | ${client.user.username} is up!`)
-    client.user.setPresence({ activities: [{ name: 'Startup Complete!' }], status: 'online' })
-
-    registerCommands()
-
-    const watchingActivities = [
-        `${client.guilds.cache.size} Servers`, 'towns being created.',
-        'emctoolkit.vercel.app', 'for Dynmap updates', 
-        'for /help', 'nations grow!', 'Wales boat sink'
-    ]
-
-    if (prod) {
-        console.log("Production enabled, initializing data updates..")
-        await initUpdates()
-
-        queueSubbedChannels.get().then(doc => { 
-            const { channelIDs } = doc.data()
-            fn.setQueueSubbedChannels(channelIDs)
-
-            console.log(`${fn.time()} | Queue subbed channels retrieved. Length: ${channelIDs.length}`)
-        })
-
-        townlessSubbedChannels.get().then(doc => { 
-            const { channelIDs } = doc.data()
-            fn.setTownlessSubbedChannels(channelIDs)
-
-            console.log(`${fn.time()} | Townless subbed channels retrieved. Length: ${channelIDs.length}`)
-        })
-    }
-
-    setInterval(() => {
-        const randomNum = fn.random(watchingActivities, lastActivity)
-        client.user.setActivity(watchingActivities[randomNum], { 
-            type: ActivityType.Watching 
-        })
-
-        lastActivity = randomNum
-    }, 30*1000)
-})
-//#endregion
-
 //#region Call Updates
-async function initUpdates() {
+async function init() {
     const oneMinute = 60 * 1000
 
     // Pre-fill everything but news.
@@ -193,63 +69,11 @@ async function updateMap(players: any[], map: { emc: emc.Map, db: any }) {
 }
 //#endregion
 
-//#region Helper Methods
-const purged = (timestamp: { seconds }, now: Date) => {
-    const loDate = new Date(timestamp.seconds * 1000)
-    const days = fn.daysBetween(loDate, now)
-
-    return days > 35
-}
-
-const latinize = (str: string) => emc.formatString(str, true)
-
-async function purgeInactive(players: any[]) {
-    const now = new Date()
-    const len = players.length
-
-    let i = 0, counter = 0
-
-    //#region Purge loop
-    for (i; i < len; i++) {
-        const player = players[i]
-        const lo = player?.lastOnline
-
-        if (!lo) {
-            players.splice(i, 1)
-            counter++
-
-            continue
-        }
-
-        // Player's discord is null or empty, delete it.
-        // If not, don't purge them.
-        if (!player?.linkedID) delete player.linkedID
-        else continue
-
-        //#region Purge if inactive on both maps.
-        if (lo.aurora && !purged(lo.aurora, now)) continue
-        if (lo.nova && !purged(lo.nova, now)) continue
-
-        players.splice(i, 1)
-        counter++
-        //#endregion
-    }
-    //#endregion
-
-    console.log(`Purged ${counter} inactive/corrupted players.`)
-    await database.setPlayers(players)
-
-    return players
-}
-//#endregion
-
 //#region Database Update Methods
 async function updateAPI(news, alliances) {
     if (alliances) await api.sendAlliances()
     if (news) await updateNews()
 }
-
-const exists = (name, obj, key='nations') => obj[key].includes(name)
 
 async function updateAlliances(map: { emc: emc.Map, db: any }) {
     const nations = await map.emc.Nations.all()
@@ -519,7 +343,7 @@ async function liveQueue() {
                     msg.author.id == "656231016385478657"
                 )
 
-                queueEmbedArray.forEach(qMsg => qMsg.edit({embeds: [embed]}).catch(() => {}))
+                queueEmbedArray.forEach(m => m.edit({ embeds: [embed] }).catch(() => {}))
             }).catch(() => {})
         }
     }
@@ -680,75 +504,58 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
 }
 //#endregion
 
-//#region Registry
-// async function registerButtons() {
-//     client['buttons'] = new Collection()
-//     const buttons = fs.readdirSync('./aurora/buttons').filter(file => file.endsWith('.ts'))
+//#region Helper Methods
+const exists = (name, obj, key='nations') => obj[key].includes(name)
 
-//     for (const file of buttons) {
-//         const buttonFile = await import(`./aurora/buttons/${file}`)
-//         const button = buttonFile.default as Button
+const purged = (timestamp: { seconds }, now: Date) => {
+    const loDate = new Date(timestamp.seconds * 1000)
+    const days = fn.daysBetween(loDate, now)
 
-//         if (button.name) {
-//             client['buttons'].set(button.name)
-//         }
-//     }
-// }
+    return days > 35
+}
 
-async function registerCommands() {
-    console.log("Registering commands..")
+const latinize = (str: string) => emc.formatString(str, true)
 
-    const data = [],
-          slashCommands = fs.readdirSync('./aurora/slashcommands').filter(file => file.endsWith('.ts')),
-          auroraCmds = fs.readdirSync('./aurora/commands').filter(file => file.endsWith('.ts')),
-          novaCmds = fs.readdirSync('./nova/commands').filter(file => file.endsWith('.ts'))
+async function purgeInactive(players: any[]) {
+    const now = new Date()
+    const len = players.length
 
-    for (const file of auroraCmds) {
-        const command = await import(`./aurora/commands/${file}`).then(cmd => cmd.default)
- 
-        if (!command.disabled) 
-            client['auroraCommands'].set(command.name, command)
-    }
+    let i = 0, counter = 0
 
-    for (const file of novaCmds) {
-        const command = await import(`./nova/commands/${file}`).then(cmd => cmd.default)
+    //#region Purge loop
+    for (i; i < len; i++) {
+        const player = players[i]
+        const lo = player?.lastOnline
 
-        if (!command.disabled) 
-            client['novaCommands'].set(command.name, command)
-    }
+        if (!lo) {
+            players.splice(i, 1)
+            counter++
 
-    for (const file of slashCommands) {
-        const command = await import(`./aurora/slashcommands/${file}`).then(cmd => cmd.default)
-        if (command.disabled) continue
-    
-        client['slashCommands'].set(command.name, command)
-
-        if (command.data) data.push(command.data.toJSON())
-        else {
-            data.push({
-                name: command.name,
-                description: command.description
-            })
+            continue
         }
+
+        // Player's discord is null or empty, delete it.
+        // If not, don't purge them.
+        if (!player?.linkedID) delete player.linkedID
+        else continue
+
+        //#region Purge if inactive on both maps.
+        if (lo.aurora && !purged(lo.aurora, now)) continue
+        if (lo.nova && !purged(lo.nova, now)) continue
+
+        players.splice(i, 1)
+        counter++
+        //#endregion
     }
+    //#endregion
 
-    const linkAction = new ContextMenuCommandBuilder().setName("Link User").setType(2) 
-    data.push(linkAction)
+    console.log(`Purged ${counter} inactive/corrupted players.`)
+    await database.setPlayers(players)
 
-    if (prod) await client.application.commands.set(data)
-    else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
+    return players
 }
 //#endregion
 
-//#region Error Handling
-client.on('error', (err: Error & { code: number }) => {
-    if (err.code != 50013) console.log(err)
-})
-
-process.on('unhandledRejection', (err: Error & { code: number }) => console.error('Unhandled promise rejection: ', err))
-
-process.on('uncaughtException', (err: Error & { code: number }) => {
-    if (err.code != 50013) 
-        console.error('Uncaught Exception!\n', err)
-})
-//#endregion
+export {
+    init
+}

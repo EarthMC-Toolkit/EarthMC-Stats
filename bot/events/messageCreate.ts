@@ -13,7 +13,6 @@ import { MessageCommand } from '../types.js'
 const { SendMessages, EmbedLinks } = PermissionFlagsBits
 const requiredPerms = [SendMessages, EmbedLinks]
 
-
 async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {	
     const args = msg.content.slice(sliceAmt).split(/\s+/u)
 
