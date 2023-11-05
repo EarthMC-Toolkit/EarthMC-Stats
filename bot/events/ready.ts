@@ -31,7 +31,7 @@ export default {
 
         registerCommands(client)
         registerButtons(client)
-        registerModals()
+        //registerModals()
 
         const watchingActivities = [
             `${client.guilds.cache.size} Servers`, 'towns being created.',
@@ -70,14 +70,19 @@ export default {
     }
 }
 
+const readTsFiles = (path: string) => fs.readdirSync(path).filter(file => file.endsWith('.ts'))
+
 async function registerCommands(client: Client) {
-    const data = [],
-          slashCommands = fs.readdirSync('./aurora/slashcommands').filter(file => file.endsWith('.ts')),
-          auroraCmds = fs.readdirSync('./aurora/commands').filter(file => file.endsWith('.ts')),
-          novaCmds = fs.readdirSync('./nova/commands').filter(file => file.endsWith('.ts'))
+    const dir = process.cwd()
+
+    const slashCommands = readTsFiles(`${dir}/aurora/slashcommands`)
+    const auroraCmds = readTsFiles(`${dir}/aurora/commands`)
+    const novaCmds = readTsFiles(`${dir}/nova/commands`)
+
+    const data = []
 
     for (const file of auroraCmds) {
-        const commandFile = await import(`./aurora/commands/${file}`)
+        const commandFile = await import(`${dir}/aurora/commands/${file}`)
         const command = commandFile.default
 
         if (!command.disabled) 
@@ -85,7 +90,7 @@ async function registerCommands(client: Client) {
     }
 
     for (const file of novaCmds) {
-        const commandFile = await import(`./nova/commands/${file}`)
+        const commandFile = await import(`${dir}/nova/commands/${file}`)
         const command = commandFile.default
 
         if (!command.disabled) 
@@ -93,7 +98,7 @@ async function registerCommands(client: Client) {
     }
 
     for (const file of slashCommands) {
-        const commandFile = await import(`./aurora/slashcommands/${file}`)
+        const commandFile = await import(`${dir}/aurora/slashcommands/${file}`)
         const command = commandFile.default
 
         if (command.disabled) continue
@@ -109,22 +114,28 @@ async function registerCommands(client: Client) {
         }
     }
 
-    console.log("Registered commands.")
-
     const linkAction = new ContextMenuCommandBuilder().setName("Link User").setType(2) 
     data.push(linkAction)
 
     const prod = process.env.PROD == "true"
     if (prod) await client.application.commands.set(data)
     else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
+
+    console.log(`
+        Commands registered.\n
+        Regular: ${auroraCmds.length + novaCmds.length}\n
+        Slash: ${slashCommands.length}
+    `)
 }
 
 async function registerButtons(client: Client) {
     client['buttons'] = new Collection()
-    const buttons = fs.readdirSync('./aurora/buttons').filter(file => file.endsWith('.ts'))
+
+    const buttonsPath = `${process.cwd() + "/aurora/buttons"}`
+    const buttons = readTsFiles(buttonsPath)
 
     for (const file of buttons) {
-        const buttonFile = await import(`./aurora/buttons/${file}`)
+        const buttonFile = await import(`${buttonsPath}/${file}`)
         const button = buttonFile.default
 
         if (button.id) {
@@ -133,6 +144,6 @@ async function registerButtons(client: Client) {
     }
 }
 
-async function registerModals() {
+// async function registerModals() {
 
-}
+// }
