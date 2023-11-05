@@ -1,16 +1,17 @@
-import * as fn from "./fn.js"
 import cache from 'memory-cache'
 
+import * as fn from "./fn.js"
+import * as Nova from "./nova.js"
+import * as Aurora from "./aurora.js"
+
+import { db } from "../constants.js"
 import type { 
     DocumentReference, 
     DocumentSnapshot, 
     DocumentData 
 } from "firebase-admin/firestore"
 
-import { getFirestore } from "firebase-admin/firestore"
-
-const db = () => getFirestore()
-const playerCollection = () => db().collection("players")
+const playerCollection = () => db.collection("players")
 
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
@@ -52,9 +53,6 @@ async function setPlayers(players) {
         playerCollection().doc("playerArray" + counter).set({ playerArray: array })
     }
 }
-
-import * as Nova from "./nova.js"
-import * as Aurora from "./aurora.js"
 
 export {
     getPlayerInfo, 

@@ -7,6 +7,8 @@ import {
     SharedNameAndDescription
 } from "discord.js"
 
+import { Map } from "earthmc"
+
 export type BaseCommand = {
     name: string
     description?: string
@@ -39,6 +41,11 @@ export type DJSEvent = {
     execute: (...args) => any
 }
 
+export type MapInstance = { 
+    emc: Map,
+    db: MapDB
+}
+
 export type MCUserProfile = {
     id: string | number
     name: string
@@ -52,4 +59,16 @@ export type MCProfileProperty = {
 export type MCSessionProfile = MCUserProfile & {
     properties: MCProfileProperty[]
     profileActions: any[]
+}
+
+export type MapDB = {
+    getAlliance(name: string): Promise<any>
+    getAlliances(skipCache: boolean): Promise<any> 
+    setAlliances(alliances: any[]): Promise<void>
+    getTowns(): Promise<any>
+    setTowns(towns: any[]): Promise<void>
+    getNations(): Promise<any>
+    setNations(nations: any[]): Promise<void>
+    getResidents(): Promise<any>
+    setResidents(residents: any[]): Promise<void>
 }
