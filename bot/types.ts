@@ -4,27 +4,31 @@ import {
     Message,
     BaseInteraction,
     ChatInputCommandInteraction,
-    SlashCommandBuilder
+    SharedNameAndDescription
 } from "discord.js"
 
-export type InteractionCommand = {
+export type BaseCommand = {
     name: string
     description?: string
     disabled?: boolean
-    data?: SlashCommandBuilder
+}
+
+export type SlashCommand<TData extends SharedNameAndDescription> = BaseCommand & {
+    data?: TData & { toJSON: () => any }
+    cooldown?: number
     run: (client: Client, interaction: ChatInputCommandInteraction) => any
 }
 
-export type MessageCommand = {
-    name: string
+export type MessageCommand = BaseCommand & {
     aliases?: string[] 
-    description?: string
     slashCommand?: boolean
-    disabled?: boolean
     run: (client: Client, message: Message, args: string[]) => any
 }
 
 export type Button = {
-    name: string
+    id: string
+    permissions?: any[]
+    description?: string
+    disabled?: boolean
     execute: (client: Client, interaction: BaseInteraction) => any
 }

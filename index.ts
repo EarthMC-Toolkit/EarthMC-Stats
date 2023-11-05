@@ -17,7 +17,9 @@ import {
     setProduction, 
     setDatabase 
 } from "./bot/constants.js"
+//#endregion
 
+//#region Check production
 const prod = process.env.PROD == "true"
 setProduction(prod)
 
@@ -26,25 +28,28 @@ console.log(prod ? "Running in production." : "Running in maintenance, live func
 
 //#region Initialize Discord
 const Flags = IntentsBitField.Flags
-const intents = [ 
-    Flags.Guilds, 
-    Flags.GuildMessages, 
-    Flags.GuildMembers,
-    Flags.DirectMessages, 
-    Flags.DirectMessageReactions,
-    Flags.MessageContent
-]
 
-const client = new Client({ intents, allowedMentions: { repliedUser: false } })
-setClient(client)
+const client = new Client({ 
+    allowedMentions: { repliedUser: false },
+    intents: [
+        Flags.Guilds, 
+        Flags.GuildMessages, 
+        Flags.GuildMembers,
+        Flags.DirectMessages, 
+        Flags.DirectMessageReactions,
+        Flags.MessageContent
+    ]
+})
 
-client.login(process.env.DISCORD_BOT_TOKEN).then(t => {
+client.login(process.env.DISCORD_BOT_TOKEN).then(token => {
     client['slashCommands'] = new Collection()
     client['auroraCommands'] = new Collection()
     client['novaCommands'] = new Collection()
 
-    console.log("Logged into Discord with token: " + t)
+    console.log(`Logged into Discord.\nToken: ${token}`)
 }).catch(console.error)
+
+setClient(client)
 //#endregion
 
 //#region Firebase Setup

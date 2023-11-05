@@ -8,6 +8,7 @@ import {
 import * as database from '../../bot/utils/database.js'
 import * as fn from '../../bot/utils/fn.js'
 import AllianceModal from '../../bot/objects/AllianceModal.js'
+import { SlashCommand } from "../../bot/types.js"
 
 const editingChannels = ["971408026516979813"]
 
@@ -35,7 +36,32 @@ const getAlliance = async (options: CommandInteractionOptionResolver, skipCache 
     return alliances?.find(a => a.allianceName.toLowerCase() == input) ?? null
 }
 
-export default {
+const cmdData = new SlashCommandBuilder()
+    .setName("alliance")
+    .setDescription("Used by editors to create or update an alliance.")
+    .addSubcommand(subCmd => subCmd.setName('create').setDescription('Create a new alliance.')
+        .addStringOption(option => option.setName("map")
+            .setDescription("Choose a map this new alliance will apply to.").setRequired(true)
+            .addChoices({ name: "Aurora", value: "aurora" }, { name: "Nova", value: "nova" })
+        )
+        .addStringOption(option => option.setName("name")
+            .setDescription("Enter a name for this new alliance.")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subCmd => subCmd.setName('edit').setDescription('Edit an existing alliance.')
+        .addStringOption(option => option.setName("map")
+            .setDescription("Choose a map the edits will apply to.").setRequired(true)
+            .addChoices({ name: "Aurora", value: "aurora" }, { name: "Nova", value: "nova" })
+        )
+        .addStringOption(option => option.setName("name")
+            .setDescription("Enter name of the alliance to edit.")
+            .setRequired(true)
+        )
+    )
+
+const allianceCmd: SlashCommand<typeof cmdData> = {
+    data: cmdData,
     name: "alliance",
     run: async (_, interaction: ChatInputCommandInteraction) => {
         const opts = interaction.options as CommandInteractionOptionResolver
@@ -85,23 +111,7 @@ export default {
 
         // Handle success message
 
-    }, data: new SlashCommandBuilder()
-        .setName("alliance")
-        .setDescription("Used by editors to create or update an alliance.")
-        .addSubcommand(subCmd => subCmd.setName('create').setDescription('Create a new alliance.')
-            .addStringOption(option => option.setName("map")
-                .setDescription("Choose a map this new alliance will apply to.").setRequired(true)
-                .addChoices({ name: "Aurora", value: "aurora" }, { name: "Nova", value: "nova" }))
-            .addStringOption(option => option.setName("name")
-                .setDescription("Enter a name for this new alliance.")
-                .setRequired(true))
-        )
-        .addSubcommand(subCmd => subCmd.setName('edit').setDescription('Edit an existing alliance.')
-            .addStringOption(option => option.setName("map")
-                .setDescription("Choose a map the edits will apply to.").setRequired(true)
-                .addChoices({ name: "Aurora", value: "aurora" }, { name: "Nova", value: "nova" }))
-            .addStringOption(option => option.setName("name")
-                .setDescription("Enter name of the alliance to edit.")
-                .setRequired(true))
-        )
+    }, 
 }
+
+export default allianceCmd

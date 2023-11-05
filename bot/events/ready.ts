@@ -13,12 +13,6 @@ import {
 } from "../constants.js"
 
 import { 
-    Button, 
-    InteractionCommand, 
-    MessageCommand 
-} from "../types.js"
-
-import { 
     Client, 
     Collection,
     ActivityType,
@@ -37,6 +31,7 @@ export default {
 
         registerCommands(client)
         registerButtons(client)
+        registerModals()
 
         const watchingActivities = [
             `${client.guilds.cache.size} Servers`, 'towns being created.',
@@ -83,7 +78,7 @@ async function registerCommands(client: Client) {
 
     for (const file of auroraCmds) {
         const commandFile = await import(`./aurora/commands/${file}`)
-        const command = commandFile.default as MessageCommand
+        const command = commandFile.default
 
         if (!command.disabled) 
             client['auroraCommands'].set(command.name, command)
@@ -91,7 +86,7 @@ async function registerCommands(client: Client) {
 
     for (const file of novaCmds) {
         const commandFile = await import(`./nova/commands/${file}`)
-        const command = commandFile.default as MessageCommand
+        const command = commandFile.default
 
         if (!command.disabled) 
             client['novaCommands'].set(command.name, command)
@@ -99,7 +94,7 @@ async function registerCommands(client: Client) {
 
     for (const file of slashCommands) {
         const commandFile = await import(`./aurora/slashcommands/${file}`)
-        const command = commandFile.default as InteractionCommand
+        const command = commandFile.default
 
         if (command.disabled) continue
     
@@ -130,10 +125,14 @@ async function registerButtons(client: Client) {
 
     for (const file of buttons) {
         const buttonFile = await import(`./aurora/buttons/${file}`)
-        const button = buttonFile.default as Button
+        const button = buttonFile.default
 
-        if (button.name) {
-            client['buttons'].set(button.name)
+        if (button.id) {
+            client['buttons'].set(button.id)
         }
     }
+}
+
+async function registerModals() {
+
 }
