@@ -279,7 +279,7 @@ function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascend
 }
 
 function defaultSort(arr: any[]) {
-    return sortByOrder(arr, [{
+    sortByOrder(arr, [{
         key: 'residents',
         callback: k => k.length
     }, {
@@ -288,6 +288,8 @@ function defaultSort(arr: any[]) {
         key: 'name',
         callback: k => k.toLowerCase()
     }])
+
+    return arr
 }
 
 const maxTownSize = 940
