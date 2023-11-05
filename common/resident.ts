@@ -150,7 +150,7 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = bal => this.addField("Balance", `${bal ?? 0}G`)
+    addBalance = (bal: number) => this.addField("Balance", `${bal ?? 0}G`, true)
 
     addLinkedAcc = async () => {
         if (!this.player?.name) return

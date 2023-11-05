@@ -330,8 +330,11 @@ const secToMs = (ts: number) => Math.round(ts / 1000)
 
 const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
 
+const readTsFiles = (path: string) => fs.readdirSync(path).filter(file => file.endsWith('.ts'))
+
 export {
     jsonReq,
+    readTsFiles,
     maxTownSize,
     time,
     error,

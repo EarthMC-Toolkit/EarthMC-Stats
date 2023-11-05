@@ -5,8 +5,6 @@ import { MessageCommand } from '../../bot/types.js'
 
 import { 
     Colors, 
-    Client, 
-    Message, 
     EmbedBuilder 
 } from "discord.js"
 
@@ -19,8 +17,8 @@ const resCmd: MessageCommand = {
         const req = args.join(" ")
         const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching resident data, this might take a moment.")
-            .setColor(Colors.DarkPurple)]
-        })
+            .setColor(Colors.DarkPurple)
+        ]})
         
         if (!req) return m.edit({embeds: [new EmbedBuilder()
             .setTitle("Invalid Arguments!")

@@ -38,3 +38,18 @@ export type DJSEvent = {
     once?: boolean
     execute: (...args) => any
 }
+
+export type MCUserProfile = {
+    id: string | number
+    name: string
+}
+
+export type MCProfileProperty = {
+    name: string
+    value: string
+}
+
+export type MCSessionProfile = MCUserProfile & {
+    properties: MCProfileProperty[]
+    profileActions: any[]
+}

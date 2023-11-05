@@ -1,5 +1,4 @@
 //#region Imports
-import fs from "fs"
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -19,6 +18,7 @@ import {
 } from "./bot/constants.js"
 
 import { DJSEvent } from "./bot/types.js"
+import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
 //#region Check production
@@ -70,7 +70,7 @@ setDatabase(db)
 //#endregion
 
 //#region Event Handler
-const eventFiles = fs.readdirSync('./bot/events').filter(file => file.endsWith('.ts'))
+const eventFiles = readTsFiles('./bot/events')
 
 for (const file of eventFiles) {
 	const eventFile = await import(`./bot/events/${file}`)

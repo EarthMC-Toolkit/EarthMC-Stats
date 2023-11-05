@@ -1,5 +1,4 @@
 //#region Imports
-import fs from "fs"
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -18,13 +17,13 @@ import {
     ActivityType,
     ContextMenuCommandBuilder,
 } from "discord.js"
-//#endregion
 
-const readTsFiles = (path: string) => fs.readdirSync(path).filter(file => file.endsWith('.ts'))
+import { DJSEvent } from "../types.js"
+//#endregion
 
 let lastActivity = -1
 
-export default {
+const rdyEvent: DJSEvent = {
     name: 'ready',
     once: true,
     async execute(client: Client) {
@@ -75,9 +74,9 @@ export default {
 async function registerCommands(client: Client) {
     const dir = process.cwd()
 
-    const slashCommands = readTsFiles(`${dir}/aurora/slashcommands`)
-    const auroraCmds = readTsFiles(`${dir}/aurora/commands`)
-    const novaCmds = readTsFiles(`${dir}/nova/commands`)
+    const slashCommands = fn.readTsFiles(`${dir}/aurora/slashcommands`)
+    const auroraCmds = fn.readTsFiles(`${dir}/aurora/commands`)
+    const novaCmds = fn.readTsFiles(`${dir}/nova/commands`)
 
     const data = []
 
@@ -131,7 +130,7 @@ async function registerButtons(client: Client) {
     client['buttons'] = new Collection()
 
     const buttonsPath = `${process.cwd() + "/aurora/buttons"}`
-    const buttons = readTsFiles(buttonsPath)
+    const buttons = fn.readTsFiles(buttonsPath)
 
     for (const file of buttons) {
         const buttonFile = await import(`${buttonsPath}/${file}`)
@@ -146,3 +145,5 @@ async function registerButtons(client: Client) {
 // async function registerModals() {
 
 // }
+
+export default rdyEvent
