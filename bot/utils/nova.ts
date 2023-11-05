@@ -1,23 +1,22 @@
 import * as fn from "./fn.js"
 import cache from 'memory-cache'
 import { request } from "undici"
-import { getFirestore } from 'firebase-admin/firestore'
 
-const db = () => getFirestore()   
+import { db } from "../constants.js"
 
 const novaUrl = 'https://earthmc.net/map/nova/'
 const getTownyData = () => request(`${novaUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`).then(res => res.body.json())
 const getOnlinePlayerData = () => request(`${novaUrl}standalone/MySQL_update.php?world=earth`).then(res => res.body.json())
 
 async function getResidents() {
-    const residentDataCollection = db().collection("residentData")
+    const residentDataCollection = db.collection("residentData")
     return cache.get('residents') ?? residentDataCollection.get().then(async snapshot => { 
         return snapshot.docs.flatMap(doc => doc.data().residentArray)
     }).catch(() => {})
 }
 
 async function setResidents(residents: any[]) {
-    const residentDataCollection = db().collection("residentData")
+    const residentDataCollection = db.collection("residentData")
 
     const dividedResidentsArray = fn.divideArray(residents, 7)
     let counter = 0
@@ -30,7 +29,7 @@ async function setResidents(residents: any[]) {
 }
 
 async function getNations() {
-    const nationDataCollection = db().collection("nationData")
+    const nationDataCollection = db.collection("nationData")
     return cache.get('nations') ?? nationDataCollection.get().then(async snapshot => { 
         return snapshot.docs.flatMap(doc => doc.data().nationArray)
     }).catch(() => {})
@@ -42,7 +41,7 @@ const getNation = nationName => getNations().then(arr => {
 }).catch(() => {})
 
 async function setNations(nations: any[]) {
-    const nationDataCollection = db().collection("nationData")
+    const nationDataCollection = db.collection("nationData")
 
     const dividedNationsArray = fn.divideArray(nations, 4)
     let counter = 0
@@ -55,7 +54,7 @@ async function setNations(nations: any[]) {
 }
 
 async function getTowns() {
-    const townDataCollection = db().collection("townData")
+    const townDataCollection = db.collection("townData")
 
     return cache.get('towns') ?? townDataCollection.get().then(async snapshot => { 
         return snapshot.docs.flatMap(doc => doc.data().townArray)
@@ -63,7 +62,7 @@ async function getTowns() {
 }
 
 async function setTowns(towns: any[]) {
-    const townDataCollection = db().collection("townData")
+    const townDataCollection = db.collection("townData")
     
     const dividedTownsArray = fn.divideArray(towns, 6)
     let counter = 0
@@ -145,7 +144,7 @@ async function getAlliance(name: string) {
 async function getAlliances() {
     const cachedAlliances = cache.get('alliances')
     if (!cachedAlliances) {
-        const allianceDoc = db().collection("alliances").doc("alliancesDoc")
+        const allianceDoc = db.collection("alliances").doc("alliancesDoc")
 
         return allianceDoc.get()
             .then(async doc => doc.data().allianceArray)
@@ -158,7 +157,7 @@ async function getAlliances() {
 async function setAlliances(alliances: any[]) {
     cache.put('alliances', alliances)
 
-    const allianceDoc = db().collection("alliances").doc("alliancesDoc")
+    const allianceDoc = db.collection("alliances").doc("alliancesDoc")
     allianceDoc.set({ allianceArray: alliances })
 }
 

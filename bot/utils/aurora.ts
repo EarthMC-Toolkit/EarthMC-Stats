@@ -6,15 +6,15 @@
 import * as fn from "./fn.js"
 import cache from 'memory-cache'
 import { request } from "undici"
-import { getFirestore } from 'firebase-admin/firestore'
 
-import { 
+import type { 
     MapResponse,
-    type PlayersResponse 
+    PlayersResponse 
 } from "earthmc"
 
-const db = () => getFirestore()
-const auroraDoc = () => db().collection("aurora").doc("data")
+import { db } from "../constants.js"
+
+const auroraDoc = () => db.collection("aurora").doc("data")
 
 const residentDataCollection = () => auroraDoc().collection("residentData")
 const nationDataCollection = () => auroraDoc().collection("nationData")

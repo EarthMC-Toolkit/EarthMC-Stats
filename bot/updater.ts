@@ -1,5 +1,6 @@
 //#region Imports
-import * as emc from "earthmc"
+import Queue from "./objects/Queue.js"
+
 import * as api from "../bot/utils/api.js"
 import * as database from "../bot/utils/database.js"
 import * as fn from "../bot/utils/fn.js"
@@ -7,7 +8,6 @@ import * as fn from "../bot/utils/fn.js"
 import { 
     Aurora, 
     MojangLib, 
-    Nova, 
     formatString
 } from "earthmc"
 
@@ -28,7 +28,7 @@ import {
     Message, TextChannel
 } from "discord.js"
 
-import Queue from "../bot/objects/Queue.js"
+import type { MapInstance } from "./types.js"
 //#endregion
 
 //#region Call Updates
@@ -79,7 +79,7 @@ async function updateData(botStarting = false, updateAurora = true, updateNova =
     }
 }
 
-async function updateMap(players: any[], map: { emc: emc.Map, db: any }) {
+async function updateMap(players: any[], map: MapInstance) {
     await updateMapData(map)
 
     if (players.length < 1) return
@@ -93,7 +93,7 @@ async function updateAPI(news, alliances) {
     if (news) await updateNews()
 }
 
-async function updateAlliances(map: { emc: emc.Map, db: any }) {
+async function updateAlliances(map: MapInstance) {
     const nations = await map.emc.Nations.all()
     if (!nations) return console.warn("Couldn't update " + map + " alliances, failed to fetch nations.")
 
@@ -123,7 +123,7 @@ async function updateAlliances(map: { emc: emc.Map, db: any }) {
 }
 
 // Updates: Player info or remove if purged
-async function updatePlayerData(players: any[], map: { emc: emc.Map, db: any }) {
+async function updatePlayerData(players: any[], map: MapInstance) {
     const mapName = map == AURORA ? 'aurora' : 'nova'
 
     const onlinePlayers = await map.emc.Players.online().catch(() => {})
@@ -169,7 +169,7 @@ async function updatePlayerData(players: any[], map: { emc: emc.Map, db: any }) 
 }
 
 // Updates: Towns, Nations, Residents
-async function updateMapData(map: { emc: emc.Map, db: any }) {
+async function updateMapData(map: MapInstance) {
     const towns = await map.emc.Towns.all().catch(console.error)
     if (!towns) return console.log("Could not update map data! 'towns' is null or undefined.")
 
@@ -275,11 +275,8 @@ async function liveTownless() {
     const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray,
           len = townlessSubbedChannelIDs.length
 
-    const promiseArr = await Promise.all([
-        Aurora.Players.townless(), 
-        Nova.Players.townless()
-    ]).catch(e => { console.error(e); return null })
-    
+    const promiseArr = await Aurora.Players.townless().catch(e => { console.error(e); return null })
+
     if (!promiseArr) return
     const [auroraTownless, novaTownless] = promiseArr
 
@@ -303,10 +300,10 @@ async function liveTownless() {
             
             // Fetch the channel's messages.
             curChannel.messages.fetch().then(async msgs => {
-                const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora')
-                if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
+                const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora'),
+                      novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
 
-                const novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
+                if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
                 if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
             }).catch(console.error)
         }
@@ -314,9 +311,9 @@ async function liveTownless() {
 }
 
 async function liveQueue() {              
-    const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
-    const aurora = server ? await database.Aurora.getOnlinePlayerData() : null
-    const nova   = server ? await database.Nova.getOnlinePlayerData() : null
+    const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {}),
+          aurora = server ? await database.Aurora.getOnlinePlayerData() : null,
+          nova   = server ? await database.Nova.getOnlinePlayerData() : null
 
     const queue = new Queue(server, aurora, nova)
     await queue.init()
@@ -373,7 +370,7 @@ function updateTownCache(data: any[]) {
     console.log(`${fn.time()} | Updated fallen town cache. Length: ${data.length}`)
 }
 
-async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
+async function updateFallenTowns(map: MapInstance) {
     const towns = await map.emc.Towns.all().then(arr => arr.map(t => {
         const NPCRegex = /^NPC[0-9]{1,5}$/
         t["ruined"] = (NPCRegex.test(t.mayor) || (t.residents?.length ?? 0) < 1) ? true : false
@@ -445,7 +442,7 @@ async function updateFallenTowns(map: { emc: emc.Map, db: any }) {
                   residentBatch2 = [],
                   mayor = town.mayor.replace(/_/g, "\\_")
 
-            const route = await emc.Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
+            const route = await Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
             const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`
 
             const fallenTownEmbed = new EmbedBuilder()
