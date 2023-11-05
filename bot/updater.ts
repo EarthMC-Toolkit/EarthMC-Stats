@@ -1,3 +1,4 @@
+//#region Imports
 import * as emc from "earthmc"
 import * as api from "../bot/utils/api.js"
 import * as database from "../bot/utils/database.js"
@@ -5,16 +6,26 @@ import * as fn from "../bot/utils/fn.js"
 
 import Queue from "./objects/Queue.js"
 
-import { prod, client, AURORA, NOVA } from "./constants.js"
-import { FieldValue, Timestamp } from "firebase-admin/firestore"
+import { 
+    prod, client, 
+    AURORA, NOVA, 
+    townlessSubbedChannels, 
+    queueSubbedChannels
+} from "./constants.js"
+
+import { 
+    FieldValue,
+    Timestamp
+} from "firebase-admin/firestore"
 
 import { 
     Colors, EmbedBuilder, 
     Message, TextChannel
 } from "discord.js"
+//#endregion
 
 //#region Call Updates
-async function init() {
+async function initUpdates() {
     const oneMinute = 60 * 1000
 
     // Pre-fill everything but news.
@@ -557,5 +568,5 @@ async function purgeInactive(players: any[]) {
 //#endregion
 
 export {
-    init
+    initUpdates
 }

@@ -2,18 +2,25 @@ import { Client } from "discord.js"
 import * as emc from "earthmc"
 import * as database from "../bot/utils/database.js"
 import { Firestore } from "firebase-admin/firestore"
+import { DocReference } from "../bot/utils/database.js"
 
-let prod: boolean
+let prod: boolean = false
 const setProduction = (val: boolean) => prod = val
 
 let client: Client = null
 const setClient = (val: Client) => client = val
 
 let db: Firestore = null
-const setDatabase = (val: Firestore) => db = val
+let queueSubbedChannels: DocReference = null
+let townlessSubbedChannels: DocReference = null
 
-const queueSubbedChannels = db.collection("subs").doc("queue")
-const townlessSubbedChannels = db.collection("subs").doc("townless")
+const setDatabase = (val: Firestore) => {
+    db = val
+
+    const subsCollection = db.collection("subs")
+    queueSubbedChannels = subsCollection.doc("queue")
+    townlessSubbedChannels = subsCollection.doc("townless")
+}
 
 const NOVA = { 
     emc: emc.Nova, 

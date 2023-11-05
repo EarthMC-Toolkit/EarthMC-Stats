@@ -1,6 +1,22 @@
+//#region Imports
 import fs from "fs"
 import dotenv from 'dotenv'
 dotenv.config()
+
+import * as fn from "../utils/fn.js"
+import { initUpdates } from "../updater.js"
+
+import { 
+    prod, 
+    queueSubbedChannels,
+    townlessSubbedChannels 
+} from "../constants.js"
+
+import { 
+    Button, 
+    InteractionCommand, 
+    MessageCommand 
+} from "../types.js"
 
 import { 
     Client, 
@@ -8,12 +24,7 @@ import {
     ActivityType,
     ContextMenuCommandBuilder,
 } from "discord.js"
-
-import { Button, InteractionCommand, MessageCommand } from "../types.js"
-import * as fn from "../utils/fn.js"
-
-import * as updater from "../updater.js"
-import { prod } from "../constants.js"
+//#endregion
 
 let lastActivity = -1
 
@@ -36,7 +47,7 @@ export default {
     
         if (prod) {
             console.log("Production enabled, initializing data updates..")
-            await updater.init()
+            await initUpdates()
     
             queueSubbedChannels.get().then(doc => { 
                 const { channelIDs } = doc.data()
