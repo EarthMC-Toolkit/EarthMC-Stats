@@ -22,7 +22,7 @@ export type SlashCommand<TData extends SharedNameAndDescription> = BaseCommand &
 export type MessageCommand = BaseCommand & {
     aliases?: string[] 
     slashCommand?: boolean
-    run: (client: Client, message: Message, args: string[]) => any
+    run: (client: Client, message: Message, args?: string[]) => any
 }
 
 export type Button = {
@@ -30,5 +30,11 @@ export type Button = {
     permissions?: any[]
     description?: string
     disabled?: boolean
-    execute: (client: Client, interaction: BaseInteraction) => any
+    execute: (client: Client, interaction: BaseInteraction, args?: any[]) => any
+}
+
+export type DJSEvent = {
+    name: string
+    once?: boolean
+    execute: (...args) => any
 }

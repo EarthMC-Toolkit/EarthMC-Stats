@@ -8,7 +8,7 @@ import {
 
 import { AURORA, NOVA } from '../utils/fn.js'
 import { sendNews } from '../utils/api.js'
-import { MessageCommand } from '../types.js'
+import { DJSEvent, MessageCommand } from '../types.js'
 
 const { SendMessages, EmbedLinks } = PermissionFlagsBits
 const requiredPerms = [SendMessages, EmbedLinks]
@@ -51,7 +51,7 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
 const prefix = (message: Message, str: string) => 
     message.content.startsWith(str)
 
-export default {
+const msgCreate: DJSEvent = {
     name: 'messageCreate',
     async execute(message: Message) {
         if (message.author.id == '970963659109060640') {
@@ -75,3 +75,5 @@ export default {
             return runCmd(message, 2, message.client['novaCommands'])
     }
 }
+
+export default msgCreate

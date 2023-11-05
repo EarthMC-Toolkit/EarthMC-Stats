@@ -15,6 +15,7 @@ import * as fn from '../utils/fn.js'
 
 import { getLinkedPlayer, linkPlayer } from '../utils/linking.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
+import {Button} from '../types.js'
 
 let target = null
 
@@ -97,7 +98,7 @@ export default {
         }
 
         if (interaction.isButton()) {
-            const button = client['buttons'].get(interaction.customId)
+            const button = client['buttons'].get(interaction.customId) as Button
             if (!button) return
             
             return button.execute(client, interaction).catch(console.error)

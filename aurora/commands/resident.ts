@@ -15,7 +15,7 @@ const resCmd: MessageCommand = {
     description: "Displays info for a specific resident.",
     slashCommand: true,
     aliases: ["res", "player"],
-    run: async (client: Client, message: Message, args) => {    
+    run: async (client, message, args) => {    
         const req = args.join(" ")
         const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching resident data, this might take a moment.")

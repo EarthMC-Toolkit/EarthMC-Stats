@@ -17,6 +17,8 @@ import {
     setProduction, 
     setDatabase 
 } from "./bot/constants.js"
+
+import { DJSEvent } from "./bot/types.js"
 //#endregion
 
 //#region Check production
@@ -71,8 +73,8 @@ setDatabase(db)
 const eventFiles = fs.readdirSync('./bot/events').filter(file => file.endsWith('.ts'))
 
 for (const file of eventFiles) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const event = await import(`./bot/events/${file}`).then(ev => ev.default) as any
+	const eventFile = await import(`./bot/events/${file}`)
+    const event = eventFile.default as DJSEvent
 
 	if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
     else client.on(event.name, (...args) => event.execute(...args))

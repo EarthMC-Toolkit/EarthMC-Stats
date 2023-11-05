@@ -20,6 +20,8 @@ import {
 } from "discord.js"
 //#endregion
 
+const readTsFiles = (path: string) => fs.readdirSync(path).filter(file => file.endsWith('.ts'))
+
 let lastActivity = -1
 
 export default {
@@ -69,8 +71,6 @@ export default {
         }, 30*1000)
     }
 }
-
-const readTsFiles = (path: string) => fs.readdirSync(path).filter(file => file.endsWith('.ts'))
 
 async function registerCommands(client: Client) {
     const dir = process.cwd()
