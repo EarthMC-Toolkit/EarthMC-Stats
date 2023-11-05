@@ -121,11 +121,10 @@ async function registerCommands(client: Client) {
     if (prod) await client.application.commands.set(data)
     else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
 
-    console.log(`
-        Commands registered.\n
-        Regular: ${auroraCmds.length + novaCmds.length}\n
-        Slash: ${slashCommands.length}
-    `)
+    console.log(`Commands registered.
+        \nRegular: ${auroraCmds.length + novaCmds.length}
+        \nSlash: ${slashCommands.length}`
+    )
 }
 
 async function registerButtons(client: Client) {
