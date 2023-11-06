@@ -18,8 +18,8 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
 
     const commands = msg.client[cmdsKey] as Collection<string, MessageCommand>
 
-    const commandName = args.shift().toLowerCase(),
-          command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
+    const commandName = args.shift().toLowerCase()
+    const command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
 
     if (!command) return console.log(`Could not find command '${commandName}'`)
     
@@ -66,13 +66,13 @@ const msgCreate: DJSEvent = {
         if (message.author.bot) return
 
         if (prefix(message, "/")) 
-            return runCmd(message, 1, message.client['auroraCommands'])
+            return runCmd(message, 1, 'auroraCommands')
 
         if (prefix(message, "a/"))
-            return runCmd(message, 2, message.client['auroraCommands'])
+            return runCmd(message, 2, 'auroraCommands')
 
         if (prefix(message, "n/")) 
-            return runCmd(message, 2, message.client['novaCommands'])
+            return runCmd(message, 2, 'novaCommands')
     }
 }
 
