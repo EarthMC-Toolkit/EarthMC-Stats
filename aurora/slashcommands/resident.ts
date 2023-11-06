@@ -27,7 +27,7 @@ export default {
         const resHelper = new ResidentHelper(client)
         const exists = await resHelper.init(name, true)
 
-        if (!exists && !resHelper.apiResident) {
+        if (!exists || !resHelper.apiResident) {
             await interaction.deleteReply()
             return interaction.followUp({embeds: [new EmbedBuilder()
                 .setTitle(name + " isn't a registered player name, please try again.")

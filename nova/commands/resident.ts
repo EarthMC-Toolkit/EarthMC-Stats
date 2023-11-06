@@ -32,7 +32,7 @@ export default {
         const exists = await resHelper.init(args)
 
         // Townless
-        if (!exists && !resHelper.apiResident) {  
+        if (!exists || !resHelper.apiResident) {  
             return m.edit({embeds: [new Discord.EmbedBuilder()
                 .setTitle(args[0] + " isn't a registered player name, please try again.")
                 .setColor(Discord.Colors.Red)
