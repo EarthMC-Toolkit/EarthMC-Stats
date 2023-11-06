@@ -53,7 +53,7 @@ class ResidentHelper extends BaseHelper {
 
         if (!this.isNova) {
             try {
-                const res = await emc.OfficialAPI.resident(arg1.toLowerCase())
+                const res = await emc.OfficialAPI.resident(arg1)
 
                 if (res.town) {
                     const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
@@ -75,6 +75,8 @@ class ResidentHelper extends BaseHelper {
         this.pInfo = await database.getPlayerInfo(resName, this.isNova).catch(e => console.log("Database error!\n" + e))
 
         this.tryAddAvatar()
+
+        return true
     }
 
     async setupEmbed() {
