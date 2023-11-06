@@ -1,13 +1,8 @@
-import * as emc from "earthmc"
-
 import { Client } from "discord.js"
+import * as emc from "earthmc"
+import * as database from "../bot/utils/database.js"
 import { Firestore } from "firebase-admin/firestore"
-import { MapInstance } from "./types.js"
-
-import { 
-    type DocReference, 
-    Aurora, Nova 
-} from "../bot/utils/database.js"
+import { DocReference } from "../bot/utils/database.js"
 
 let prod: boolean = false
 const setProduction = (val: boolean) => prod = val
@@ -27,14 +22,14 @@ const setDatabase = (val: Firestore) => {
     townlessSubbedChannels = subsCollection.doc("townless")
 }
 
-const NOVA: MapInstance = { 
+const NOVA = { 
     emc: emc.Nova, 
-    db: Nova 
+    db: database.Nova 
 }
 
-const AURORA: MapInstance = { 
+const AURORA = { 
     emc: emc.Aurora, 
-    db: Aurora 
+    db: database.Aurora 
 }
 
 export {

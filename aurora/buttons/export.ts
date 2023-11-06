@@ -7,11 +7,11 @@ import { Button } from "../../bot/types.js"
 
 const exportBtn: Button = {
     id: "export",
-    execute: (_: Client, interaction: ChatInputCommandInteraction, args: any[]) => {
-        const fileContent = args[0]
+    execute: (_: Client, interaction: ChatInputCommandInteraction) => {
+        
         
         return interaction.reply({ 
-            content: "```" + fileContent + "```",
+            content: "Your exported content is attached below.",
             ephemeral: true,
             files: []
         })

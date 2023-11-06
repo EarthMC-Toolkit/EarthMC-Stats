@@ -5,6 +5,8 @@ import { MessageCommand } from '../../bot/types.js'
 
 import { 
     Colors, 
+    Client, 
+    Message, 
     EmbedBuilder 
 } from "discord.js"
 
@@ -13,12 +15,12 @@ const resCmd: MessageCommand = {
     description: "Displays info for a specific resident.",
     slashCommand: true,
     aliases: ["res", "player"],
-    run: async (client, message, args) => {    
+    run: async (client: Client, message: Message, args) => {    
         const req = args.join(" ")
         const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching resident data, this might take a moment.")
-            .setColor(Colors.DarkPurple)
-        ]})
+            .setColor(Colors.DarkPurple)]
+        })
         
         if (!req) return m.edit({embeds: [new EmbedBuilder()
             .setTitle("Invalid Arguments!")
@@ -29,9 +31,9 @@ const resCmd: MessageCommand = {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const resHelper = new ResidentHelper(client)
-        const exists = await resHelper.init(args)
+        await resHelper.init(args)
 
-        if (!exists && !resHelper.apiResident) return m.edit({embeds: [new EmbedBuilder()
+        if (!resHelper.apiResident) return m.edit({embeds: [new EmbedBuilder()
             .setTitle(`${args[0]} isn't a registered player name, please try again.`)
             .setColor(Colors.Red)
             .setFooter(fn.devsFooter(client))

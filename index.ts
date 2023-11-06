@@ -1,10 +1,11 @@
 //#region Imports
+import fs from "fs"
 import dotenv from 'dotenv'
 dotenv.config()
 
 import { 
     Client, 
-    GatewayIntentBits as Intents,
+    IntentsBitField,
     Collection,
 } from "discord.js"
 
@@ -16,9 +17,6 @@ import {
     setProduction, 
     setDatabase 
 } from "./bot/constants.js"
-
-import { DJSEvent } from "./bot/types.js"
-import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
 //#region Check production
@@ -29,15 +27,17 @@ console.log(prod ? "Running in production." : "Running in maintenance, live func
 //#endregion
 
 //#region Initialize Discord
+const Flags = IntentsBitField.Flags
+
 const client = new Client({ 
     allowedMentions: { repliedUser: false },
     intents: [
-        Intents.Guilds, 
-        Intents.GuildMessages, 
-        Intents.GuildMembers,
-        Intents.DirectMessages, 
-        Intents.DirectMessageReactions,
-        Intents.MessageContent
+        Flags.Guilds, 
+        Flags.GuildMessages, 
+        Flags.GuildMembers,
+        Flags.DirectMessages, 
+        Flags.DirectMessageReactions,
+        Flags.MessageContent
     ]
 })
 
@@ -53,18 +53,12 @@ setClient(client)
 //#endregion
 
 //#region Firebase Setup
-const { 
-    FIREBASE_PROJECT_ID,
-    FIREBASE_CLIENT_EMAIL,
-    FIREBASE_PRIVATE_KEY
-} = process.env
-
 initializeApp({
     credential: cert({
-        projectId: FIREBASE_PROJECT_ID,
-        clientEmail: FIREBASE_CLIENT_EMAIL,
-        privateKey: JSON.parse(prod ? FIREBASE_PRIVATE_KEY : JSON.stringify(FIREBASE_PRIVATE_KEY))
-    })
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
+    }) 
 })
 
 const db = getFirestore()
@@ -74,14 +68,13 @@ setDatabase(db)
 //#endregion
 
 //#region Event Handler
-const eventsPath = `./bot/events`
-const eventFiles = readTsFiles(eventsPath)
+const eventFiles = fs.readdirSync('./bot/events').filter(file => file.endsWith('.ts'))
 
 for (const file of eventFiles) {
-    const eventFile = await import(`${eventsPath}/${file}`)
-    const event = eventFile.default as DJSEvent
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const event = await import(`./bot/events/${file}`).then(ev => ev.default) as any
 
-    if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
+	if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
     else client.on(event.name, (...args) => event.execute(...args))
 }
 //#endregion

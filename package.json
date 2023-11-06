@@ -15,20 +15,18 @@
     "memory-cache": "0.2.0",
     "moment": "^2.29.4",
     "striptags": "^3.2.0",
-    "tslib": "latest",
+    "tslib": "^2.6.2",
     "tsx": "latest",
-    "undici": "latest"
+    "undici": "^5.26.2"
   },
   "scripts": {
     "compile": "rimraf dist && tsc",
-    "start-js": "pnpm run compile && node --gc_interval=240 --max-old-space-size=960 ./dist/index.js",
-    "start": "tsx index.ts",
-    "reinstall": "rimraf node_modules && pnpm install",
-    "start-bun": "bun run index.ts"
+    "start-js": "pnpm run build && node --gc_interval=240 --max-old-space-size=960 index.js",
+    "start": "tsx index.ts"
   },
   "engines": {
-    "node": ">=16.20.2",
-    "pnpm": ">=8.6"
+    "node": "16.20.2",
+    "npm": "9.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",

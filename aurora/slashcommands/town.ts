@@ -1,11 +1,6 @@
 import * as fn from '../../bot/utils/fn.js'
+import * as emc from "earthmc"
 import * as database from "../../bot/utils/database.js"
-
-import { 
-    Aurora, Town, 
-    NotFoundError,
-    formatString
-} from "earthmc"
 
 import {
     type Client,
@@ -14,26 +9,8 @@ import {
 } from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
-import { SlashCommand } from '../../bot/types.js'
 
-const cmdData = new SlashCommandBuilder()
-    .setName("town")
-    .setDescription("Displays info for a town.")
-    .addSubcommand(subCmd => subCmd
-        .setName('lookup')
-        .setDescription('Get detailed information for a town')
-        .addStringOption(option => option.setName("name").setDescription("The name of the town to lookup.").setRequired(true)))
-    .addSubcommand(subCmd => subCmd
-        .setName('activity')
-        .setDescription('Gets activity data for members of a town.')
-        .addStringOption(option => option.setName("name").setDescription("The name of the town to get activity data for.").setRequired(true)))              
-    .addSubcommand(subCmd => subCmd
-        .setName('list')
-        .setDescription('List towns using various comparators.')
-        .addStringOption(option => option.setName("comparator").setDescription("The comparator to use which the list will be filtered by.")))
-
-const townCmd: SlashCommand<typeof cmdData> = {
-    data: cmdData,
+export default {
     name: "town",
     description: "Displays info for a town.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
@@ -49,12 +26,12 @@ const townCmd: SlashCommand<typeof cmdData> = {
         await interaction.deferReply()
 
         database.Aurora.getTowns().then(async towns => {
-            if (!towns) towns = await Aurora.Towns.all().catch(err => console.log(err))
+            if (!towns) towns = await emc.Aurora.Towns.all().catch(err => console.log(err))
 
             towns = towns.map(t => {
-                t.name = formatString(t.name, false)
+                t.name = emc.formatString(t.name, false)
                 return t
-            }) as Town[]
+            })
 
             const townEmbed = new EmbedBuilder(),
                   nameArg = interaction.options.getString("name")
@@ -67,8 +44,8 @@ const townCmd: SlashCommand<typeof cmdData> = {
                 const comparator = args2.toLowerCase()
 
                 if (comparator == "online") {
-                    const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                    if (!onlinePlayers) return await interaction.editReply({ embeds: [fn.fetchError] })
+                    const onlinePlayers = await emc.Aurora.Players.online().catch(() => {})
+                    if (!onlinePlayers) return await interaction.editReply({embeds: [fn.fetchError]})
 
                     const onlineTownData = [],
                           onlineTownDataFinal = []
@@ -205,8 +182,8 @@ const townCmd: SlashCommand<typeof cmdData> = {
                 const townRank = (towns.findIndex(t => t.name == town.name)) + 1,
                       mayor = town.mayor.replace(/_/g, "\\_")
                 
-                const townColours = await Aurora.Towns.get(town.name).then((t: any) => {
-                    return t instanceof NotFoundError ? null : t.colourCodes
+                const townColours = await emc.Aurora.Towns.get(town.name).then((t: any) => {
+                    return t instanceof emc.NotFoundError ? null : t.colourCodes
                 })
 
                 const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
@@ -214,7 +191,7 @@ const townCmd: SlashCommand<typeof cmdData> = {
                 townEmbed.setColor(town.ruined ? Colors.Orange : colour)
                 townEmbed.setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
                 
-                const townNation = await database.Aurora.getNation(town.nation).catch(() => {}) ?? await Aurora.Nations.get(town.nation),
+                const townNation = await database.Aurora.getNation(town.nation).catch(() => {}) ?? await emc.Aurora.Nations.get(town.nation),
                       townResidentsLength = town.residents.length
 
                 if (!town.ruined) {
@@ -330,14 +307,28 @@ const townCmd: SlashCommand<typeof cmdData> = {
                 .setColor(Colors.Red)
             ]})
         })
-    }
+    }, data: new SlashCommandBuilder()
+        .setName("town")
+        .setDescription("Displays info for a town.")
+        .addSubcommand(subCmd => subCmd
+            .setName('lookup')
+            .setDescription('Get detailed information for a town')
+            .addStringOption(option => option.setName("name").setDescription("The name of the town to lookup.").setRequired(true)))
+        .addSubcommand(subCmd => subCmd
+            .setName('activity')
+            .setDescription('Gets activity data for members of a town.')
+            .addStringOption(option => option.setName("name").setDescription("The name of the town to get activity data for.").setRequired(true)))              
+        .addSubcommand(subCmd => subCmd
+            .setName('list')
+            .setDescription('List towns using various comparators.')
+            .addStringOption(option => option.setName("comparator").setDescription("The comparator to use which the list will be filtered by.")))
 }
 
-function extractTownData(towns: Town[]) {
+function extractTownData(towns: any[]) {
     if (!towns) return []
 
-    const townData = []
-    const len = towns.length
+    const townData = [],
+          len = towns.length
 
     for (let i = 0; i < len; i++) {     
         const cur = towns[i]
@@ -357,15 +348,13 @@ function sendList(
     client: Client, 
     interaction: ChatInputCommandInteraction, 
     comparator: string, 
-    towns: Town[]
+    towns: any[]
 ) {
-    fn.defaultSort(towns)
+    towns = fn.defaultSort(towns)
   
     const townData = extractTownData(towns)
-    const allData = townData.map((town, index) => (index + 1) + `. **${town.name} (${town.nation})**` + 
-        "\n```Residents: " + town.residentNames.length + 
-        "``````Chunks: " + town.area + "```"
-    ).join('\n').match(/(?:^.*$\n?){1,8}/mg)
+    const allData = townData.map((town, index) => (index + 1) + ". **" + town.name + " (" + town.nation + ")**" + 
+        "\n```Residents: " + town.residentNames.length + "``````Chunks: " + town.area + "```").join('\n').match(/(?:^.*$\n?){1,8}/mg)
 
     new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)
@@ -373,5 +362,3 @@ function sendList(
         .paginate(allData, "\n")
         .editInteraction(interaction)
 }
-
-export default townCmd

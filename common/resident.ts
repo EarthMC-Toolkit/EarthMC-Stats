@@ -36,19 +36,15 @@ class ResidentHelper extends BaseHelper {
     }
 
     async init(args, isInteraction = false) {
-        const arg1 = (isInteraction ? args : args[0])?.toLowerCase()
-        const p = await MC.Players.get(arg1).catch(console.log)
-
-        if (!p) return false
-        this.player = p
+        const arg1 = isInteraction ? args : args[0]
 
         const residents = await this.fetchResidents()
-        this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)
+        this.dbResident = residents.find(r => r.name.toLowerCase() == arg1.toLowerCase())
 
         const resName = this.dbResident?.name || arg1
         const ops = await (this.isNova ? emc.Nova : emc.Aurora).Players.online().catch(() => {})
 
-        const searchName = !this.dbResident ? arg1 : resName
+        const searchName = !this.dbResident ? arg1.toLowerCase() : resName
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
         if (!this.isNova) {
@@ -74,12 +70,13 @@ class ResidentHelper extends BaseHelper {
         this.status = this.onlinePlayer ? "Online" : "Offline"
         this.pInfo = await database.getPlayerInfo(resName, this.isNova).catch(e => console.log("Database error!\n" + e))
 
+        this.player = await MC.Players.get(resName).catch(console.log)
         this.tryAddAvatar()
     }
 
     async setupEmbed() {
         if (this.apiResident.town) await this.setupResidentEmbed()
-        else await this.setupTownlessEmbed()
+        else await this.setupTownlessEmbed() 
     }
 
     async setupTownlessEmbed() {
@@ -153,7 +150,7 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = (bal: number) => this.addField("Balance", `${bal ?? 0}G`, true)
+    addBalance = bal => this.addField("Balance", `${bal ?? 0}G`)
 
     addLinkedAcc = async () => {
         if (!this.player?.name) return

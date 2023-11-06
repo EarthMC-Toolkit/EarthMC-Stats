@@ -1,5 +1,5 @@
 import { setPlayers, getPlayers} from "./database.js"
-import { Players } from "./minecraft.js"
+import * as MC from "./minecraft.js"
 
 type ResidentProfile = {
     name: string
@@ -17,7 +17,7 @@ async function linkPlayer(id: string | number, username: string) {
               residentIndex = players.findIndex(player => filter(player))
         
         if (!foundResident) {
-            const player = await Players.get(username).catch(() => {})
+            const player = await MC.Players.get(username).catch(() => {})
             const residentObj: ResidentProfile = {
                 name: player ? player.name : username,
                 linkedID: id,

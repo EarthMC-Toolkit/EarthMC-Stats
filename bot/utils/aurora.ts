@@ -3,18 +3,18 @@
 * @author Owen3H
 */
 
+import * as fn from "./fn.js"
 import cache from 'memory-cache'
 import { request } from "undici"
+import { getFirestore } from 'firebase-admin/firestore'
 
-import type { 
+import { 
     MapResponse,
-    PlayersResponse 
+    type PlayersResponse 
 } from "earthmc"
 
-import { divideArray, sortByOrder } from "./fn.js"
-import { db } from "../constants.js"
-
-const auroraDoc = () => db.collection("aurora").doc("data")
+const db = () => getFirestore()
+const auroraDoc = () => db().collection("aurora").doc("data")
 
 const residentDataCollection = () => auroraDoc().collection("residentData")
 const nationDataCollection = () => auroraDoc().collection("nationData")
@@ -39,7 +39,7 @@ async function getResidents() {
 }
 
 async function setResidents(residents: any[]) {
-    const dividedResidentsArray = divideArray(residents, 12)
+    const dividedResidentsArray = fn.divideArray(residents, 12)
     let counter = 0
 
     cache.put('aurora_residents', residents)
@@ -59,7 +59,7 @@ const getNation = (nationName: string) => getNations().then(arr => {
 }).catch(() => {})
 
 async function setNations(nations: any[]) {
-    const dividedNationsArray = divideArray(nations, 4)
+    const dividedNationsArray = fn.divideArray(nations, 4)
     let counter = 0
 
     cache.put('aurora_nations', nations)
@@ -74,7 +74,7 @@ const getTowns = async () => cache.get('aurora_towns') ?? townDataCollection().g
 }).catch(() => {})
 
 async function setTowns(towns: any[]) {
-    const dividedTownsArray = divideArray(towns, 6)
+    const dividedTownsArray = fn.divideArray(towns, 6)
     let counter = 0
 
     cache.put('aurora_towns', towns)
@@ -130,11 +130,26 @@ async function getAlliance(name: string) {
                     }
                     
                     //#region Default sort
-                    sortByOrder(alliances, [
-                        { key: "residents" }, 
-                        { key: "area" },
-                        { key: "nations", callback: length }, 
-                        { key: "towns", callback: length }
+                    // alliances.sort((a, b) => {
+                    //     if (b.residents > a.residents) return 1
+                    //     if (b.residents < a.residents) return -1
+    
+                    //     if (b.area > a.area) return 1
+                    //     if (b.area < a.area) return -1
+    
+                    //     if (b.nations.length > a.nations.length) return 1
+                    //     if (b.nations.length < a.nations.length) return -1
+    
+                    //     if (b.towns.length > a.towns.length) return 1
+                    //     if (b.towns.length < a.towns.length) return -1
+                    // })
+
+                    const callback = x => x.length
+                    fn.sortByOrder(alliances, [
+                        { key: "residents", callback }, 
+                        { key: "area" }, 
+                        { key: "nations", callback }, 
+                        { key: "towns", callback }
                     ])
                     //#endregion
     
@@ -162,8 +177,6 @@ async function setAlliances(alliances: any[]) {
     cache.put('aurora_alliances', alliances)
     allianceCollection().set({ allianceArray: alliances })
 }
-
-const length = x => x.length
 
 export {
     getResidents, setResidents,
