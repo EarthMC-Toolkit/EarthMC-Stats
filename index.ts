@@ -4,7 +4,7 @@ dotenv.config()
 
 import { 
     Client, 
-    IntentsBitField,
+    GatewayIntentBits as Intents,
     Collection,
 } from "discord.js"
 
@@ -29,17 +29,15 @@ console.log(prod ? "Running in production." : "Running in maintenance, live func
 //#endregion
 
 //#region Initialize Discord
-const Flags = IntentsBitField.Flags
-
 const client = new Client({ 
     allowedMentions: { repliedUser: false },
     intents: [
-        Flags.Guilds, 
-        Flags.GuildMessages, 
-        Flags.GuildMembers,
-        Flags.DirectMessages, 
-        Flags.DirectMessageReactions,
-        Flags.MessageContent
+        Intents.Guilds, 
+        Intents.GuildMessages, 
+        Intents.GuildMembers,
+        Intents.DirectMessages, 
+        Intents.DirectMessageReactions,
+        Intents.MessageContent
     ]
 })
 
@@ -55,12 +53,18 @@ setClient(client)
 //#endregion
 
 //#region Firebase Setup
+const { 
+    FIREBASE_PROJECT_ID,
+    FIREBASE_CLIENT_EMAIL,
+    FIREBASE_PRIVATE_KEY
+} = process.env
+
 initializeApp({
     credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
-    }) 
+        projectId: FIREBASE_PROJECT_ID,
+        clientEmail: FIREBASE_CLIENT_EMAIL,
+        privateKey: JSON.parse(JSON.stringify(FIREBASE_PRIVATE_KEY))
+    })
 })
 
 const db = getFirestore()
@@ -70,13 +74,14 @@ setDatabase(db)
 //#endregion
 
 //#region Event Handler
-const eventFiles = readTsFiles('./bot/events')
+const eventsPath = `./bot/events`
+const eventFiles = readTsFiles(eventsPath)
 
 for (const file of eventFiles) {
-	const eventFile = await import(`./bot/events/${file}`)
+    const eventFile = await import(`${eventsPath}/${file}`)
     const event = eventFile.default as DJSEvent
 
-	if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
+    if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
     else client.on(event.name, (...args) => event.execute(...args))
 }
 //#endregion

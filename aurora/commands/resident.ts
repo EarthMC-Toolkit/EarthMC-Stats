@@ -29,9 +29,9 @@ const resCmd: MessageCommand = {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const resHelper = new ResidentHelper(client)
-        await resHelper.init(args)
+        const exists = await resHelper.init(args)
 
-        if (!resHelper.apiResident) return m.edit({embeds: [new EmbedBuilder()
+        if (exists || !resHelper.apiResident) return m.edit({embeds: [new EmbedBuilder()
             .setTitle(`${args[0]} isn't a registered player name, please try again.`)
             .setColor(Colors.Red)
             .setFooter(fn.devsFooter(client))

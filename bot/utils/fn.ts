@@ -4,7 +4,8 @@ import admin from "firebase-admin"
 
 import fs from 'fs'
 import { request } from "undici"
-  
+import path from "path"
+
 const botDevs = ["Owen3H#5737", "263377802647175170"]
 
 // eslint-disable-next-line
@@ -327,10 +328,12 @@ function canViewAndSend(channel: Discord.Channel) {
 }
 
 const secToMs = (ts: number) => Math.round(ts / 1000)
-
 const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
 
-const readTsFiles = (path: string) => fs.readdirSync(path).filter(file => file.endsWith('.ts'))
+const readTsFiles = (str: string) => {
+    const fullPath = path.join(path.resolve(process.cwd(), `./${str}`))
+    return fs.readdirSync(fullPath).filter(file => file.endsWith('.ts'))
+}
 
 export {
     jsonReq,

@@ -16,7 +16,7 @@ class Players {
         if (!uuid) uuid = input // If not, maybe it's already a UUID?
 
         const profile = await jsonReq(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`)
-        return profile ? profile as MCSessionProfile : null // Neither name or UUID, must not exist.
+        return profile['uuid'] ? profile as MCSessionProfile : null // No UUID, must not exist.
     }
 }
 
