@@ -4,7 +4,12 @@ import * as api from "../bot/utils/api.js"
 import * as database from "../bot/utils/database.js"
 import * as fn from "../bot/utils/fn.js"
 
-import Queue from "./objects/Queue.js"
+import { 
+    Aurora, 
+    MojangLib, 
+    Nova, 
+    formatString
+} from "earthmc"
 
 import { 
     prod, client, 
@@ -22,6 +27,8 @@ import {
     Colors, EmbedBuilder, 
     Message, TextChannel
 } from "discord.js"
+
+import Queue from "../bot/objects/Queue.js"
 //#endregion
 
 //#region Call Updates
@@ -269,10 +276,10 @@ async function liveTownless() {
           len = townlessSubbedChannelIDs.length
 
     const promiseArr = await Promise.all([
-        emc.Aurora.Players.townless(), 
-        emc.Nova.Players.townless()
+        Aurora.Players.townless(), 
+        Nova.Players.townless()
     ]).catch(e => { console.error(e); return null })
-
+    
     if (!promiseArr) return
     const [auroraTownless, novaTownless] = promiseArr
 
@@ -296,10 +303,10 @@ async function liveTownless() {
             
             // Fetch the channel's messages.
             curChannel.messages.fetch().then(async msgs => {
-                const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora'),
-                      novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
-
+                const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora')
                 if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
+
+                const novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
                 if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
             }).catch(console.error)
         }
@@ -307,9 +314,9 @@ async function liveTownless() {
 }
 
 async function liveQueue() {              
-    const server = await emc.MojangLib.servers.get("play.earthmc.net").catch(() => {}),
-          aurora = server ? await database.Aurora.getOnlinePlayerData() : null,
-          nova   = server ? await database.Nova.getOnlinePlayerData() : null
+    const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
+    const aurora = server ? await database.Aurora.getOnlinePlayerData() : null
+    const nova   = server ? await database.Nova.getOnlinePlayerData() : null
 
     const queue = new Queue(server, aurora, nova)
     await queue.init()
@@ -525,7 +532,7 @@ const purged = (timestamp: { seconds }, now: Date) => {
     return days > 35
 }
 
-const latinize = (str: string) => emc.formatString(str, true)
+const latinize = (str: string) => formatString(str, true)
 
 async function purgeInactive(players: any[]) {
     const now = new Date()
