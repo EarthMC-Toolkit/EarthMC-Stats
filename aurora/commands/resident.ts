@@ -33,6 +33,9 @@ const resCmd: MessageCommand = {
         const resHelper = new ResidentHelper(client)
         const exists = await resHelper.init(args)
 
+        console.log(exists)
+        console.log(resHelper.apiResident)
+
         if (!exists || !resHelper.apiResident) return m.edit({embeds: [new EmbedBuilder()
             .setTitle(`${args[0]} isn't a registered player name, please try again.`)
             .setColor(Colors.Red)

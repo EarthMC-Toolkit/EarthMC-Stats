@@ -6,6 +6,7 @@ import * as database from "../bot/utils/database.js"
 import * as fn from "../bot/utils/fn.js"
 
 import { 
+    type RawPlayer,
     Aurora, 
     MojangLib, 
     Nova, 
@@ -25,6 +26,7 @@ import {
 } from "firebase-admin/firestore"
 
 import { 
+    Collection,
     Colors, EmbedBuilder, 
     Message, TextChannel
 } from "discord.js"
@@ -243,14 +245,14 @@ async function updateMapData(map: MapInstance) {
 //#endregion
 
 //#region Live Stuff
-const filterLiveEmbeds = (arr, map: string) => {
+const filterLiveEmbeds = (arr: Collection<string, Message>, mapName: string) => {
     return arr.filter(msg => msg.embeds.length >= 1 
-        && msg.embeds[0]?.title?.includes(`Townless Players (${map})`) 
+        && msg.embeds[0]?.title?.includes(`Townless Players (${mapName})`) 
         && msg.author.id == "656231016385478657"
     )
 }
 
-const editEmbed = (msg: Message, arr: any[], mapName: string) => {
+const editEmbed = (msg: Message, arr: RawPlayer[], mapName: string) => {
     const names = arr.map(player => player.name).join('\n')
     const newEmbed = new EmbedBuilder()
         .setTitle(`Live Townless Players (${mapName})`)

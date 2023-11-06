@@ -4,7 +4,7 @@ dotenv.config()
 
 import { 
     Client, 
-    GatewayIntentBits as Intents,
+    IntentsBitField,
     Collection,
 } from "discord.js"
 
@@ -29,6 +29,7 @@ console.log(prod ? "Running in production." : "Running in maintenance, live func
 //#endregion
 
 //#region Initialize Discord
+const Intents = IntentsBitField.Flags
 const client = new Client({ 
     allowedMentions: { repliedUser: false },
     intents: [
@@ -74,11 +75,10 @@ setDatabase(db)
 //#endregion
 
 //#region Event Handler
-const eventsPath = `./bot/events`
-const eventFiles = readTsFiles(eventsPath)
+const eventFiles = readTsFiles(`bot/events`)
 
 for (const file of eventFiles) {
-    const eventFile = await import(`${eventsPath}/${file}`)
+    const eventFile = await import(`./bot/events/${file}`)
     const event = eventFile.default as DJSEvent
 
     if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
