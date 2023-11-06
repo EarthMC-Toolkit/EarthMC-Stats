@@ -33,14 +33,14 @@ dependencies:
     specifier: ^3.2.0
     version: 3.2.0
   tslib:
-    specifier: ^2.6.2
+    specifier: latest
     version: 2.6.2
   tsx:
     specifier: latest
     version: 3.14.0
   undici:
-    specifier: ^5.26.2
-    version: 5.26.3
+    specifier: latest
+    version: 5.27.2
 
 devDependencies:
   '@types/node':
@@ -2538,7 +2538,7 @@ packages:
     engines: {node: ^14.13.1 || >=16.0.0}
     dependencies:
       tslib: 2.6.2
-      undici: 5.26.3
+      undici: 5.27.2
       ws: 8.14.1
     transitivePeerDependencies:
       - bufferutil
@@ -3330,7 +3330,7 @@ packages:
     resolution: {integrity: sha512-2rJh4ndI10SjR6v+0LGCRisewxmGH0/+rYcnmhNqlcqNGHBVH58l4p5gtyMV1PU1lC85RhGGRwqWi+DSsd+JoA==}
     dependencies:
       tslib: 2.6.2
-      undici: 5.26.5
+      undici: 5.27.2
     dev: false
 
   /undici-types@5.25.3:
@@ -3343,15 +3343,8 @@ packages:
       busboy: 1.6.0
     dev: false
 
-  /undici@5.26.3:
-    resolution: {integrity: sha512-H7n2zmKEWgOllKkIUkLvFmsJQj062lSm3uA4EYApG8gLuiOM0/go9bIoC3HVaSnfg4xunowDE2i9p8drkXuvDw==}
-    engines: {node: '>=14.0'}
-    dependencies:
-      '@fastify/busboy': 2.0.0
-    dev: false
-
-  /undici@5.26.5:
-    resolution: {integrity: sha512-cSb4bPFd5qgR7qr2jYAi0hlX9n5YKK2ONKkLFkxl+v/9BvC0sOpZjBHDBSXc5lWAf5ty9oZdRXytBIHzgUcerw==}
+  /undici@5.27.2:
+    resolution: {integrity: sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==}
     engines: {node: '>=14.0'}
     dependencies:
       '@fastify/busboy': 2.0.0

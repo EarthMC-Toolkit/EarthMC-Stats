@@ -29,26 +29,20 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const resHelper = new ResidentHelper(client, true)
-        await resHelper.init(args)
+        const exists = await resHelper.init(args)
 
         // Townless
-        if (!resHelper.apiResident) {  
-            if (!resHelper.player?.name) {
-                return m.edit({embeds: [new Discord.EmbedBuilder()
-                    .setTitle(args[0] + " isn't a registered player name, please try again.")
-                    .setColor(Discord.Colors.Red)
-                    .setFooter(fn.devsFooter(client))
-                    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                    .setTimestamp()
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-            }
-
-            await resHelper.setupTownlessEmbed()
+        if (exists || !resHelper.apiResident) {  
+            return m.edit({embeds: [new Discord.EmbedBuilder()
+                .setTitle(args[0] + " isn't a registered player name, please try again.")
+                .setColor(Discord.Colors.Red)
+                .setFooter(fn.devsFooter(client))
+                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                .setTimestamp()
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
-        else { // Belongs to a town
-            await resHelper.setupResidentEmbed()
-        }
-
+        
+        await resHelper.setupEmbed()
         return await m.edit({embeds: [resHelper.embed]})
     }
 }
