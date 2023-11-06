@@ -1,4 +1,4 @@
-import * as fn from "./fn.js"
+import { divideArray, sortByOrder } from "./fn.js"
 import cache from 'memory-cache'
 import { request } from "undici"
 
@@ -18,7 +18,7 @@ async function getResidents() {
 async function setResidents(residents: any[]) {
     const residentDataCollection = db.collection("residentData")
 
-    const dividedResidentsArray = fn.divideArray(residents, 7)
+    const dividedResidentsArray = divideArray(residents, 7)
     let counter = 0
 
     cache.put('residents', residents)
@@ -43,7 +43,7 @@ const getNation = nationName => getNations().then(arr => {
 async function setNations(nations: any[]) {
     const nationDataCollection = db.collection("nationData")
 
-    const dividedNationsArray = fn.divideArray(nations, 4)
+    const dividedNationsArray = divideArray(nations, 4)
     let counter = 0
 
     cache.put('nations', nations)
@@ -64,7 +64,7 @@ async function getTowns() {
 async function setTowns(towns: any[]) {
     const townDataCollection = db.collection("townData")
     
-    const dividedTownsArray = fn.divideArray(towns, 6)
+    const dividedTownsArray = divideArray(towns, 6)
     let counter = 0
 
     cache.put('towns', towns)
@@ -114,20 +114,14 @@ async function getAlliance(name: string) {
                         alliance["area"] = currentAllianceArea
                     })
                     
-                    // Default sort
-                    alliances.sort((a, b) => {
-                        if (b.residents > a.residents) return 1
-                        if (b.residents < a.residents) return -1
-    
-                        if (b.area > a.area) return 1
-                        if (b.area < a.area) return -1
-    
-                        if (b.nations.length > a.nations.length) return 1
-                        if (b.nations.length < a.nations.length) return -1
-    
-                        if (b.towns.length > a.towns.length) return 1
-                        if (b.towns.length < a.towns.length) return -1
-                    })
+                    //#region Default sort
+                    sortByOrder(alliances, [
+                        { key: "residents" }, 
+                        { key: "area" },
+                        { key: "nations", callback: length }, 
+                        { key: "towns", callback: length }
+                    ])
+                    //#endregion
     
                     const index = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName)
     
@@ -160,6 +154,8 @@ async function setAlliances(alliances: any[]) {
     const allianceDoc = db.collection("alliances").doc("alliancesDoc")
     allianceDoc.set({ allianceArray: alliances })
 }
+
+const length = x => x.length
 
 export {
     getResidents, setResidents,
