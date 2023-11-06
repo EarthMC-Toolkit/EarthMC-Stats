@@ -63,7 +63,7 @@ initializeApp({
     credential: cert({
         projectId: FIREBASE_PROJECT_ID,
         clientEmail: FIREBASE_CLIENT_EMAIL,
-        privateKey: JSON.parse(JSON.stringify(FIREBASE_PRIVATE_KEY))
+        privateKey: JSON.parse(prod ? FIREBASE_PRIVATE_KEY : JSON.stringify(FIREBASE_PRIVATE_KEY))
     })
 })
 
