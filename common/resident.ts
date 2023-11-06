@@ -39,6 +39,9 @@ class ResidentHelper extends BaseHelper {
         const arg1 = (isInteraction ? args : args[0])?.toLowerCase()
         const p = await MC.Players.get(arg1).catch(console.log)
 
+        console.log(arg1)
+        console.log(p)
+
         if (!p) return false
         this.player = p
 
