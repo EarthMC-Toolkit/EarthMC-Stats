@@ -1,16 +1,17 @@
-import * as fn from "./fn.js"
 import cache from 'memory-cache'
 
+import { unixFromDate, divideArray } from "./fn.js"
+import * as Nova from "./nova.js"
+import * as Aurora from "./aurora.js"
+
+import { db } from "../constants.js"
 import type { 
     DocumentReference, 
     DocumentSnapshot, 
     DocumentData 
 } from "firebase-admin/firestore"
 
-import { getFirestore } from "firebase-admin/firestore"
-
-const db = () => getFirestore()
-const playerCollection = () => db().collection("players")
+const playerCollection = () => db.collection("players")
 
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
@@ -33,8 +34,8 @@ const getPlayerInfo = (name: string, includeTimestamps=true) => getPlayers().the
 
     if (includeTimestamps) {
         player["lastOnline"] = {
-            nova: fn.unixFromDate(player.lastOnline.nova),
-            aurora: fn.unixFromDate(player.lastOnline.aurora)
+            nova: unixFromDate(player.lastOnline.nova),
+            aurora: unixFromDate(player.lastOnline.aurora)
         }
     }
     
@@ -44,17 +45,14 @@ const getPlayerInfo = (name: string, includeTimestamps=true) => getPlayers().the
 async function setPlayers(players) {
     cache.put('players', players, 298*1000)
 
-    const dividedPlayerArray = fn.divideArray(players, 8)
     let counter = 0
-
+    const dividedPlayerArray = divideArray(players, 8)
+    
     for (const array of dividedPlayerArray) {      
         counter++
         playerCollection().doc("playerArray" + counter).set({ playerArray: array })
     }
 }
-
-import * as Nova from "./nova.js"
-import * as Aurora from "./aurora.js"
 
 export {
     getPlayerInfo, 

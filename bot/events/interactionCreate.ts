@@ -10,15 +10,16 @@ import {
 
 import cache from 'memory-cache'
 
-import * as MC from '../utils/minecraft.js'
+import { Players } from '../utils/minecraft.js'
 import * as fn from '../utils/fn.js'
 
 import { getLinkedPlayer, linkPlayer } from '../utils/linking.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
+import { Button, DJSEvent } from '../types.js'
 
 let target = null
 
-export default {
+const interactionCreate: DJSEvent = {
     name: 'interactionCreate',
     async execute(interaction: BaseInteraction) {
         const [client, username] = [interaction.client, interaction.user.username]
@@ -97,7 +98,7 @@ export default {
         }
 
         if (interaction.isButton()) {
-            const button = client['buttons'].get(interaction.customId)
+            const button = client['buttons'].get(interaction.customId) as Button
             if (!button) return
             
             return button.execute(client, interaction).catch(console.error)
@@ -141,7 +142,7 @@ const submitLinkModal = async (interaction: ModalSubmitInteraction) => {
     await interaction.deferReply()
     
     const ign = interaction.fields.getTextInputValue('ign')
-    const player = await MC.Players.get(ign).catch(console.error)
+    const player = await Players.get(ign).catch(console.error)
 
     if (!player) return await interaction.editReply({embeds: [
         new EmbedBuilder()
@@ -161,18 +162,21 @@ const submitLinkModal = async (interaction: ModalSubmitInteraction) => {
     ]}).then(m => setTimeout(() => m.delete(), 10000))
 
     const userID = target.id
-    if (!userID || !new RegExp(/[0-9]{18}/).test(userID)) return interaction.editReply({embeds: [
-        new EmbedBuilder()
-        .setDescription("<:red_tick:1036290475012915270> Invalid user or ID, please try again.")
-        .setColor(Colors.Red)
-        .setTimestamp()
-    ]}).then(m => setTimeout(() => m.delete(), 10000))
+    if (!userID || !new RegExp(/[0-9]{18}/).test(userID)) {
+        return interaction.editReply({embeds: [new EmbedBuilder()
+            .setDescription("<:red_tick:1036290475012915270> Invalid user or ID, please try again.")
+            .setColor(Colors.Red)
+            .setTimestamp()
+        ]}).then(m => setTimeout(() => m.delete(), 10000))
+    }
 
     await linkPlayer(userID, player.name)
-    interaction.editReply({embeds: [
-        new EmbedBuilder()
+
+    interaction.editReply({embeds: [new EmbedBuilder()
         .setDescription(`<:green_tick:1036290473708495028> ${player.name.replace(/_/g, "\\_")} is now linked with <@${userID}>.`)
         .setColor(Colors.Green)
         .setTimestamp()
     ]})
 }
+
+export default interactionCreate

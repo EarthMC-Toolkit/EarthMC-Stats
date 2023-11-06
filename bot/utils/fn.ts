@@ -4,7 +4,8 @@ import admin from "firebase-admin"
 
 import fs from 'fs'
 import { request } from "undici"
-  
+import path from "path"
+
 const botDevs = ["Owen3H#5737", "263377802647175170"]
 
 // eslint-disable-next-line
@@ -279,7 +280,7 @@ function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascend
 }
 
 function defaultSort(arr: any[]) {
-    return sortByOrder(arr, [{
+    sortByOrder(arr, [{
         key: 'residents',
         callback: k => k.length
     }, {
@@ -288,6 +289,8 @@ function defaultSort(arr: any[]) {
         key: 'name',
         callback: k => k.toLowerCase()
     }])
+
+    return arr
 }
 
 const maxTownSize = 940
@@ -325,11 +328,16 @@ function canViewAndSend(channel: Discord.Channel) {
 }
 
 const secToMs = (ts: number) => Math.round(ts / 1000)
-
 const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
+
+const readTsFiles = (str: string) => {
+    const fullPath = path.join(path.resolve(process.cwd(), `./${str}`))
+    return fs.readdirSync(fullPath).filter(file => file.endsWith('.ts'))
+}
 
 export {
     jsonReq,
+    readTsFiles,
     maxTownSize,
     time,
     error,

@@ -1,7 +1,13 @@
-import News from "../objects/News.js"
-import * as database from "./database.js"
-import * as fn from "./fn.js"
 import { request } from "undici"
+
+import { Aurora, Nova } from "./database.js"
+import { 
+    AURORA, NOVA, 
+    unixFromDate, 
+    jsonReq 
+}  from "./fn.js"
+
+import News from "../objects/News.js"
 
 const reqHeaders = {
     'Content-Type': 'application/json',
@@ -15,13 +21,14 @@ const sendRequest = async (route, method, content) => request(`https://emctoolki
 }).catch(e => console.log(e))
 
 const replaceWithUnix = (arr, map) => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
-    .map(p => ({ ...p, lastOnline: fn.unixFromDate(p.lastOnline[map]) }))
+    .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
 
 const sendNews = async (client, map) => {
-    const channel = await client.channels.fetch(map == 'nova' ? fn.NOVA.newsChannel : fn.AURORA.newsChannel),
-          msgArr = await channel.messages.fetch()
-            .then(msgs => msgs.filter(m => m.content != "[Original Message Deleted]" && !m.content.startsWith("/")))
-            .catch(console.error)
+    const channel = await client.channels.fetch(map == 'nova' ? NOVA.newsChannel : AURORA.newsChannel)
+    const msgArr = await channel.messages.fetch().then(msgs => msgs.filter(m => 
+        m.content != "[Original Message Deleted]" && 
+        !m.content.startsWith("/")
+    )).catch(console.error)
 
     sendNewsReq(msgArr, map)
 }
@@ -40,8 +47,8 @@ async function sendNewsReq(msgs, mapName) {
 }
 
 async function sendAlliances() {
-    const novaAlliances = await database.Nova.getAlliances(),
-          auroraAlliances = await database.Aurora.getAlliances()
+    const novaAlliances = await Nova.getAlliances(),
+          auroraAlliances = await Aurora.getAlliances()
  
     if (auroraAlliances) await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
     if (novaAlliances) await sendRequest('nova/alliances', 'PUT', novaAlliances)
@@ -63,7 +70,7 @@ async function sendAlliances() {
 //     })
 // })//.catch(console.log)
 
-const get = endpoint => fn.jsonReq(`https://emctoolkit.vercel.app/api/${endpoint}`)
+const get = endpoint => jsonReq(`https://emctoolkit.vercel.app/api/${endpoint}`)
 export {
     replaceWithUnix,
     sendNews, sendAlliances,

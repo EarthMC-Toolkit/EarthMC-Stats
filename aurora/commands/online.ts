@@ -1,31 +1,33 @@
-import Discord from 'discord.js'
+import {
+    Client, Message, 
+    Colors, EmbedBuilder
+} from 'discord.js'
 
 import { Aurora } from "earthmc"
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import * as fn from '../../bot/utils/fn.js'
 
-const embed = (client: Discord.Client, msg: Discord.Message) => new Discord.EmbedBuilder()
+const embed = (client: Client, msg: Message) => new EmbedBuilder()
     .setColor(0x556b2f)
     .setAuthor({ name: msg.author.username, iconURL: msg.author.displayAvatarURL() })
-    .setTimestamp()
     .setFooter(fn.devsFooter(client))
+    .setTimestamp()
 
 export default {
     name: "online",
     slashCommand: true,
-    run: async (client: Discord.Client, message: Discord.Message, args: string[]) => {
+    run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        const m = await message.reply({embeds: [new Discord.EmbedBuilder()
+        const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching activity data, this might take a moment.")
             .setColor(0x556b2f)]
         })
 
-        if (!req) return m.edit({embeds: [
-              new Discord.EmbedBuilder()
-              .setColor(Discord.Colors.Red)
-              .setTitle("No Arguments Given")
-              .setDescription("Arguments: `all`, `staff`/`mods`, `mayors`, `kings`")
+        if (!req) return m.edit({embeds: [new EmbedBuilder()
+            .setColor(Colors.Red)
+            .setTitle("No Arguments Given")
+            .setDescription("Arguments: `all`, `staff`/`mods`, `mayors`, `kings`")
         ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
         const onlinePlayers = await Aurora.Players.online().catch(err => console.log(err))
@@ -61,7 +63,8 @@ export default {
             }
             case "mayors": {
                 const towns = await Aurora.Towns.all().then(arr =>
-                    arr.filter(t => onlinePlayers.find(op => op.name == t.mayor)))
+                    arr.filter(t => onlinePlayers.find(op => op.name == t.mayor))
+                )
                 
                 if (!towns) return
                 fn.sortByKey(towns, 'mayor')
@@ -80,8 +83,11 @@ export default {
             }
             case "kings": {
                 const allNations = await Aurora.Nations.all().catch(err => console.log(err))
-                if (!allNations || allNations.length < 1) 
-                    return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                if (!allNations || allNations.length < 1) {
+                    return await m.edit({ embeds: [fn.fetchError] })
+                        .then(m => setTimeout(() => m.delete(), 10000))
+                        .catch(() => {})
+                }
 
                 const nations = allNations.filter(n => onlinePlayers.find(op => op.name == n.king))
                 fn.sortByKey(nations, 'king')
@@ -98,9 +104,8 @@ export default {
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
                     .editMessage(m)
             }
-            default: return await m.edit({embeds: [
-                new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.Red)
+            default: return await m.edit({embeds: [new EmbedBuilder()
+                .setColor(Colors.Red)
                 .setTitle("Invalid Arguments")
                 .setDescription("Arguments: `all`, `staff`, `mayors`, `kings`")
             ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
