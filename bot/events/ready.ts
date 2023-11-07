@@ -114,7 +114,6 @@ async function registerCommands(client: Client) {
     const linkAction = new ContextMenuCommandBuilder().setName("Link User").setType(2) 
     data.push(linkAction)
 
-    const prod = process.env.PROD == "true"
     if (prod) await client.application.commands.set(data)
     else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
 

@@ -1,4 +1,8 @@
-import Discord from "discord.js"
+import { 
+    Client, Message, 
+    EmbedBuilder, Colors, 
+    TextChannel, ButtonStyle
+} from "discord.js"
 
 import { Aurora } from "earthmc"
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
@@ -6,12 +10,12 @@ import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
-const sendDevsOnly = (msg: Discord.Message) => msg.edit({embeds: [
-    new Discord.EmbedBuilder()
+const sendDevsOnly = (msg: Message) => msg.edit({embeds: [
+    new EmbedBuilder()
     .setTitle("That command is for developers only!")
     .setTitle("Goofy ah :skull:")
     .setAuthor({name: msg.author.tag, iconURL: msg.author.displayAvatarURL()})
-    .setColor(Discord.Colors.Red)
+    .setColor(Colors.Red)
     .setTimestamp()
 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
@@ -24,11 +28,12 @@ const seniorEditorID = "1143253762039873646"
 export default {
     name: "alliance",
     aliases: ["pacts", "submeganations", "meganations", "alliances", "a"],
-    run: async (client: Discord.Client, message: Discord.Message, args: string[]) => {
-        const req = args.join(" "),
-              m = await message.reply({embeds: [new Discord.EmbedBuilder()
-                .setTitle("<a:loading:966778243615191110> Fetching alliance data, this may take a moment.")
-                .setColor(Discord.Colors.DarkBlue)]})
+    run: async (client: Client, message: Message, args: string[]) => {
+        const req = args.join(" ")
+        const m = await message.reply({embeds: [new EmbedBuilder()
+            .setTitle("<a:loading:966778243615191110> Fetching alliance data, this may take a moment.")
+            .setColor(Colors.DarkBlue)
+        ]})
 
         const commandName = message.content.slice(1).split(' ')[0].toLowerCase()
         const cmdArray = [
@@ -37,12 +42,11 @@ export default {
         ]
  
         if (!req && !cmdArray.includes(commandName)) {
-            return m.edit({embeds: [
-                new Discord.EmbedBuilder()
+            return m.edit({embeds: [new EmbedBuilder()
                 .setTitle("No Arguments Given!")
                 .setDescription("Usage: `/alliance <name>`, `/alliances` or `/alliances search <key>`")
                 .setTimestamp()
-                .setColor(Discord.Colors.Red)
+                .setColor(Colors.Red)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
 
@@ -63,25 +67,25 @@ export default {
                     const foundAlliance = await database.Aurora.getAlliance(args[1])
 
                     if (!foundAlliance) return m.edit({embeds: [
-                        new Discord.EmbedBuilder()
+                        new EmbedBuilder()
                             .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                             .setTitle("Error fetching alliance")
                             .setDescription("That alliance does not exist! Please try again.")
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                     const ops = await Aurora.Players.online(true).catch(() => null)
-                    if (!ops) return m.edit({embeds: [new Discord.EmbedBuilder()
-                        .setColor(Discord.Colors.Red)
+                    if (!ops) return m.edit({embeds: [new EmbedBuilder()
+                        .setColor(Colors.Red)
                         .setTitle(`Error fetching online players`)
                         .setDescription("")
                         .setTimestamp()
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                     const allianceOps = ops?.filter(op => foundAlliance.online.find(p => p == op.name)) ?? []
-                    if (allianceOps.length < 1) return m.edit({embeds: [new Discord.EmbedBuilder()
-                        .setColor(Discord.Colors.DarkBlue)
+                    if (allianceOps.length < 1) return m.edit({embeds: [new EmbedBuilder()
+                        .setColor(Colors.DarkBlue)
                         .setTitle(`Online in ${name(foundAlliance)} [0]`)
                         .setDescription("No players are online in this alliance :(")
                         .setTimestamp()
@@ -94,8 +98,8 @@ export default {
                 
                     const len = allData.length
                     for (let i = 0; i < len; i++) {
-                        botembed[i] = new Discord.EmbedBuilder()
-                        .setColor(Discord.Colors.DarkBlue)
+                        botembed[i] = new EmbedBuilder()
+                        .setColor(Colors.DarkBlue)
                         .setTitle("Online in " + name(foundAlliance))
                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                         .setDescription("```" + allData[i] + "```")
@@ -109,11 +113,11 @@ export default {
             else {
                 //#region Alliance editing
                 if (!allowedChannels.includes(message.channel.id)) {
-                    return m.edit({embeds: [new Discord.EmbedBuilder()
+                    return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error running command")
                         .setDescription("Alliance commands are not allowed in this channel!")
                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                         .setTimestamp()
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                 }
@@ -133,86 +137,81 @@ export default {
                     const leaderName = !args[2] ? "No leader set." : argsHelper(args, 2).asString()
                     
                     if (!isNaN(Number(allianceName))) {
-                        return m.edit({embeds: [new Discord.EmbedBuilder()
+                        return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error creating alliance")
                             .setDescription("Alliance names cannot be numbers! Please try again.")
                             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                     }
                     
                     database.Aurora.getAlliances().then(async alliances => {
-                        const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-                        if (foundAlliance) return m.edit({embeds: [new Discord.EmbedBuilder()
+                        const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                        if (foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error creating alliance")
                             .setDescription("The alliance you're trying to create already exists! Please use /alliance add.")
                             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-                        else {
-                            const alliance = {
-                                allianceName: allianceName,
-                                leaderName: leaderName,
-                                discordInvite: "No discord invite has been set for this alliance",
-                                nations: [],
-                                type: 'Normal'
-                            }
-                            
-                            alliances.push(alliance)
-                            database.Aurora.setAlliances(alliances)
                         
-                            const embed = new Discord.EmbedBuilder()
-                                .setColor(Discord.Colors.DarkBlue)
-                                .setTimestamp()
-                                .setAuthor({ 
-                                    name: message.author.username, 
-                                    iconURL: message.author.displayAvatarURL() 
-                                })
-
-                            if (leaderName == "No leader set.") return m.edit({embeds: [embed
-                                .setTitle("Alliance Created")
-                                .setDescription("The alliance `" + allianceName + "` has been created.\n\nNo leader has been set.")
-                            ]})
-
-                            return m.edit({embeds: [embed
-                                .setTitle("Alliance Created")
-                                .setDescription("The alliance `" + allianceName + "` has been created.\n\nLeader(s): `" + leaderName + "`")
-                            ]})
+                        const alliance = {
+                            allianceName: allianceName,
+                            leaderName: leaderName,
+                            discordInvite: "No discord invite has been set for this alliance",
+                            nations: [],
+                            type: 'Normal'
                         }
+                        
+                        alliances.push(alliance)
+                        database.Aurora.setAlliances(alliances)
+                    
+                        const embed = new EmbedBuilder()
+                            .setColor(Colors.DarkBlue)
+                            .setTimestamp()
+                            .setAuthor({ 
+                                name: message.author.username, 
+                                iconURL: message.author.displayAvatarURL() 
+                            })
+
+                        if (leaderName == "No leader set.") return m.edit({embeds: [embed
+                            .setTitle("Alliance Created")
+                            .setDescription("The alliance `" + allianceName + "` has been created.\n\nNo leader has been set.")
+                        ]})
+
+                        return m.edit({embeds: [embed
+                            .setTitle("Alliance Created")
+                            .setDescription("The alliance `" + allianceName + "` has been created.\n\nLeader(s): `" + leaderName + "`")
+                        ]})
                     })
                 } else if (arg1 == "rename") {
                     database.Aurora.getAlliances().then(async alliances => {
                         const allianceName = arg2,
                               foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName)
                             
-                        if (!foundAlliance) {
-                            return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
-                                .setTitle("Error renaming alliance")
-                                .setDescription("The alliance you're trying to rename does not exist! Please try again.")
-                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
-                                .setTimestamp()
-                            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                        } else {               
-                            const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
-                            
-                            m.edit({embeds: [
-                                new Discord.EmbedBuilder()
-                                .setTitle("Alliance Renamed")
-                                .setDescription("The alliance ```" + foundAlliance.allianceName + "``` has been renamed to ```" + args[2] + "```")
-                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
-                                .setTimestamp()
-                            ]})
+                        if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
+                            .setTitle("Error renaming alliance")
+                            .setDescription("The alliance you're trying to rename does not exist! Please try again.")
+                            .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                            .setColor(Colors.Red)
+                            .setTimestamp()
+                        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+ 
+                        const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
 
-                            foundAlliance.allianceName = args[2]
-                            alliances[allianceIndex] = foundAlliance
-                            
-                            database.Aurora.setAlliances(alliances)
-                        }
+                        m.edit({embeds: [new EmbedBuilder()
+                            .setTitle("Alliance Renamed")
+                            .setDescription("The alliance ```" + foundAlliance.allianceName + "``` has been renamed to ```" + args[2] + "```")
+                            .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                            .setColor(Colors.DarkBlue)
+                            .setTimestamp()
+                        ]})
+
+                        foundAlliance.allianceName = args[2]
+                        alliances[allianceIndex] = foundAlliance
+                        
+                        database.Aurora.setAlliances(alliances)
                     })
                 } else if (arg1 == "delete" || arg1 == "disband") {
                     if (isEditor && !seniorEditor) return sendDevsOnly(m)
@@ -221,11 +220,11 @@ export default {
                         const allianceName = arg2,
                               foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName)
 
-                        if (!foundAlliance) return m.edit({embeds: [new Discord.EmbedBuilder()
+                        if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error disbanding alliance")
                             .setDescription("The alliance you're trying to disband does not exist! Please try again.")
                             .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                         else {
@@ -234,11 +233,11 @@ export default {
                             alliances.splice(allianceIndex, 1)
                             database.Aurora.setAlliances(alliances)
                         
-                            return m.edit({embeds: [new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Disbanded")
                                 .setDescription("The alliance `" + name(foundAlliance) + "` has been disbanded.")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]})
                         }
@@ -246,72 +245,73 @@ export default {
                 }
                 else if (arg1 == "add") { // Adding nation(s) to an alliance      
                     database.Aurora.getAlliances().then(async alliances => {
-                        const allianceName = arg2,
-                              foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                        const allianceName = arg2
+                        const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                         
-                        if (!foundAlliance) return m.edit({embeds: [
-                            new Discord.EmbedBuilder()
-                                .setTitle("Error updating alliance")
-                                .setDescription("Unable to update that alliance as it does not exist!")
-                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
-                                .setTimestamp()
+                        if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
+                            .setTitle("Error updating alliance")
+                            .setDescription("Unable to update that alliance as it does not exist!")
+                            .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                            .setColor(Colors.Red)
+                            .setTimestamp()
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                        else {
-                            // Remove first 2 args, then remove commas from every other argument.
-                            const formattedArgs = argsHelper(args, 2),
-                                  nationsToAdd = formattedArgs.asArray(),
-                                  allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
 
-                            //console.log(nationsToAdd)
-                            if (!nationsToAdd) return
+                        // Remove first 2 args, then remove commas from every other argument.
+                        const formattedArgs = argsHelper(args, 2)
+                        const nationsToAdd = formattedArgs.asArray()
+                        const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
-                            database.Aurora.getNations().then(async nations => {
-                                const nationsSkipped = [], 
-                                    nationsAdded = []
-                                    
-                                const len = nationsToAdd.length
-                                for (let i = 0; i < len; i++) {                                                 
-                                    const nation = nations.find(n => n.name.toLowerCase() == nationsToAdd[i].toLowerCase())
-            
-                                    if (!nation) {
-                                        nationsSkipped.push(nationsToAdd[i])
-                                        continue
-                                    }
+                        //console.log(nationsToAdd)
+                        if (!nationsToAdd) return
 
-                                    nationsAdded.push(nation.name)
-
-                                    // If the current nation doesn't already exist in the alliance, add it.
-                                    const foundNation = foundAlliance.nations.find(nation => nation.toLowerCase() == nationsToAdd[i].toLowerCase())
-                                    if (!foundNation) foundAlliance.nations.push(nation.name)
-                                }
-
-                                alliances[allianceIndex] = foundAlliance
-                                database.Aurora.setAlliances(alliances)
-
-                                const allianceEmbed = new Discord.EmbedBuilder()
-                                    .setTitle("Alliance Updated | " + name(foundAlliance))
-                                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                    .setTimestamp()
+                        database.Aurora.getNations().then(async nations => {
+                            const nationsSkipped = []
+                            const nationsAdded = []
                                 
-                                // Some nations skipped, some added.
-                                if (nationsSkipped.length >= 1 && nationsAdded.length >= 1) {
-                                    allianceEmbed.setColor(Discord.Colors.Orange)
-                                                 .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + 
-                                                                 "```\n\nThe following nations do not exist:\n\n```" + nationsSkipped.join(", ") + "```")
+                            const len = nationsToAdd.length
+                            for (let i = 0; i < len; i++) {   
+                                const cur = nationsToAdd[i]                                              
+                                const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
+        
+                                if (!nation) {
+                                    nationsSkipped.push(cur)
+                                    continue
                                 }
-                                else if (nationsSkipped.length >= 1 && nationsAdded.length < 1) { // No nations added, all skipped.          
-                                    allianceEmbed.setColor(Discord.Colors.Red)       
-                                                 .setDescription("The following nations do not exist:\n\n```" + nationsSkipped.join(", ") + "```")
-                                }
-                                else if (nationsSkipped.length < 1 && nationsAdded.length >= 1) { // Nations added, none skipped.
-                                    allianceEmbed.setColor(Discord.Colors.DarkBlue)
-                                                 .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
-                                }
-                                
-                                return m.edit({ embeds: [allianceEmbed] })
-                            })
-                        }
+
+                                nationsAdded.push(nation.name)
+
+                                // If the current nation doesn't already exist in the alliance, add it.
+                                const foundNation = foundAlliance.nations.find(nation => nation.toLowerCase() == cur.toLowerCase())
+                                if (!foundNation) foundAlliance.nations.push(nation.name)
+                            }
+
+                            alliances[allianceIndex] = foundAlliance
+                            database.Aurora.setAlliances(alliances)
+
+                            const allianceEmbed = new EmbedBuilder()
+                                .setTitle("Alliance Updated | " + name(foundAlliance))
+                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                                .setTimestamp()
+                            
+                            // Some nations skipped, some added.
+                            if (nationsSkipped.length >= 1 && nationsAdded.length >= 1) {
+                                allianceEmbed.setColor(Colors.Orange)
+                                    .setDescription(
+                                        "The following nations have been added:\n\n```" + nationsAdded.join(", ") + 
+                                        "```\n\nThe following nations do not exist:\n\n```" + nationsSkipped.join(", ") + "```"
+                                    )
+                            }
+                            else if (nationsSkipped.length >= 1 && nationsAdded.length < 1) { // No nations added, all skipped.          
+                                allianceEmbed.setColor(Colors.Red)       
+                                    .setDescription("The following nations do not exist:\n\n```" + nationsSkipped.join(", ") + "```")
+                            }
+                            else if (nationsSkipped.length < 1 && nationsAdded.length >= 1) { // Nations added, none skipped.
+                                allianceEmbed.setColor(Colors.DarkBlue)
+                                    .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
+                            }
+                            
+                            return m.edit({ embeds: [allianceEmbed] })
+                        })
                     })
                 } else if (arg1 == "remove") {
                     database.Aurora.getAlliances().then(async alliances => {
@@ -319,12 +319,11 @@ export default {
                               foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                         
                         if (!foundAlliance) {
-                            return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Error updating alliance")
                                 .setDescription("Unable to update that alliance as it does not exist!")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
+                                .setColor(Colors.Red)
                                 .setTimestamp()
                             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                         } else {
@@ -339,14 +338,15 @@ export default {
                                 const currentNationToRemove = nationsToRemove[i]
                                 
                                 // If a nation is a number, return an error message.
-                                if (!isNaN(Number(currentNationToRemove))) return m.edit({embeds: [
-                                    new Discord.EmbedBuilder()
+                                if (!isNaN(Number(currentNationToRemove))) {
+                                    return m.edit({embeds: [new EmbedBuilder()
                                         .setTitle("Error updating alliance")
                                         .setDescription("Cannot use a number as an alliance nation! Please try again.")
                                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                        .setColor(Discord.Colors.Red)
+                                        .setColor(Colors.Red)
                                         .setTimestamp()
-                                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                                }
                                          
                                 const foundAllianceNations = foundAlliance.nations,
                                       nationToRemoveLower = currentNationToRemove.toLowerCase()
@@ -359,34 +359,33 @@ export default {
                                 else nationsToRemove.splice(foundNationIndex, 1)
                             }
                         
-                            if (nationsToRemove.length < 1) return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
-                                .setTitle("Error updating alliance")
-                                .setDescription("None of the specified nations exist in that alliance!")
-                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
-                                .setTimestamp()
-                            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                            if (nationsToRemove.length < 1) {
+                                return m.edit({embeds: [new EmbedBuilder()
+                                    .setTitle("Error updating alliance")
+                                    .setDescription("None of the specified nations exist in that alliance!")
+                                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                                    .setColor(Colors.Red)
+                                    .setTimestamp()
+                                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                            }
 
                             alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
 
-                            return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]})
                         }
                     })
                 } else if (arg1 == "set") {
-                    if (!arg2) return m.edit({embeds: [
-                        new Discord.EmbedBuilder()
+                    if (!arg2) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Please provide a valid option for this command.\nChoices: Leader, Discord, Type or Image/Flag.`)
                         .setTimestamp()
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     
                     if (arg2 == "leader") {
@@ -394,13 +393,12 @@ export default {
                             const allianceName = args[2],
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
-                            if (!foundAlliance) return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
-                                    .setTitle("Error updating alliance")
-                                    .setDescription("Unable to update that alliance as it does not exist!")
-                                    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                                    .setColor(Discord.Colors.Red)
-                                    .setTimestamp()
+                            if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
+                                .setTitle("Error updating alliance")
+                                .setDescription("Unable to update that alliance as it does not exist!")
+                                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                                .setColor(Colors.Red)
+                                .setTimestamp()
                             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
                             foundAlliance.leaderName = argsHelper(args, 3).asString()
@@ -409,12 +407,11 @@ export default {
                             alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
                             
-                            return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription("The alliance leader has been set to: `" + foundAlliance.leaderName + "`")
                                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]})
                         })
@@ -424,21 +421,21 @@ export default {
                             const allianceName = args[2],
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
-                            if (!foundAlliance) return m.edit({embeds: [new Discord.EmbedBuilder()
+                            if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Error updating alliance")
                                 .setDescription("Unable to update that alliance as it does not exist!")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
+                                .setColor(Colors.Red)
                                 .setTimestamp()
                             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
                             const inviteInput = args[3]
-                            if (!inviteInput.startsWith("https://discord.gg")) {
-                                return m.edit({embeds: [new Discord.EmbedBuilder()
+                            if (!inviteInput.startsWith("https://gg")) {
+                                return m.edit({embeds: [new EmbedBuilder()
                                     .setTitle("Error updating alliance")
-                                    .setDescription("That invite is not valid. Make sure it begins with `https://discord.gg`.")
+                                    .setDescription("That invite is not valid. Make sure it begins with `https://gg`.")
                                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                                    .setColor(Discord.Colors.Red)
+                                    .setColor(Colors.Red)
                                     .setTimestamp()
                                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             }
@@ -450,11 +447,11 @@ export default {
 
                             await database.Aurora.setAlliances(alliances)
 
-                            return m.edit({embeds: [new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription("The alliance discord link has been set to: " + inviteInput)
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]})
                         })
@@ -464,11 +461,11 @@ export default {
                             const allianceName = args[2],
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
-                            if (!foundAlliance) return m.edit({embeds: [new Discord.EmbedBuilder()
+                            if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Error updating alliance")
                                 .setDescription("Unable to update that alliance as it does not exist!")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
+                                .setColor(Colors.Red)
                                 .setTimestamp()]
                             }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
@@ -479,12 +476,12 @@ export default {
 
                             await database.Aurora.setAlliances(alliances)
                             
-                            return m.edit({embeds: [new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription("The alliance image has been set to:") 
                                 .setImage(args[3])
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]}).catch(() => {})
                         })
@@ -495,22 +492,22 @@ export default {
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                             if (!foundAlliance) return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
+                                new EmbedBuilder()
                                     .setTitle("Error updating alliance")
                                     .setDescription("Unable to update that alliance as it does not exist!")
                                     .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                    .setColor(Discord.Colors.Red)
+                                    .setColor(Colors.Red)
                                     .setTimestamp()]
                             }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
                             const type = args[3].toLowerCase()
                             if (type != 'sub' && type != 'normal' && type != 'mega') 
                                 return m.edit({embeds: [
-                                    new Discord.EmbedBuilder()
+                                    new EmbedBuilder()
                                         .setTitle("Invalid Arguments!")
                                         .setDescription("Unable to set alliance type. Choose one of the following: `sub`, `mega`, `normal`")
                                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                        .setColor(Discord.Colors.Red)
+                                        .setColor(Colors.Red)
                                         .setTimestamp()]
                                 }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
@@ -524,11 +521,11 @@ export default {
                             alliances[allianceIndex] = foundAlliance   
                             await database.Aurora.setAlliances(alliances)
                             
-                            return m.edit({embeds: [new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription(desc)
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()]
                             }).catch(() => {})
                         })
@@ -538,11 +535,11 @@ export default {
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
     
                             if (!foundAlliance) return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
+                                new EmbedBuilder()
                                 .setTitle("Error updating alliance")
                                 .setDescription("That alliance does not exist!")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
+                                .setColor(Colors.Red)
                                 .setTimestamp()]
                             }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
@@ -556,13 +553,13 @@ export default {
                             alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
                             
-                            return m.edit({embeds: [new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription(`The alliance colours have been set to: \n
                                     Fill: ${foundAlliance.colours.fill}\n
                                     Outline: ${foundAlliance.colours.outline}`)
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]}).catch(() => {})
                         })
@@ -571,11 +568,11 @@ export default {
                             const allianceName = args[2],
                                   foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
     
-                            if (!foundAlliance) return m.edit({embeds: [new Discord.EmbedBuilder()
+                            if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Error updating alliance")
                                 .setDescription("That alliance does not exist!")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.Red)
+                                .setColor(Colors.Red)
                                 .setTimestamp()]
                             }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
@@ -586,18 +583,20 @@ export default {
                             alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
                             
-                            return m.edit({embeds: [new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + foundAlliance.allianceName)
                                 .setDescription(`The alliance's full name has been set to: ${foundAlliance.fullName}`) 
                                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]}).catch(() => {})
                         })
-                    } else return m.edit({embeds: [new Discord.EmbedBuilder()
+                    }
+                    
+                    return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`${args[1]} isn't a valid option, please try again.`)
                         .setTimestamp()
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
                 else if (arg1 == "merge") {
@@ -605,11 +604,11 @@ export default {
                         const allianceName = arg2,
                               foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
                         
-                        if (!foundAlliance) return m.edit({embeds: [new Discord.EmbedBuilder()
+                        if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error updating alliance")
                             .setDescription("Unable to update that alliance as it does not exist!")
                             .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                             .setTimestamp()
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                         else {
@@ -622,11 +621,11 @@ export default {
                                 // If an alliance is a number, return an error message.
                                 if (!isNaN(Number(allianceToMerge))) {
                                     return m.edit({embeds: [
-                                        new Discord.EmbedBuilder()
+                                        new EmbedBuilder()
                                         .setTitle("Error updating alliance")
                                         .setDescription("Cannot use a number as an alliance name! Please try again.")
                                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                        .setColor(Discord.Colors.Red)
+                                        .setColor(Colors.Red)
                                         .setTimestamp()
                                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                                 }
@@ -640,12 +639,11 @@ export default {
                             alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
                         
-                            return m.edit({embeds: [
-                                new Discord.EmbedBuilder()
+                            return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
                                 .setDescription("The following alliances have been merged:\n\n```" + alliancesToMerge.join(", ").toString() + "```")
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setColor(Discord.Colors.DarkBlue)
+                                .setColor(Colors.DarkBlue)
                                 .setTimestamp()
                             ]})
                         }
@@ -655,10 +653,10 @@ export default {
                     if (isEditor) return sendDevsOnly(m)
                     
                     const backupData = await fn.jsonReq(arg2).catch(e => console.error(e)) as any
-                    if (!backupData) return m.edit({embeds: [new Discord.EmbedBuilder()
+                    if (!backupData) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`\`${arg2}\` isn't a valid JSON file, please try again.`)
                         .setTimestamp()
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                     const len = backupData.length
@@ -678,21 +676,21 @@ export default {
 
                     await database.Aurora.setAlliances(alliances)
                             
-                    return m.edit({embeds: [new Discord.EmbedBuilder()
+                    return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Backup Successful")
                         .setDescription('The following alliances have been restored:\n\n```' + restored.join(", ") + '```') 
                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                        .setColor(Discord.Colors.DarkBlue)
+                        .setColor(Colors.DarkBlue)
                         .setTimestamp()
                     ]}).catch(() => {})
+                } else {
+                    return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle("Invalid Usage!")
+                        .setDescription("Invalid dev argument: `" + args[0] + "`")
+                        .setTimestamp()
+                        .setColor(Colors.Red)
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
-                
-                return m.edit({embeds: [new Discord.EmbedBuilder()
-                    .setTitle("Invalid Usage!")
-                    .setDescription("Invalid dev argument: `" + args[0] + "`")
-                    .setTimestamp()
-                    .setColor(Discord.Colors.Red)
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 //#endregion
             }
         }
@@ -775,11 +773,11 @@ async function sendAllianceList(client, message, m, args, type) {
             //#region Search or send all
             if (searching) {
                 if (foundAlliances.length == 0) {
-                    return m.edit({embeds: [new Discord.EmbedBuilder()
+                    return m.edit({embeds: [new EmbedBuilder()
                         .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                         .setTitle("Searching unsuccessful")
                         .setDescription("Could not find any alliances matching that key.")
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
                         .setTimestamp()
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
@@ -798,8 +796,8 @@ async function sendAllianceList(client, message, m, args, type) {
 
                 const len = allData.length
                 for (let i = 0; i < len; i++) {
-                    botembed[i] = new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.DarkBlue)
+                    botembed[i] = new EmbedBuilder()
+                    .setColor(Colors.DarkBlue)
                     .setTitle("List of Alliances")
                     .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                     .setDescription(allData[i])
@@ -824,8 +822,8 @@ async function sendAllianceList(client, message, m, args, type) {
 
             const len = allData.length
             for (let i = 0; i < len; i++) {
-                botembed[i] = new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.DarkBlue)
+                botembed[i] = new EmbedBuilder()
+                .setColor(Colors.DarkBlue)
                 .setTitle("List of Alliances")
                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                 .setDescription(allData[i])
@@ -840,19 +838,19 @@ async function sendAllianceList(client, message, m, args, type) {
 }
 
 async function sendSingleAlliance(
-    client: Discord.Client, 
-    message: Discord.Message, 
-    m: Discord.Message, 
+    client: Client, 
+    message: Message, 
+    m: Message, 
     args: string[]
 ) {
     const foundAlliance = await database.Aurora.getAlliance(args[0])
     if (!foundAlliance) {
         return m.edit({embeds: [
-            new Discord.EmbedBuilder()
+            new EmbedBuilder()
             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
             .setTitle("Error fetching alliance")
             .setDescription("That alliance does not exist! Please try again.")
-            .setColor(Discord.Colors.Red)
+            .setColor(Colors.Red)
             .setTimestamp()
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
     }
@@ -863,11 +861,11 @@ async function sendSingleAlliance(
     ))
 
     if (!players) return m.edit({embeds: [
-        new Discord.EmbedBuilder()
+        new EmbedBuilder()
         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         .setTitle("Database error occurred")
         .setDescription("Failed to fetch players needed for this command to work.")
-        .setColor(Discord.Colors.Red)
+        .setColor(Colors.Red)
         .setTimestamp()
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
@@ -883,7 +881,7 @@ async function sendSingleAlliance(
         const leaderID = leader.linkedID
 
         if (leaderID) {
-            const members = (message.channel as Discord.TextChannel).members
+            const members = (message.channel as TextChannel).members
             if (members.get(leaderID)) {
                 // Leader can view channel where command was issued, use mention.
                 leaders.push(`<@${leaderID}>`)
@@ -901,7 +899,7 @@ async function sendSingleAlliance(
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setColor(foundAlliance.colours 
             ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
-            : Discord.Colors.DarkBlue
+            : Colors.DarkBlue
         )
         .setDefaultAuthor(message)
         .setTimestamp()
@@ -936,7 +934,7 @@ async function sendSingleAlliance(
             "Too many nations to display! Click the 'view all' button to see the full list."
         ))
 
-        allianceEmbed.addButton('view_all_nations', 'View All Nations', Discord.ButtonStyle.Primary)
+        allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
     }
 
     return m.edit({ embeds: [allianceEmbed], files: thumbnail, components: allianceEmbed.components })
