@@ -1,24 +1,38 @@
 import type { Client } from "discord.js"
-import striptags from'striptags'
+import striptags from 'striptags'
 
-import * as emc from 'earthmc'
 import * as MC from '../bot/utils/minecraft.js'
 import * as database from '../bot/utils/database.js'
+
+import { 
+    OfficialAPI, 
+    Nova, Aurora,
+    type OAPIResident, 
+    type OnlinePlayer
+} from 'earthmc'
+
+import { type MCSessionProfile } from "../bot/types.js"
+
 import { secToMs } from "../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
 
 class ResidentHelper extends BaseHelper {
     dbResident = null
     
-    apiResident = null
+    #apiResident: OAPIResident = null
 
-    onlinePlayer = null
+    get apiResident() { return this.#apiResident }
+    private set apiResident(val: OAPIResident) {
+        this.#apiResident = val
+    }
+
+    onlinePlayer: OnlinePlayer = null
 
     pInfo = null
 
-    player = null
+    player: MCSessionProfile = null
     
-    status = ''
+    status: "Online" | "Offline"
 
     constructor(client: Client, isNova = false) {
         super(client, isNova)
@@ -32,7 +46,7 @@ class ResidentHelper extends BaseHelper {
 
     async fetchResidents() {
         const arr = await (this.isNova ? database.Nova : database.Aurora).getResidents()
-        return arr ? arr : await (this.isNova ? emc.Nova : emc.Aurora).Residents.all()
+        return arr ? arr : await (this.isNova ? Nova : Aurora).Residents.all()
     }
 
     async init(args, isInteraction = false) {
@@ -46,29 +60,31 @@ class ResidentHelper extends BaseHelper {
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)
 
         const resName = this.dbResident?.name || arg1
-        const ops = await (this.isNova ? emc.Nova : emc.Aurora).Players.online().catch(() => {})
+        const ops = await (this.isNova ? Nova : Aurora).Players.online()
 
         const searchName = !this.dbResident ? arg1 : resName
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
         if (!this.isNova) {
+            let res: OAPIResident
             try {
-                const res = await emc.OfficialAPI.resident(arg1)
-
-                if (res.town) {
-                    const resTown = await emc.OfficialAPI.town(res.town.toLowerCase())
-
-                    let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
-                    if (rank == "Mayor" && resTown.status.isCapital) 
-                        rank = "Nation Leader" 
-    
-                    res['rank'] = rank
-                }
-
-                this.apiResident = res
+                res = await OfficialAPI.resident(arg1)
             } catch (e) {
                 console.log(e)
+                return false
             }
+
+            if (res.town) {
+                const resTown = await OfficialAPI.town(res.town.toLowerCase())
+
+                let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
+                if (rank == "Mayor" && resTown.status.isCapital) 
+                    rank = "Nation Leader" 
+
+                res['rank'] = rank
+            }
+
+            this.apiResident = res
         }
 
         this.status = this.onlinePlayer ? "Online" : "Offline"

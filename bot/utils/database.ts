@@ -16,7 +16,7 @@ const playerCollection = () => db.collection("players")
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
-const getPlayers = async (skipCache=false) => {
+const getPlayers = async (skipCache = false) => {
     const skip = !skipCache ? cache.get('players') : null
 
     return skip ?? playerCollection().get().then(async snapshot => { 
@@ -24,7 +24,7 @@ const getPlayers = async (skipCache=false) => {
     }).catch(() => {})
 }
 
-const getPlayerInfo = (name: string, includeTimestamps=true) => getPlayers().then(players => {
+const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
     if (!players) return null
 
     const player = players.find(p => p.name.toLowerCase() == name.toLowerCase())
@@ -42,7 +42,7 @@ const getPlayerInfo = (name: string, includeTimestamps=true) => getPlayers().the
     return player
 })
 
-async function setPlayers(players) {
+async function setPlayers(players: any[]) {
     cache.put('players', players, 298*1000)
 
     let counter = 0
