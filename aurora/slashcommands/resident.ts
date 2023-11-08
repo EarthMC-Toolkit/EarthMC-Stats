@@ -25,7 +25,7 @@ export default {
         }
 
         const resHelper = new ResidentHelper(client)
-        const exists = await resHelper.init(name, true)
+        const exists = await resHelper.init(name)
 
         if (!exists || !resHelper.apiResident) {
             await interaction.deleteReply()

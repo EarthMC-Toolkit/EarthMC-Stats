@@ -49,8 +49,8 @@ class ResidentHelper extends BaseHelper {
         return arr ? arr : await (this.isNova ? Nova : Aurora).Residents.all()
     }
 
-    async init(args, isInteraction = false) {
-        const arg1 = (isInteraction ? args : args[0])?.toLowerCase()
+    async init(input: string) {
+        const arg1 = input?.toLowerCase()
         const p = await MC.Players.get(arg1).catch(err => { console.log(err); return null })
 
         if (!p) return false

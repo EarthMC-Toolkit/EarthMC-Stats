@@ -1,4 +1,4 @@
-import * as fn from '../../bot/utils/fn.js'
+import { devsFooter } from '../../bot/utils/fn.js'
 
 import { ResidentHelper } from '../../common/resident.js'
 import { MessageCommand } from '../../bot/types.js'
@@ -12,7 +12,7 @@ import {
 
 const errEmbed = (client: Client, msg: Message) => new EmbedBuilder()
     .setColor(Colors.Red)
-    .setFooter(fn.devsFooter(client))
+    .setFooter(devsFooter(client))
     .setAuthor({ 
         name: msg.author.username, 
         iconURL: msg.author.displayAvatarURL() 
@@ -46,7 +46,7 @@ const resCmd: MessageCommand = {
         //#endregion
 
         const resHelper = new ResidentHelper(client)
-        const exists = await resHelper.init(args)
+        const exists = await resHelper.init(input)
 
         if (!exists || !resHelper.apiResident) {
             return m.edit({embeds: [errEmbed(client, message)
