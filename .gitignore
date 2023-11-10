@@ -1,9 +1,14 @@
+# Directories
 /node_modules
 /bot/archive
-
 /firebase
 /dist
 
+## Secret files
 .env
 .env.*
+pm2.*
+ecosystem.*
+
+## Extra
 .slugignore
