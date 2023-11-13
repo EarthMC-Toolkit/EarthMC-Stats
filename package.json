@@ -21,10 +21,10 @@
   },
   "scripts": {
     "compile": "rimraf dist && tsc",
-    "start-js": "pnpm run compile && node --gc_interval=240 --max-old-space-size=960 ./dist/index.js",
-    "start": "tsx index.ts",
     "reinstall": "rimraf node_modules && pnpm install",
-    "start-bun": "bun run index.ts"
+    "start-js": "pnpm run compile && node ./dist/index.js",
+    "start": "tsx index.ts",
+    "deploy": "pm2 startOrGracefulReload --attach ecosystem.json"
   },
   "engines": {
     "node": ">=16.20.2",
