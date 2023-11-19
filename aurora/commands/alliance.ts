@@ -430,10 +430,10 @@ export default {
                             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                             
                             const inviteInput = args[3]
-                            if (!inviteInput.startsWith("https://gg")) {
+                            if (!inviteInput.startsWith("https://discord.gg")) {
                                 return m.edit({embeds: [new EmbedBuilder()
                                     .setTitle("Error updating alliance")
-                                    .setDescription("That invite is not valid. Make sure it begins with `https://gg`.")
+                                    .setDescription("That invite is not valid. Make sure it begins with `https://discord.gg`.")
                                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                                     .setColor(Colors.Red)
                                     .setTimestamp()
