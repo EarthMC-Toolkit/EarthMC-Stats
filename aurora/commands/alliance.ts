@@ -555,8 +555,8 @@ export default {
                                 
                             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                             let change = `set to: \n
-                            Fill: ${foundAlliance.colours.fill}\n
-                            Outline: ${foundAlliance.colours.outline}`
+                                Fill: ${foundAlliance.colours.fill}\n
+                                Outline: ${foundAlliance.colours.outline}`
                             if (!args[3]) {
                                 change = "cleared"
                                 delete alliances[allianceIndex]['colours']
