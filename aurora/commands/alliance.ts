@@ -258,8 +258,13 @@ export default {
 
                         // Remove first 2 args, then remove commas from every other argument.
                         const formattedArgs = argsHelper(args, 2)
-                        const nationsToAdd = formattedArgs.asArray()
+                        let nationsToAdd = formattedArgs.asArray()
                         const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+
+                        if (nationsToAdd.includes("$override")) {
+                            nationsToAdd = nationsToAdd.filter(nation => nation !== "$override")
+                            foundAlliance.nations = []
+                        }
 
                         //console.log(nationsToAdd)
                         if (!nationsToAdd) return
@@ -549,15 +554,19 @@ export default {
                             }
                                 
                             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-    
-                            alliances[allianceIndex] = foundAlliance
+                            let change = `set to: \n
+                            Fill: ${foundAlliance.colours.fill}\n
+                            Outline: ${foundAlliance.colours.outline}`
+                            if (!args[3]) {
+                                change = "cleared"
+                                delete alliances[allianceIndex]['colours']
+                            } 
+                            else alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
                             
                             return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + name(foundAlliance))
-                                .setDescription(`The alliance colours have been set to: \n
-                                    Fill: ${foundAlliance.colours.fill}\n
-                                    Outline: ${foundAlliance.colours.outline}`)
+                                .setDescription(`The alliance colours have been ${change}`)
                                 .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                                 .setColor(Colors.DarkBlue)
                                 .setTimestamp()
@@ -579,13 +588,17 @@ export default {
                             foundAlliance.fullName = args.splice(3).join(" ")
                                 
                             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-    
-                            alliances[allianceIndex] = foundAlliance
+                            let change = `set to: ${foundAlliance.fullName}`
+                            if (!args[3]) {
+                                change = "cleared"
+                                delete alliances[allianceIndex]['leader']
+                            }
+                            else alliances[allianceIndex] = foundAlliance
                             database.Aurora.setAlliances(alliances)
                             
                             return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Alliance Updated | " + foundAlliance.allianceName)
-                                .setDescription(`The alliance's full name has been set to: ${foundAlliance.fullName}`) 
+                                .setDescription(`The alliance's full name has been ${change}`) 
                                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                                 .setColor(Colors.DarkBlue)
                                 .setTimestamp()
