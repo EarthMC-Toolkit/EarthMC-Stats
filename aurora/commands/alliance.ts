@@ -186,7 +186,7 @@ export default {
                         ]})
                     })
                 } else if (arg1 == "wizard") {
-                    const info = argsHelper(args, 1).asString().split(';')
+                    const info = arg2.split(';')
                     const allianceName = info[0]
                     
                     if (!allianceName) {
