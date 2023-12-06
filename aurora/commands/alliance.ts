@@ -136,7 +136,7 @@ export default {
                     const allianceName = args[1]
                     const leaderName = !args[2] ? "No leader set." : argsHelper(args, 2).asString()
                     
-                    if (!isNaN(Number(allianceName))) {
+                    if (typeof(allianceName) == "number") {
                         return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error creating alliance")
                             .setDescription("Alliance names cannot be numbers! Please try again.")
@@ -229,15 +229,17 @@ export default {
                             discordInvite: info[5] ?? "No discord invite has been set for this alliance",
                             ...{
                                 fullName: info[1],
-                                imageURL: info[6],
+                                imageURL: info[6]
                             }
                         }
 
                         const fill = args[7]
-                        alliance['colours'] = { 
-                            fill, outline: args[8] ?? fill
+                        if (fill) {
+                            alliance['colours'] = { 
+                                fill, outline: args[8] ?? fill
+                            }
                         }
-                        
+
                         alliances.push(alliance)
                         database.Aurora.setAlliances(alliances)
                     
@@ -963,8 +965,8 @@ async function sendSingleAlliance(
           allianceType = typeString == 'sub' ? "Sub-Meganation" : 
                          typeString == 'mega' ? "Meganation" : "Normal"
     
-    const playersLen = players.length,
-          leaders = []
+    const playersLen = players.length
+    const leaders = []
 
     for (let i = 0; i < playersLen; i++) {
         const leader = players[i]
