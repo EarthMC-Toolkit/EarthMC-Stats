@@ -54,16 +54,21 @@ export default {
         if (commandName == "/meganations" || commandName == "meganations") return sendAllianceList(client, message, m, args, 'mega')
         if (commandName == "/pacts" || commandName == "pacts") return sendAllianceList(client, message, m, args, 'normal') // Normal/pacts only.
 
+        const arg1Lower = args[0]?.toLowerCase()
+
         // /alliances or /alliance list
-        if (commandName == "/alliances" || commandName == "alliances" || (args[0] != null && args[0].toLowerCase() == "list"))
+        if (commandName == "/alliances" || commandName == "alliances" || (arg1Lower == "list"))
             return sendAllianceList(client, message, m, args, 'all') // Includes all types.
         
         // /alliance <allianceName>
-        if (args.length == 1 && args[0].toLowerCase() != "list") return sendSingleAlliance(client, message, m, args)
-        else if (args.length > 1) {
+        if (args.length == 1 && arg1Lower != "list" && arg1Lower != "wizard") {
+            return sendSingleAlliance(client, message, m, args)
+        }
+        
+        if (args.length > 1) {
             // There is an argument, but not a dev one.
-            if (args[0] && !devArgs.includes(args[0].toLowerCase())) {
-                if (args[0].toLowerCase() == "online") {
+            if (args[0] && !devArgs.includes(arg1Lower)) {
+                if (arg1Lower == "online") {
                     const foundAlliance = await database.Aurora.getAlliance(args[1])
 
                     if (!foundAlliance) return m.edit({embeds: [
@@ -233,10 +238,10 @@ export default {
                             }
                         }
 
-                        const fill = args[7]
+                        const fill = info[7]
                         if (fill) {
                             alliance['colours'] = { 
-                                fill, outline: args[8] ?? fill
+                                fill, outline: info[8] ?? fill
                             }
                         }
 
