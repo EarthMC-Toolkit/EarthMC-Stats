@@ -223,19 +223,19 @@ export default {
 
                         const alliance = {
                             allianceName,
+                            leaderName: info[2] ?? "No leader set.",
+                            nations: info[3]?.split(",") ?? [],
+                            type: info[4] ?? 'Normal',
+                            discordInvite: info[5] ?? "No discord invite has been set for this alliance",
                             ...{
                                 fullName: info[1],
-                                leaderName: info[2],
-                                nations: info[3].split(","),
-                                type: info[4],
-                                discordInvite: info[5],
-                                imageURL: info[6]
+                                imageURL: info[6],
                             }
                         }
 
+                        const fill = args[7]
                         alliance['colours'] = { 
-                            fill: args[7],
-                            outline: args[8] ?? args[7]
+                            fill, outline: args[8] ?? fill
                         }
                         
                         alliances.push(alliance)
@@ -412,21 +412,24 @@ export default {
                             const currentNationToRemove = nationsToRemove[i]
                             
                             // If a nation is a number, return an error message.
-                            if (!isNaN(Number(currentNationToRemove))) {
+                            if (typeof(currentNationToRemove) == "number") {
                                 return m.edit({embeds: [new EmbedBuilder()
                                     .setTitle("Error updating alliance")
                                     .setDescription("Cannot use a number as an alliance nation! Please try again.")
-                                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                                     .setColor(Colors.Red)
                                     .setTimestamp()
+                                    .setAuthor({ 
+                                        name: message.author.username, 
+                                        iconURL: message.author.displayAvatarURL() 
+                                    })
                                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                             }
                                      
-                            const foundAllianceNations = foundAlliance.nations,
-                                  nationToRemoveLower = currentNationToRemove.toLowerCase()
+                            const foundAllianceNations = foundAlliance.nations
+                            const nationToRemoveLower = currentNationToRemove.toLowerCase()
 
-                            const foundNation = foundAllianceNations.find(nation => nation.toLowerCase() == nationToRemoveLower),
-                                  foundNationIndex = foundAllianceNations.findIndex(nation => nation.toLowerCase() == nationToRemoveLower)
+                            const foundNation = foundAllianceNations.find(nation => nation.toLowerCase() == nationToRemoveLower)
+                            const foundNationIndex = foundAllianceNations.findIndex(nation => nation.toLowerCase() == nationToRemoveLower)
                                                 
                             // If the current nation exists in the alliance, remove it.
                             if (foundNation) foundAllianceNations.splice(foundNationIndex, 1)
@@ -437,9 +440,12 @@ export default {
                             return m.edit({embeds: [new EmbedBuilder()
                                 .setTitle("Error updating alliance")
                                 .setDescription("None of the specified nations exist in that alliance!")
-                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                                 .setColor(Colors.Red)
                                 .setTimestamp()
+                                .setAuthor({ 
+                                    name: message.author.username, 
+                                    iconURL: message.author.displayAvatarURL() 
+                                })
                             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                         }
 
@@ -449,9 +455,12 @@ export default {
                         return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Alliance Updated | " + name(foundAlliance))
                             .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```")
-                            .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                             .setColor(Colors.DarkBlue)
                             .setTimestamp()
+                            .setAuthor({ 
+                                name: message.author.username, 
+                                iconURL: message.author.displayAvatarURL() 
+                            })
                         ]})
                     })
                 } else if (arg1 == "set") {
