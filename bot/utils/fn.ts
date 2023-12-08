@@ -279,19 +279,28 @@ function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascend
     return arr
 }
 
-function defaultSort(arr: any[]) {
-    sortByOrder(arr, [{
-        key: 'residents',
-        callback: k => k.length
-    }, {
-        key: 'area'
-    }, {
-        key: 'name',
-        callback: k => k.toLowerCase()
-    }])
+const len = x => x.length
+const defaultSort = (arr: any[]) => sortByOrder(arr, [{
+    key: 'residents',
+    callback: len
+}, {
+    key: 'area'
+}, {
+    key: 'name',
+    callback: k => k.toLowerCase()
+}])
 
-    return arr
-}
+const defaultSortAlliance = (arr: any[]) => sortByOrder(arr, [{ 
+    key: "residents"
+}, { 
+    key: "area"
+}, { 
+    key: "nations",
+    callback: len
+}, { 
+    key: "towns",
+    callback: len
+}])
 
 const maxTownSize = 940
 
@@ -335,6 +344,19 @@ const readTsFiles = (str: string) => {
     return fs.readdirSync(fullPath).filter(file => file.endsWith('.ts'))
 }
 
+function argsHelper(args: string[], spliceAmt: number) {
+    return {
+        original: args,
+        spliced: [],
+        format: function() { 
+            this.spliced = this.original.splice(spliceAmt).map(e => e.replace(/,/g, ''))
+            return this.spliced
+        },
+        asArray: function() { return this.spliced?.length < 1 ? this.format() : this.spliced },
+        asString: function(delimiter = ", ") { return this.asArray().join(delimiter) }
+    }
+}
+
 export {
     jsonReq,
     readTsFiles,
@@ -366,7 +388,8 @@ export {
     alphabetSort,
     sortByKey,
     sortByOrder,
-    defaultSort, 
+    defaultSort,
+    defaultSortAlliance, 
     attachmentFromFile,
     novaNationBonus,
     auroraNationBonus,
@@ -378,5 +401,6 @@ export {
     secToMs,
     setQueueSubbedChannels,
     setNewsSubbedChannels,
-    setTownlessSubbedChannels
+    setTownlessSubbedChannels,
+    argsHelper
 }
