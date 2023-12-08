@@ -126,20 +126,11 @@ export default {
 
             const seniorEditor = message.member.roles.cache.has(seniorEditorID)
 
-            // const isEditor = allowedChannels.includes(message.channel.id) && message.member.roles.cache.has(editRoleID)
-            // if (!fn.botDevs.includes(message.author.id) && !isEditor) {
-            //     return m.edit({embeds: [new Discord.EmbedBuilder()
-            //         .setTitle("That command is for developers only!")
-            //         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-            //         .setColor(Discord.Colors.Red)
-            //         .setTimestamp()
-            //     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-            // }
-
-            const arg0 = args[0]?.toLowerCase()
+            const arg1 = args[0]?.toLowerCase()
+            const arg2 = args[1]?.toLowerCase()
 
             // Creating an alliance
-            if (arg0 == "create" || arg0 == "new") {   
+            if (arg1 == "create" || arg1 == "new") {   
                 const allianceName = args[1]
                 let leaderName = "No leader set."
                 
@@ -203,7 +194,7 @@ export default {
                         ]})
                     }
                 })
-            } else if (arg0 == "wizard") {
+            } else if (arg1 == "wizard") {
                 const info = fn.argsHelper(args, 1).asString().split(';')
                 const allianceName = info[0]
                 
@@ -274,10 +265,10 @@ export default {
                         .setDescription("The alliance `" + info[0] + "` has been created")
                     ]})
                 })
-            } else if (arg0 == "rename") {
+            } else if (arg1 == "rename") {
                 database.Nova.getAlliances().then(async alliances => {
-                    const allianceName = args[1],
-                          foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
+                    const allianceName = args[1]
+                    const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
                         
                     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error renaming alliance")
@@ -302,12 +293,12 @@ export default {
                     
                     database.Nova.setAlliances(alliances)
                 })
-            } else if (arg0 == "delete" || arg0 == "disband") {
+            } else if (arg1 == "delete" || arg1 == "disband") {
                 if (isEditor && !seniorEditor) return sendDevsOnly(m)
 
                 database.Nova.getAlliances().then(async alliances => {
-                    const allianceName = args[1],
-                          foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
+                    const allianceName = args[1]
+                    const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                     if (!foundAlliance) {
                         return m.edit({embeds: [new EmbedBuilder()
@@ -333,7 +324,7 @@ export default {
                     }
                 })
             }
-            else if (arg0 == "add") { // Adding nation(s) to an alliance
+            else if (arg1 == "add") { // Adding nation(s) to an alliance
                 database.Nova.getAlliances().then(async alliances => {
                     const allianceName = args[1]
                     const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -413,7 +404,7 @@ export default {
                         return m.edit({ embeds: [allianceEmbed] })
                     })
                 })
-            } else if (arg0 == "remove") {
+            } else if (arg1 == "remove") {
                 database.Nova.getAlliances().then(async alliances => {
                     const allianceName = args[1]
                     const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -473,14 +464,14 @@ export default {
                         .setTimestamp()
                     ]})
                 })
-            } else if (arg0 == "set") {
+            } else if (arg1 == "set") {
                 if (!args[1]) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Please provide a valid option for this command.\nChoices: Leader, Discord, Type or Image/Flag.`)
                     .setTimestamp()
                     .setColor(Colors.Red)
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                if (args[1].toLowerCase() == "leader") {
+                if (arg2 == "leader") {
                     database.Nova.getAlliances().then(async alliances => {
                         const allianceName = args[2]
                         const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -508,7 +499,7 @@ export default {
                         ]})
                     })
                 }
-                else if (args[1].toLowerCase() == "discord" || args[1].toLowerCase() == "invite") {
+                else if (arg2 == "discord" || arg2 == "invite") {
                     database.Nova.getAlliances().then(async alliances => {
                         const allianceName = args[2]
                         const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -536,7 +527,7 @@ export default {
                         ]})
                     })
                 }
-                else if (args[1].toLowerCase() == "image" || args[1].toLowerCase() == "flag") {
+                else if (arg2 == "image" || arg2 == "flag") {
                     database.Nova.getAlliances().then(async alliances => {
                         const allianceName = args[2]
                         const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -565,7 +556,7 @@ export default {
                             .setTimestamp()]}).catch(() => {})
                     })
                 }
-                else if (args[1].toLowerCase() == "type") { 
+                else if (arg2 == "type") { 
                     database.Nova.getAlliances().then(async alliances => {
                         const allianceName = args[2]
                         const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -608,7 +599,7 @@ export default {
                             .setTimestamp()]
                         }).catch(() => {})
                     })
-                } else if (args[1].toLowerCase() == "colours" || args[1].toLowerCase() == "colors") {
+                } else if (arg2 == "colours" || arg2 == "colors") {
                     database.Nova.getAlliances().then(async alliances => {
                         const allianceName = args[2]
                         const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -645,7 +636,7 @@ export default {
                             .setTimestamp()
                         ]}).catch(() => {})
                     })
-                } else if (args[1].toLowerCase() == "fullname" || args[1].toLowerCase() == "label") {
+                } else if (arg2 == "fullname" || arg2 == "label") {
                     database.Nova.getAlliances().then(async alliances => {
                         const allianceName = args[2]
                         const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -687,7 +678,7 @@ export default {
                     .setColor(Colors.Red)
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
-            else if (arg0 == "merge") {
+            else if (arg1 == "merge") {
                 database.Nova.getAlliances().then(async alliances => {
                     const allianceName = args[1]
                     const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -702,45 +693,45 @@ export default {
                             iconURL: message.author.displayAvatarURL() 
                         })
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                    else {
-                        const alliancesToMerge = args.slice(2)
-                        const len = alliancesToMerge.length
 
-                        for (let i = 0; i < len; i++) {
-                            const allianceToMerge = alliancesToMerge[i]
-                            
-                            // If an alliance is a number, return an error message.
-                            if (typeof(allianceToMerge) == "number") {
-                                return m.edit({embeds: [new EmbedBuilder()
-                                    .setTitle("Error updating alliance")
-                                    .setDescription("Cannot use a number as an alliance name! Please try again.")
-                                    .setColor(Colors.Red)
-                                    .setTimestamp()
-                                    .setAuthor({ 
-                                        name: message.author.username, 
-                                        iconURL: message.author.displayAvatarURL() 
-                                    })
-                                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                            }
+                    //region Update alliance
+                    const alliancesToMerge = args.slice(2)
+                    const len = alliancesToMerge.length
+
+                    for (let i = 0; i < len; i++) {
+                        const allianceToMerge = alliancesToMerge[i]
                         
-                            const foundMergeAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceToMerge.toLowerCase())
-                            if (foundMergeAlliance) foundAlliance.nations = foundAlliance.nations.concat(foundMergeAlliance.nations)
-                        }
-
-                        const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
-
-                        alliances[allianceIndex] = foundAlliance
-                        database.Nova.setAlliances(alliances)
-                    
-                        return m.edit({embeds: [new EmbedBuilder()
-                            .setTitle("Alliance Updated | " + name(foundAlliance))
-                            .setDescription("The following alliances have been merged:\n\n```" + alliancesToMerge.join(", ").toString() + "```")
-                            .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                            .setColor(Colors.DarkBlue)
+                        // If an alliance is a number, return an error message.
+                        if (typeof(allianceToMerge) == "number")  return m.edit({embeds: [
+                            new EmbedBuilder()
+                            .setTitle("Error updating alliance")
+                            .setDescription("Cannot use a number as an alliance name! Please try again.")
+                            .setColor(Colors.Red)
                             .setTimestamp()
-                        ]})
+                            .setAuthor({ 
+                                name: message.author.username, 
+                                iconURL: message.author.displayAvatarURL() 
+                            })
+                        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                    
+                        const foundMergeAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceToMerge.toLowerCase())
+                        if (foundMergeAlliance) foundAlliance.nations = foundAlliance.nations.concat(foundMergeAlliance.nations)
                     }
+
+                    const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
+
+                    alliances[allianceIndex] = foundAlliance
+                    database.Nova.setAlliances(alliances)
+                
+                    return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle("Alliance Updated | " + name(foundAlliance))
+                        .setDescription("The following alliances have been merged:\n\n```" + alliancesToMerge.join(", ").toString() + "```")
+                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                        .setColor(Colors.DarkBlue)
+                        .setTimestamp()
+                    ]})
                 })
+                //endregion
             } else return m.edit({embeds: [new EmbedBuilder()
                 .setTitle("Invalid Usage!")
                 .setDescription("Invalid dev argument: `" + args[0] + "`")
@@ -780,41 +771,48 @@ async function sendAllianceList(client, message, m, args, type) {
             let foundAlliances = []
             let searching = false
             
+            const arg2 = args[1]?.toLowerCase()
+            const arg3 = args[2]?.toLowerCase()
+
             //#region Sort
             // /alliances <option>
-            if (!args[1]) {
-                // Default sort
-                fn.defaultSortAlliance(alliances)
-            } else if (args[1].toLowerCase() == "towns") {
+            if (!arg2) fn.defaultSortAlliance(alliances)
+            else if (arg2 == "towns") {
                 alliances.sort((a, b) => {
                     if (b.towns.length > a.towns.length) return 1
                     if (b.towns.length < a.towns.length) return -1
                 })
-            } else if (args[1].toLowerCase() == "nations") {
+            } else if (arg2 == "nations") {
                 alliances.sort((a, b) => {
                     if (b.nations.length > a.nations.length) return 1
                     if (b.nations.length < a.nations.length) return -1
                 })
-            } else if (args[1].toLowerCase() == "residents") {
+            } else if (arg2 == "residents") {
                 alliances.sort((a, b) => {
                     if (b.residents > a.residents) return 1
                     if (b.residents < a.residents) return -1
                 })
-            } else if (args[1].toLowerCase() == "area" || (args[2] != null && args[2].toLowerCase() == "chunks")) {
+            } else if (arg2 == "area" || arg2 == "chunks") {
                 alliances.sort((a, b) => {
                     if (b.area > a.area) return 1
                     if (b.area < a.area) return -1
                 })
             } else { // /alliances <option> <option> ... ...
-                fn.defaultSort(alliances)
+                fn.defaultSortAlliance(alliances)
 
-                if (args[0] != null && args[0].toLowerCase() == "search") {
-                    foundAlliances = alliances.filter(a => a.allianceName.toLowerCase() == args[1].toLowerCase() || 
-                                                           a.allianceName.toLowerCase().includes(args[1].toLowerCase()))
+                if (args[0]?.toLowerCase() == "search") {
+                    foundAlliances = alliances.filter(a => 
+                        a.allianceName.toLowerCase() == arg2 || 
+                        a.allianceName.toLowerCase().includes(arg2)
+                    )
+
                     searching = true
-                } else if (args[1].toLowerCase() == "search") { // /alliance list search
-                    foundAlliances = alliances.filter(a => a.allianceName.toLowerCase() == args[2].toLowerCase() || 
-                                                           a.allianceName.toLowerCase().includes(args[2].toLowerCase()))
+                } else if (arg2 == "search") { // /alliance list search
+                    foundAlliances = alliances.filter(a => 
+                        a.allianceName.toLowerCase() == arg3 || 
+                        a.allianceName.toLowerCase().includes(arg3)
+                    )
+
                     searching = true
                 }
             }

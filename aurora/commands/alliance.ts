@@ -881,20 +881,23 @@ async function sendAllianceList(client, message, m, args, type) {
             //#endregion
 
             //#region Search or send all
+            const type = a => a.type == 'mega' ? 'Meganation' : a.type == 'sub' ? 'Sub-Meganation' : 'Normal'
+
             if (searching) {
                 if (foundAlliances.length == 0) {
                     return m.edit({embeds: [new EmbedBuilder()
-                        .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
                         .setTitle("Searching unsuccessful")
                         .setDescription("Could not find any alliances matching that key.")
                         .setColor(Colors.Red)
                         .setTimestamp()
+                        .setAuthor({
+                            name: message.author.username, 
+                            iconURL: message.author.displayAvatarURL()
+                        })
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
 
                 const botembed = []
-
-                const type = (a) => a.type == 'mega' ? 'Meganation' : a.type == 'sub' ? 'Sub-Meganation' : 'Normal'
                 const allData = foundAlliances.map(alliance => 
                     "**" + name(alliance) + "**" + " (" + type(alliance) + ")" +
                     "```Leader(s): " + alliance.leaderName + 
@@ -915,12 +918,10 @@ async function sendAllianceList(client, message, m, args, type) {
                     .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
                 }
 
-                return await m.edit({embeds: [botembed[0]]}).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
+                return await m.edit({ embeds: [botembed[0]] }).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
             }
 
             const botembed = []
-
-            const type = (a) => a.type == 'mega' ? 'Meganation' : a.type == 'sub' ? 'Sub-Meganation' : 'Normal'
             const allData = alliances.map((alliance, index) => 
                 (index + 1) + ". **" + name(alliance) + "**" + " (" + type(alliance) + ")" +
                 "```Leader(s): " + alliance.leaderName + 
@@ -941,7 +942,7 @@ async function sendAllianceList(client, message, m, args, type) {
                 .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
             }
 
-            return await m.edit({embeds: [botembed[0]]}).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
+            return await m.edit({ embeds: [botembed[0]] }).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
             //#endregion
         })
     })
