@@ -47,8 +47,8 @@ async function sendNewsReq(msgs, mapName) {
 }
 
 async function sendAlliances() {
-    const novaAlliances = await Nova.getAlliances(),
-          auroraAlliances = await Aurora.getAlliances()
+    const novaAlliances = await Nova.getAlliances()
+    const auroraAlliances = await Aurora.getAlliances()
  
     if (auroraAlliances) await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
     if (novaAlliances) await sendRequest('nova/alliances', 'PUT', novaAlliances)

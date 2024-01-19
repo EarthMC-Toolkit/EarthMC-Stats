@@ -35,9 +35,9 @@ import type { MapInstance } from "./types.js"
 //#endregion
 
 //#region Call Updates
-async function initUpdates() {
-    const oneMinute = 60 * 1000
+const oneMinute = 60 * 1000
 
+async function initUpdates() {
     // Pre-fill everything but news.
     await updateData(true, true, true)
     await updateAPI(false, true)
