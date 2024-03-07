@@ -2398,8 +2398,8 @@ packages:
       '@pkgjs/parseargs': 0.11.0
     dev: true
 
-  /jose@4.14.4:
-    resolution: {integrity: sha512-j8GhLiKmUAh+dsFXlX1aJCbt5KMibuKb+d7j1JaOJG6s2UjX1PQlW+OKB/sD4a/5ZYF4RcmYmLSndOoU3Lt/3g==}
+  /jose@4.15.5:
+    resolution: {integrity: sha512-jc7BFxgKPKi94uOvEmzlSWFFe2+vASyXaKUpdQKatWAESU2MWjDfFf0fdfc83CDKcA5QecabZeNLyfhe3yKNkg==}
     dev: false
 
   /js-yaml@4.1.0:
@@ -2496,7 +2496,7 @@ packages:
       '@types/express': 4.17.17
       '@types/jsonwebtoken': 9.0.2
       debug: 4.3.4
-      jose: 4.14.4
+      jose: 4.15.5
       limiter: 1.1.5
       lru-memoizer: 2.2.0
     transitivePeerDependencies:
