@@ -1,5 +1,5 @@
 <div align="middle">
-<img width="150" height="150" src="https://media.discordapp.net/attachments/974491955864150046/974492170616721428/emcstatslogov2.png?ex=651587ce&is=6514364e&hm=7494656827478535d3422e140136ecfe401865245b0a653d54859ec042c90ef3&=&width=423&height=423">
+<img width="150" height="150" src="https://media.discordapp.net/attachments/974491955864150046/974492170616721428/emcstatslogov2.png?ex=6621d10e&is=660f5c0e&hm=70fafff28c6cfe5e89f5f442cfc8e1a3a575ac4fefa1c24c73ae0479a2be216b&=&format=webp&quality=lossless&width=466&height=466">
 
 # EarthMC Stats 
 [![Discord](https://img.shields.io/discord/966271635894190090?style=flat-square&label=Join%20the%20discord&color=%235347f5)](https://discord.com/invite/AVtgkcRgFs)
