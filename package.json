@@ -7,10 +7,10 @@
   "type": "module",
   "dependencies": {
     "discord.js": "14.13.0",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.5",
     "earthmc": "^8.3.0",
-    "firebase": "10.3.1",
-    "firebase-admin": "^11.10.1",
+    "firebase": "latest",
+    "firebase-admin": "latest",
     "koyeb.js": "^4.2.3",
     "memory-cache": "0.2.0",
     "moment": "^2.29.4",
@@ -21,8 +21,8 @@
   },
   "scripts": {
     "compile": "rimraf dist && tsc",
-    "reinstall": "rimraf node_modules && pnpm install",
-    "start-js": "pnpm run compile && node ./dist/index.js",
+    "reinstall": "rimraf node_modules && bun install",
+    "start-js": "bun run compile && node ./dist/index.js",
     "start": "tsx index.ts",
     "deploy": "pm2 startOrGracefulReload --attach ecosystem.json"
   },
@@ -37,5 +37,8 @@
     "eslint": "^8.49.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.2.2"
-  }
+  },
+  "trustedDependencies": [
+    "protobufjs"
+  ]
 }

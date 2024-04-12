@@ -2,7 +2,7 @@ import * as fn from '../../bot/utils/fn.js'
 import * as emc from "earthmc"
 import * as database from "../../bot/utils/database.js"
 
-import Discord from "discord.js"
+import Discord, {ButtonStyle} from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
@@ -11,9 +11,11 @@ export default {
     name: "nation",
     description: "Displays info for a nation.",
     run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
-        const nationEmbed = new Discord.EmbedBuilder().setColor(Discord.Colors.Aqua).setTimestamp()
-        const subCmd = interaction.options.getSubcommand()
+        const nationEmbed = new CustomEmbed(client)
+            .setColour(Discord.Colors.Aqua)
+            .setTimestamp()
 
+        const subCmd = interaction.options.getSubcommand()
         if (!subCmd) return await interaction.reply({embeds: [
             new Discord.EmbedBuilder()
                 .setColor(Discord.Colors.Red)
@@ -46,8 +48,8 @@ export default {
 
                     const len = towns.length
                     for (let i = 0; i < len; i++) {
-                        const cur = towns[i],
-                            nationName = cur.nation
+                        const cur = towns[i]
+                        const nationName = cur.nation
 
                         if (nationName == "No Nation") continue
                         const townData = {
@@ -231,8 +233,8 @@ export default {
 
             nations = fn.defaultSort(nations)
 
-            const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1,
-                  kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
+            const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
+            const kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
 
             //#region Embed Stuff
             const capitalX = nation.capital.x
@@ -285,38 +287,49 @@ export default {
             })
             //#endregion
             
-            database.Aurora.getAlliances().then(async alliances => {
-                if (alliances) {
-                    const nationAlliances = alliances
-                        .filter(alliance => alliance.nations.map(e => e.toLowerCase())
-                        .includes(nation.name.toLowerCase())).map(a => a.allianceName) 
-
-                    const len = nationAlliances?.length
-                    if (len > 0) nationEmbed.addFields(fn.embedField(
-                        `Alliances [${len}]`, 
-                        "```" + nationAlliances.join(", ") + "```"
-                    ))
-                }
-
-                const nationTownsString = nation.towns.join(", ").toString().replace(/^\s+|\s+$/gm, "")
+            const nationTowns = nation.towns.join(", ")
+            const nationTownsString = nationTowns.toString().replace(/^\s+|\s+$/gm, "")
+            
+            if (nationTownsString.length >= 1024) {
+                nationEmbed.addFields(fn.embedField(
+                    `Towns [${nation.towns.length}]`, 
+                    "Too many towns to display! Click the 'view all' button to see the full list."
+                ))
+        
+                nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
+            } else {                   
                 nationEmbed.addFields(fn.embedField(
                     `Towns [${nation.towns.length}]`, 
                     "```" + nationTownsString + "```"
                 ))
-                
-                if (recentNews) {
-                    const news = new News(recentNews),
-                          img = news?.images[0]
+            }
 
-                    nationEmbed.addFields(fn.embedField(
-                        "Recent News", 
-                        news.message + (img ? " ([Image](" + img + "))" : "")
-                    ))
-                }
-                
-                const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail] 
-                interaction.editReply({embeds: [nationEmbed], files: thumbnail})
-            })
+            const alliances = await database.Aurora.getAlliances()
+            if (alliances) {
+                const nationAlliances = alliances
+                    .filter(alliance => alliance.nations.map(e => e.toLowerCase())
+                    .includes(nation.name.toLowerCase())).map(a => a.allianceName) 
+
+                const len = nationAlliances?.length
+                if (len > 0) nationEmbed.addFields(fn.embedField(
+                    `Alliances [${len}]`, 
+                    "```" + nationAlliances.join(", ") + "```"
+                ))
+            }
+
+            if (recentNews) {
+                const news = new News(recentNews),
+                      img = news?.images[0]
+
+                nationEmbed.addFields(fn.embedField(
+                    "Recent News", 
+                    news.message + (img ? " ([Image](" + img + "))" : "")
+                ))
+            }
+
+            const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail] 
+            nationEmbed.setFiles(thumbnail)
+            nationEmbed.editInteraction(interaction)
         }
     }, data: new Discord.SlashCommandBuilder()
         .setName("nation")

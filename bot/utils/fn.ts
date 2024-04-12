@@ -35,15 +35,16 @@ const serverIssues = errorEmbed("Server Issues", "We are currently unable to rea
 const embedField = (name, value, inline = false) => ({ name, value, inline })
 const staff = {
     inactive: [
-        "Mihailovic", "FBI_Bro", "cactusinapumpkin", "Zackaree", 
-        "BusDuster", "kiadmowi", "_Precise_", "Shirazmatas", "RoseBrugs", "Scorpionzzx",
-        "BigshotWarrior", "TheAmazing_Moe", "MaddieMao", "jkmartindale", "JaVolimKatarinu"
+        "Mihailovic", "kiadmowi", "Scorpionzzx",
+        "BigshotWarrior", "TheAmazing_Moe", "jkmartindale"
     ],
     active: [
         "Fix", "KarlOfDuty", "CorruptedGreed", "1212ra", "PolkadotBlueBear", "RlZ58", "Ebola_chan",
         "Fruitloopins", "Shia_Chan", "Professor__Pro", "Barbay1","WTDpuddles", "Coblobster",
         "aas5aa_OvO", "Fijiloopins", "Masrain", "linkeron1", "Warriorrr", "AD31", "Proser",
-        "Fu_Mu", "Mednis", "yellune", "XxSlayerMCxX","32Andrew", "KeijoDPutt", "SuperHappyBros", "knowlton"
+        "Fu_Mu", "Mednis", "yellune", "XxSlayerMCxX", "32Andrew", "KeijoDPutt", "SuperHappyBros", 
+        "knowlton", "32Basileios", "Shirazmatas", "YellowVictini", "UncleSn", "Zackaree", "_Precise_",
+        "cactusinapumpkin", "Arkbomb", "Hodin", "BusDuster", "RoseBrugs", "FBI_Bro"
     ],
     all: () => staff.active.concat(staff.inactive)
 }

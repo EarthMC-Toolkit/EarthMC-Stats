@@ -1,4 +1,4 @@
-import Discord from "discord.js"
+import Discord, {ButtonStyle} from "discord.js"
 import { Aurora } from "earthmc"
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
@@ -28,8 +28,8 @@ export default {
             .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")]
         }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const nationEmbed = new Discord.EmbedBuilder()
-            .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+        const nationEmbed = new CustomEmbed(client)
+            .setDefaultAuthor(message)
             .setTimestamp()
         
         const townsWithDuplicates = [],
@@ -387,41 +387,51 @@ export default {
                 })
                 //#endregion
 
-                database.Aurora.getAlliances().then(alliances => {
-                    if (alliances) {
-                        const nationAlliances = alliances
-                            .filter(alliance => alliance.nations.map(e => e.toLowerCase())                            
-                            .includes(nation.name.toLowerCase()))
-                            .map(a => a.allianceName)
+                const alliances = await database.Aurora.getAlliances()
+                if (alliances) {
+                    const nationAlliances = alliances
+                        .filter(alliance => alliance.nations.map(e => e.toLowerCase())                            
+                        .includes(nation.name.toLowerCase()))
+                        .map(a => a.allianceName)
 
-                        const len = nationAlliances.length
-                        if (len > 0) nationEmbed.addFields(fn.embedField(
-                            `Alliances [${len}]`, 
-                            "```" + nationAlliances.join(", ") + "```"
-                        ))
-                    }
-                    
-                    const nationTownsString = nation.towns.join(", ").toString().replace(/^\s+|\s+$/gm, "")
+                    const len = nationAlliances.length
+                    if (len > 0) nationEmbed.addFields(fn.embedField(
+                        `Alliances [${len}]`, 
+                        "```" + nationAlliances.join(", ") + "```"
+                    ))
+                }
+
+                const nationTowns = nation.towns.join(", ")
+                const nationTownsString = nationTowns.toString().replace(/^\s+|\s+$/gm, "")
+                
+                if (nationTownsString.length >= 1024) {
                     nationEmbed.addFields(fn.embedField(
-                        "Towns [" + nation.towns.length + "]", 
+                        `Towns [${nation.towns.length}]`, 
+                        "Too many towns to display! Click the 'view all' button to see the full list."
+                    ))
+            
+                    nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
+                } else {                   
+                    nationEmbed.addFields(fn.embedField(
+                        `Towns [${nation.towns.length}]`, 
                         "```" + nationTownsString + "```"
                     ))
-                    
-                    if (recentNews) {
-                        const news = new News(recentNews),
-                              img = news?.images[0]
+                }
+                
+                if (recentNews) {
+                    const news = new News(recentNews),
+                            img = news?.images[0]
 
-                        nationEmbed.addFields(fn.embedField(
-                            "Recent News",
-                            news.message + (img ? " ([Image](" + img + "))" : "")
-                        ))
-                    }
+                    nationEmbed.addFields(fn.embedField(
+                        "Recent News",
+                        news.message + (img ? " ([Image](" + img + "))" : "")
+                    ))
+                }
 
-                    nationEmbed.setFooter(fn.devsFooter(client))
-
-                    const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail]
-                    return m.edit({embeds: [nationEmbed], files: thumbnail})
-                })
+                const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail]
+                
+                nationEmbed.setFiles(thumbnail)
+                nationEmbed.editMessage(m)
             }
         })
     }

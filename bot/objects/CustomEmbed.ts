@@ -7,7 +7,9 @@ import {
     CommandInteraction,
     ButtonBuilder,
     ActionRowBuilder,
-    ButtonStyle
+    ButtonStyle,
+    AttachmentBuilder,
+    Attachment
 } from "discord.js"
 
 const EntityType = {
@@ -23,6 +25,8 @@ type EntityType = ObjectValues<typeof EntityType>
 class CustomEmbed extends EmbedBuilder {
     embeds = []
     components = []
+    files = []
+
     paginated = false
     page = 0
 
@@ -31,7 +35,7 @@ class CustomEmbed extends EmbedBuilder {
     row: ActionRowBuilder = null
     title: string = null
 
-    constructor(client: Client, title: string) {
+    constructor(client: Client, title: string = null) {
         super({ title, footer: fn.devsFooter(client) })
         this.client = client
     }
@@ -92,6 +96,11 @@ class CustomEmbed extends EmbedBuilder {
         return this
     }
 
+    setFiles(files: AttachmentBuilder[] | Attachment[]) {
+        this.files = files
+        return this
+    }
+
     paginate(data, prefix = "", postfix = "") {
         const embeds = [], 
               len = data.length
@@ -119,7 +128,8 @@ class CustomEmbed extends EmbedBuilder {
 
         return await interaction.reply({ 
             embeds: [this.embeds[this.page]], 
-            components: this.components 
+            components: this.components,
+            files: this.files
         }).then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
     }
 
@@ -128,7 +138,8 @@ class CustomEmbed extends EmbedBuilder {
 
         return await interaction.editReply({ 
             embeds: [this.embeds[this.page]], 
-            components: this.components 
+            components: this.components,
+            files: this.files
         }).then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
     }
     
@@ -137,7 +148,8 @@ class CustomEmbed extends EmbedBuilder {
         
         return await msg.edit({ 
             embeds: [this.embeds[this.page]], 
-            components: this.components 
+            components: this.components,
+            files: this.files
         }).then(() => fn.paginator(msg.author.id, msg, this.embeds, this.page))
     }
 }
