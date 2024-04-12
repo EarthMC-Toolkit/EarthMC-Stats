@@ -293,7 +293,7 @@ export default {
             if (nationTownsString.length >= 1024) {
                 nationEmbed.addFields(fn.embedField(
                     `Towns [${nation.towns.length}]`, 
-                    "Too many towns to display! Click the 'view all' button to see the full list."
+                    "Too many towns to display!\nClick the 'view all' button to see the full list."
                 ))
         
                 nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
