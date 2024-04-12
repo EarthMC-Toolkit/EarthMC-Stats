@@ -2,9 +2,10 @@ import * as fn from '../../bot/utils/fn.js'
 
 import admin from 'firebase-admin'
 import {
-    Client, Message, EmbedBuilder,
-    Colors, PermissionFlagsBits,
-    ChannelType,
+    type Client, 
+    type Message, 
+    EmbedBuilder, Colors, 
+    PermissionFlagsBits, ChannelType,
 } from "discord.js"
 
 const FieldValue = admin.firestore.FieldValue

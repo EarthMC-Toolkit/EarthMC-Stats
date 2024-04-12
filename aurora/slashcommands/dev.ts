@@ -18,7 +18,7 @@ export default {
     disabled: false,
     description: "Developer restricted commands for bot management.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        const service = new Service(serviceID, process.env.AUTH_TOKEN)
+        //const service = new Service(serviceID, process.env.AUTH_TOKEN)
         const embed = new EmbedBuilder()
 
         const member = interaction.member as GuildMember

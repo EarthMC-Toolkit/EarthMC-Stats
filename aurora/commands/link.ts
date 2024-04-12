@@ -9,7 +9,8 @@ import * as MC from "../../bot/utils/minecraft.js"
 
 import {
     type Client, 
-    Colors, Message, EmbedBuilder
+    type Message,
+    Colors, EmbedBuilder
 } from "discord.js"
 
 const replyWithError = (msg: Message, desc: string) => msg.reply({embeds: [new EmbedBuilder()

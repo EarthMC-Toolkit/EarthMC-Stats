@@ -1,10 +1,10 @@
 import {
+    type Client,
+    type Message,
     ButtonStyle,
     TextChannel,
     Colors,
-    EmbedBuilder,
-    Client,
-    Message
+    EmbedBuilder
 } from "discord.js"
 
 import { Aurora } from "earthmc"
@@ -23,14 +23,12 @@ export default {
     aliases: ["n"],
     run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        const m = await message.reply({embeds: [
-            new EmbedBuilder()
-                .setTitle("<a:loading:966778243615191110> Fetching nation data, this might take a moment.")
-                .setColor(Colors.Aqua)
+        const m = await message.reply({embeds: [new EmbedBuilder()
+            .setTitle("<a:loading:966778243615191110> Fetching nation data, this might take a moment.")
+            .setColor(Colors.Aqua)
         ]})
         
-        if (!req) return await m.edit({embeds: [
-            new EmbedBuilder()
+        if (!req) return await m.edit({embeds: [new EmbedBuilder()
             .setColor(Colors.Red)
             .setTitle("No Arguments Given")
             .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")]
@@ -40,8 +38,8 @@ export default {
             .setDefaultAuthor(message)
             .setTimestamp()
         
-        const townsWithDuplicates = [],
-              nationsWithoutDuplicates = []
+        const townsWithDuplicates = []
+        const nationsWithoutDuplicates = []
         
         database.Aurora.getNations().then(async nations => { 
             if (!nations) nations = await Aurora.Nations.all().catch(err => console.log(err))

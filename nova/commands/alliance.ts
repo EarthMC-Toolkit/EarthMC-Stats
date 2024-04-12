@@ -1,11 +1,12 @@
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
 import {
+    type Client, 
+    type Message, 
     ButtonStyle,
     Colors,
     EmbedBuilder
 } from "discord.js"
-import type { Client, Message } from "discord.js"
 
 import * as fn from '../../bot/utils/fn.js'
 import * as emc from "earthmc"

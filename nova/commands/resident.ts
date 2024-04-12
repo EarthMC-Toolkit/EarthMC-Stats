@@ -1,5 +1,6 @@
 import { 
-    Client, Message,
+    type Client, 
+    type Message,
     EmbedBuilder, Colors
 } from "discord.js"
 

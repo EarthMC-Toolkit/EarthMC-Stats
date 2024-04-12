@@ -1,6 +1,7 @@
 import {
-    Client, Message, EmbedBuilder,
-    Colors
+    type Client, 
+    type Message, 
+    EmbedBuilder, Colors
 } from 'discord.js'
 
 import { Aurora } from "earthmc"

@@ -1,7 +1,7 @@
 import * as fn from'../../bot/utils/fn.js'
 import * as emc from 'earthmc'
 
-import Discord from "discord.js"
+import { Colors, EmbedBuilder } from "discord.js"
 import type { Client, Message } from "discord.js"
 
 export default {
@@ -9,8 +9,8 @@ export default {
     description: "Lists all online players without a town.",
     run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        const m = await message.reply({embeds: [new Discord.EmbedBuilder()
-            .setColor(Discord.Colors.DarkPurple)
+        const m = await message.reply({embeds: [new EmbedBuilder()
+            .setColor(Colors.DarkPurple)
             .setTitle("<a:loading:966778243615191110> Fetching townless players, this may take a moment.")]
         })
                 
@@ -28,8 +28,8 @@ export default {
         const botembed = []
         
         if (townlessPlayers.length < 1) {
-            const noTownlessEmbed = new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.DarkPurple)
+            const noTownlessEmbed = new EmbedBuilder()
+                .setColor(Colors.DarkPurple)
                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 .setTitle("(Nova) Townless Players [0]")
                 .setDescription("There are currently no townless players!")
@@ -38,9 +38,8 @@ export default {
             return m.edit({ embeds: [noTownlessEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
         else if (allData.length <= 1) { // If only one page, don't create paginator.
-            return m.edit({embeds: [
-                new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.DarkPurple)
+            return m.edit({embeds: [new EmbedBuilder()
+                .setColor(Colors.DarkPurple)
                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 .setTitle(`(Nova) Townless Players [${townlessPlayers.length}]`)
                 .setDescription("```" + townlessPlayers[0].name + "\n" + allData.toString() + "```")
@@ -49,8 +48,8 @@ export default {
         }
         else { // More than one page, create paginator.
             for (i = 0; i < allData.length; i++) {
-                botembed[i] = new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.DarkPurple)
+                botembed[i] = new EmbedBuilder()
+                .setColor(Colors.DarkPurple)
                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 .setTitle(`(Nova) Townless Players [${townlessPlayers.length}]`)
                 .setDescription("```" + townlessPlayers[0].name + "\n" + allData[i] + "```")

@@ -4,9 +4,9 @@ import { ResidentHelper } from '../../common/resident.js'
 import { MessageCommand } from '../../bot/types.js'
 
 import { 
+    type Client, 
+    type Message,
     Colors, 
-    Client, 
-    Message, 
     EmbedBuilder 
 } from "discord.js"
 

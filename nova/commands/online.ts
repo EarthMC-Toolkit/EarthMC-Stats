@@ -1,4 +1,4 @@
-import Discord from 'discord.js'
+import { Colors, EmbedBuilder } from 'discord.js'
 import type { Client, Message } from "discord.js"
 
 import * as fn from '../../bot/utils/fn.js'
@@ -8,13 +8,13 @@ export default {
     name: "online",
     run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        const m = await message.reply({embeds: [new Discord.EmbedBuilder()
+        const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching activity data, this might take a moment.")
             .setColor(0x556b2f)]
         })
 
-        if (!req) return m.edit({embeds: [new Discord.EmbedBuilder()
-              .setColor(Discord.Colors.Red)
+        if (!req) return m.edit({embeds: [new EmbedBuilder()
+              .setColor(Colors.Red)
               .setTitle("No Arguments Given")
               .setDescription("Arguments: `all`, `staff`/`mods`, `mayors`, `kings`")
         ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
@@ -37,7 +37,7 @@ export default {
                 else page--
 
                 for (; i < len; i++) {
-                    botembed[i] = new Discord.EmbedBuilder()
+                    botembed[i] = new EmbedBuilder()
                     .setColor(0x556b2f)
                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setTitle("(Nova) Online Activity | All")
@@ -51,7 +51,7 @@ export default {
             case "staff":
             case "mods": {
                 const onlineStaff = fn.staff.all().filter(sm => onlinePlayers.find(op => op.name.toLowerCase() == sm.toLowerCase()))
-                return m.edit({embeds: [new Discord.EmbedBuilder()
+                return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("(Nova) Online Activity | Staff")
                     .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
                     .setColor(0x556b2f)
@@ -77,7 +77,7 @@ export default {
                     
                 const len = allData.length
                 for (; i < len; i++) {
-                    botembed[i] = new Discord.EmbedBuilder()
+                    botembed[i] = new EmbedBuilder()
                     .setColor(0x556b2f)
                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setTitle("(Nova) Online Activity | Mayors")
@@ -104,7 +104,7 @@ export default {
                       len = allData.length
             
                 for (; i < len; i++) {
-                    botembed[i] = new Discord.EmbedBuilder()
+                    botembed[i] = new EmbedBuilder()
                     .setColor(0x556b2f)
                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setTitle("(Nova) Online Activity | Kings")
@@ -113,11 +113,10 @@ export default {
                     .setFooter({ text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL() })
                 }
                     
-                return await m.edit({embeds: [botembed[page]]}).then(msg => fn.paginator(message.author.id, msg, botembed, page))
+                return await m.edit({ embeds: [botembed[page]] }).then(msg => fn.paginator(message.author.id, msg, botembed, page))
             }
-            default: return await m.edit({embeds: [
-                new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.Red)
+            default: return await m.edit({embeds: [new EmbedBuilder()
+                .setColor(Colors.Red)
                 .setTitle("Invalid Arguments")
                 .setDescription("Arguments: `all`, `staff`/`mods`, `mayors`, `kings`")
             ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})

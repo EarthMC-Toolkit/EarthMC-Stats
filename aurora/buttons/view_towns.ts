@@ -1,6 +1,6 @@
 import {
-    Client,
-    ChatInputCommandInteraction
+    type Client,
+    type ChatInputCommandInteraction
 } from "discord.js"
 
 import { Button } from "../../bot/types.js"

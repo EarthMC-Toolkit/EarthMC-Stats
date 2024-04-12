@@ -1,13 +1,14 @@
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
+
+import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import { Aurora, NotFoundError, formatString } from "earthmc"
 
 import { 
-    Client, Message, EmbedBuilder,
-    Colors, 
+    type Client, 
+    type Message, 
+    EmbedBuilder, Colors, 
 } from "discord.js"
-
-import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 export default {
     name: "town",
