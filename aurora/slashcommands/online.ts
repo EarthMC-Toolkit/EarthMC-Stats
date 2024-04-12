@@ -1,6 +1,6 @@
 import { 
-    ChatInputCommandInteraction,
-    Client,
+    type Client,
+    type ChatInputCommandInteraction,
     EmbedBuilder,
     SlashCommandBuilder,
     Colors

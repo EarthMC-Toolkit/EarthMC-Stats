@@ -1,7 +1,7 @@
 import {
     type GuildMember,
     type CommandInteractionOptionResolver,
-    ChatInputCommandInteraction,
+    type ChatInputCommandInteraction,
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 

@@ -1,5 +1,6 @@
 import { 
-    Client, ChatInputCommandInteraction,
+    type Client, 
+    type ChatInputCommandInteraction, 
     GuildMember, Colors, EmbedBuilder,
     SlashCommandBuilder
 } from "discord.js"
@@ -17,8 +18,8 @@ export default {
     disabled: false,
     description: "Developer restricted commands for bot management.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        const service = new Service(serviceID, process.env.AUTH_TOKEN),
-              embed = new EmbedBuilder()
+        const service = new Service(serviceID, process.env.AUTH_TOKEN)
+        const embed = new EmbedBuilder()
 
         const member = interaction.member as GuildMember
 
@@ -41,34 +42,34 @@ export default {
         }
 
         switch(interaction.options.getSubcommand().toLowerCase()) {
-            case "restart": {
-                await interaction.reply({embeds: [embed
-                    .setColor(Colors.Blue)
-                    .setTitle(":repeat: Re-deploying the bot service..")
-                ]})
+            // case "restart": {
+            //     await interaction.reply({embeds: [embed
+            //         .setColor(Colors.Blue)
+            //         .setTitle(":repeat: Re-deploying the bot service..")
+            //     ]})
 
-                return await service.redeploy()
-            }
-            case "resume": {
-                await interaction.reply({embeds: [embed
-                    .setColor(Colors.Green)
-                    .setTitle(":white_check_mark: Bot service resumed.")
-                ]})
+            //     return await service.redeploy()
+            // }
+            // case "resume": {
+            //     await interaction.reply({embeds: [embed
+            //         .setColor(Colors.Green)
+            //         .setTitle(":white_check_mark: Bot service resumed.")
+            //     ]})
 
-                return await service.resume()
-            }
-            case "pause": {
-                const paused = await service.pause()
-                if (!paused) return await interaction.reply({embeds: [embed
-                    .setColor(Colors.Red)
-                    .setTitle("An error occurred while trying to pause the service!")
-                ]})
+            //     return await service.resume()
+            // }
+            // case "pause": {
+            //     const paused = await service.pause()
+            //     if (!paused) return await interaction.reply({embeds: [embed
+            //         .setColor(Colors.Red)
+            //         .setTitle("An error occurred while trying to pause the service!")
+            //     ]})
 
-                return await interaction.reply({embeds: [embed
-                    .setColor(Colors.Gold)
-                    .setTitle(":pause_button: Bot service paused.")
-                ]})
-            }
+            //     return await interaction.reply({embeds: [embed
+            //         .setColor(Colors.Gold)
+            //         .setTitle(":pause_button: Bot service paused.")
+            //     ]})
+            // }
             case "purge": {
                 await interaction.deferReply()
 

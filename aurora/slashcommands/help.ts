@@ -1,14 +1,17 @@
-import Discord from "discord.js"
+import {
+    type Client, 
+    type ChatInputCommandInteraction,
+    EmbedBuilder, SlashCommandBuilder, Colors
+} from "discord.js"
 
 export default {
     name: "help",
     description: "Sends you the bot's commands.",
-    run: async (_: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         switch(interaction.options.getSubcommand().toLowerCase()) {
             case "main": {
-                return await interaction.reply({embeds: [
-                    new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Green)
+                return await interaction.reply({embeds: [new EmbedBuilder()
+                    .setColor(Colors.Green)
                     .setTitle("Main Commands")
                     .setDescription(
                         "**Useful**\n" +
@@ -28,9 +31,8 @@ export default {
                 ]})
             }
             case "alliance": {
-                return await interaction.reply({embeds: [
-                    new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Green)
+                return await interaction.reply({embeds: [new EmbedBuilder()
+                    .setColor(Colors.Green)
                     .setTitle("Alliance Commands")
                     .setDescription(
                         "`/alliance <name>` | Get info on the specified alliance.\n" +
@@ -40,9 +42,8 @@ export default {
                 ]})
             }
             case "other": {
-                return await interaction.reply({embeds: [
-                    new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Green)
+                return await interaction.reply({embeds: [new EmbedBuilder()
+                    .setColor(Colors.Green)
                     .setTitle("Other Commands")
                     .setDescription(
                         "**Miscellaneous**\n" +
@@ -57,15 +58,13 @@ export default {
                     )
                 ]})
             }
-            default:
-                return await interaction.reply({embeds: [
-                    new Discord.EmbedBuilder()
-                    .setColor(Discord.Colors.Red)
-                    .setTitle("Invalid Arguments")
-                    .setDescription("Arguments: `main`, `alliance`, `other`")
-                ], ephemeral: true})
+            default: return await interaction.reply({embeds: [new EmbedBuilder()
+                .setColor(Colors.Red)
+                .setTitle("Invalid Arguments")
+                .setDescription("Arguments: `main`, `alliance`, `other`")
+            ], ephemeral: true})
         }
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("help")
         .setDescription("Sends you the bot's commands.")
         .addSubcommand(subcommand => subcommand.setName('main').setDescription('Lists main bot commands.'))

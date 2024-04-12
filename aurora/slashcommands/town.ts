@@ -4,7 +4,7 @@ import * as database from "../../bot/utils/database.js"
 
 import {
     type Client,
-    ChatInputCommandInteraction,
+    type ChatInputCommandInteraction,
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 

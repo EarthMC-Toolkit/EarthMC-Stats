@@ -1,7 +1,8 @@
 import {
-    type Message, type Client,
-    ChatInputCommandInteraction, Colors, 
-    EmbedBuilder, SlashCommandBuilder
+    type Message, 
+    type Client,
+    type ChatInputCommandInteraction, 
+    Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
 import * as emc from "earthmc"

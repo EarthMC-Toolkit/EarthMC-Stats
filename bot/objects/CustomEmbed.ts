@@ -1,10 +1,13 @@
 import * as fn from '../utils/fn.js'
 
-import type { Client, ColorResolvable, Message } from "discord.js"
+import type { 
+    Client, ColorResolvable, 
+    Message, CommandInteraction, 
+} from "discord.js"
+
 import { 
     EmbedBuilder, 
     Colors,
-    CommandInteraction,
     ButtonBuilder,
     ActionRowBuilder,
     ButtonStyle,

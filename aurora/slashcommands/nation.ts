@@ -2,7 +2,13 @@ import * as fn from '../../bot/utils/fn.js'
 import * as emc from "earthmc"
 import * as database from "../../bot/utils/database.js"
 
-import Discord, {ButtonStyle} from "discord.js"
+import {
+    type Client, 
+    type ChatInputCommandInteraction, 
+    EmbedBuilder, SlashCommandBuilder, 
+    Colors,ButtonStyle,
+    TextChannel,
+} from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
@@ -10,24 +16,22 @@ import News from "../../bot/objects/News.js"
 export default {
     name: "nation",
     description: "Displays info for a nation.",
-    run: async (client: Discord.Client, interaction: Discord.ChatInputCommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const nationEmbed = new CustomEmbed(client)
-            .setColour(Discord.Colors.Aqua)
+            .setColour(Colors.Aqua)
             .setTimestamp()
 
         const subCmd = interaction.options.getSubcommand()
-        if (!subCmd) return await interaction.reply({embeds: [
-            new Discord.EmbedBuilder()
-                .setColor(Discord.Colors.Red)
-                .setTitle("No Arguments Given")
-                .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")
-            ], ephemeral: true
-        })
+        if (!subCmd) return await interaction.reply({ embeds: [new EmbedBuilder()
+            .setColor(Colors.Red)
+            .setTitle("No Arguments Given")
+            .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")
+        ], ephemeral: true })
 
         await interaction.deferReply()
 
-        const townsWithDuplicates = [],
-              nationsWithoutDuplicates = []
+        const townsWithDuplicates = []
+        const nationsWithoutDuplicates = []
 
         let nations = await database.Aurora.getNations()
         if (!nations) nations = await emc.Aurora.Nations.all().catch(err => console.log(err))
@@ -145,63 +149,62 @@ export default {
             if (!nation) {
                 nationEmbed.setTitle("Invalid Nation")
                 nationEmbed.setDescription(interaction.options.getString("name") + " is not a valid nation, please try again.")
-                nationEmbed.setColor(Discord.Colors.Red)
+                nationEmbed.setColor(Colors.Red)
 
                 return interaction.editReply({embeds: [nationEmbed]})
             }
 
-            database.getPlayers().then(async players => {
-                if (!players) return await interaction.editReply({embeds: [fn.databaseError]}).then(() => setTimeout(() => interaction.deleteReply(), 10000))
+            const players = await database.getPlayers()
+            if (!players) return await interaction.editReply({embeds: [fn.databaseError]}).then(() => setTimeout(() => interaction.deleteReply(), 10000))
 
-                // Sort by highest offline duration
-                nation.residents.sort((a, b) => {
-                    const foundPlayerA = players.find(p => p.name == a),
-                          foundPlayerB = players.find(p => p.name == b)
+            // Sort by highest offline duration
+            nation.residents.sort((a, b) => {
+                const foundPlayerA = players.find(p => p.name == a)
+                const foundPlayerB = players.find(p => p.name == b)
 
-                    if (foundPlayerA && !foundPlayerB) return -1
-                    if (!foundPlayerA && foundPlayerB) return 1
+                if (foundPlayerA && !foundPlayerB) return -1
+                if (!foundPlayerA && foundPlayerB) return 1
 
-                    if (foundPlayerA && foundPlayerB) {
-                        const loA = foundPlayerA.lastOnline,
-                              loB = foundPlayerB.lastOnline
+                if (foundPlayerA && foundPlayerB) {
+                    const loA = foundPlayerA.lastOnline
+                    const loB = foundPlayerB.lastOnline
 
-                        // Identical? don't sort.
-                        if (loA.aurora === loB.aurora) return 0 
-                        if (!loA) return 1
-                        if (!loB) return -1
+                    // Identical? don't sort.
+                    if (loA.aurora === loB.aurora) return 0 
+                    if (!loA) return 1
+                    if (!loB) return -1
 
-                        const dateB = fn.unixFromDate(loB.aurora),
-                              dateA = fn.unixFromDate(loA.aurora)
+                    const dateB = fn.unixFromDate(loB.aurora)
+                    const dateA = fn.unixFromDate(loA.aurora)
 
-                        return dateB - dateA
-                    }
-                })
-
-                let page = 1
-                if (isNaN(page)) page = 0
-                else page--
-
-                const allData = nation.residents.map(resident => {
-                    const residentInPlayers = players.find(p => p.name == resident)
-
-                    if (residentInPlayers && residentInPlayers.lastOnline != null)
-                        return "``" + resident + "`` - " + `<t:${fn.unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
-
-                    return "" + resident + " | Unknown"
-                }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
-
-                new CustomEmbed(client, `Nation Info | Activity in ${nation.name}`)
-                    .setType(EntityType.Nation)
-                    .paginate(allData)
-                    .editInteraction(interaction)
+                    return dateB - dateA
+                }
             })
+
+            let page = 1
+            if (isNaN(page)) page = 0
+            else page--
+
+            const allData = nation.residents.map(resident => {
+                const residentInPlayers = players.find(p => p.name == resident)
+
+                if (residentInPlayers && residentInPlayers.lastOnline != null)
+                    return "``" + resident + "`` - " + `<t:${fn.unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
+
+                return "" + resident + " | Unknown"
+            }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+
+            new CustomEmbed(client, `Nation Info | Activity in ${nation.name}`)
+                .setType(EntityType.Nation)
+                .paginate(allData)
+                .editInteraction(interaction)
         } // /n <nation>
         else if (subCmd == "lookup" && interaction.options.getString("name") != null) {
             const nation = nations.find(n => n.name.toLowerCase() == interaction.options.getString("name").toLowerCase())
             if (!nation) {
                 nationEmbed.setTitle("Invalid Nation")
                 nationEmbed.setDescription(interaction.options.getString("name") + " is not a valid nation, please try again.")
-                nationEmbed.setColor(Discord.Colors.Red)
+                nationEmbed.setColor(Colors.Red)
 
                 return interaction.editReply({embeds: [nationEmbed]})
             }
@@ -210,7 +213,7 @@ export default {
                 return t instanceof emc.NotFoundError ? null : t.colourCodes
             })
 
-            const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Discord.Colors.Aqua
+            const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
             nationEmbed.setColor(colour)
             
             //#region Prefixes
@@ -271,15 +274,15 @@ export default {
             //#endregion
 
             //#region Recent news logic
-            const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as Discord.TextChannel,
-                  newsChannelMessages = await newsChannel?.messages.fetch()
+            const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as TextChannel
+            const newsChannelMessages = await newsChannel?.messages.fetch()
 
             const filterNews = msg => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
 
             // Get news descriptions that include the nation name
             // Then sort/get most recent description
-            const filteredMessages = newsChannelMessages?.filter(msg => filterNews(msg)),
-                  mostRecentDate = new Date(Math.max.apply(null, filteredMessages?.map(e => new Date(e.createdTimestamp))))
+            const filteredMessages = newsChannelMessages?.filter(msg => filterNews(msg))
+            const mostRecentDate = new Date(Math.max.apply(null, filteredMessages?.map(e => new Date(e.createdTimestamp))))
 
             const recentNews = filteredMessages?.find(e => { 
                 const d = new Date(e.createdTimestamp)
@@ -318,8 +321,8 @@ export default {
             }
 
             if (recentNews) {
-                const news = new News(recentNews),
-                      img = news?.images[0]
+                const news = new News(recentNews)
+                const img = news?.images[0]
 
                 nationEmbed.addFields(fn.embedField(
                     "Recent News", 
@@ -331,7 +334,7 @@ export default {
             nationEmbed.setFiles(thumbnail)
             nationEmbed.editInteraction(interaction)
         }
-    }, data: new Discord.SlashCommandBuilder()
+    }, data: new SlashCommandBuilder()
         .setName("nation")
         .setDescription("Displays info for a nation.")
         .addSubcommand(subcommand => subcommand

@@ -1,6 +1,7 @@
 import {
-    type GuildMember, type Client,
-    ChatInputCommandInteraction,
+    type Client,
+    type GuildMember, 
+    type ChatInputCommandInteraction,
     Colors, EmbedBuilder, SlashCommandBuilder,
     PermissionFlagsBits
 } from 'discord.js'
