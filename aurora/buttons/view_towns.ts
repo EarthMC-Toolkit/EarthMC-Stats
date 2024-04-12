@@ -6,10 +6,10 @@ import {
 import { Button } from "../../bot/types.js"
 
 const exportBtn: Button = {
-    id: "export",
+    id: "view_all_towns",
     execute: (_: Client, interaction: ChatInputCommandInteraction) => {
         return interaction.reply({ 
-            content: "Your exported content is attached below.",
+            content: "Not yet implemented.",
             ephemeral: true,
             files: []
         })

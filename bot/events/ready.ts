@@ -15,6 +15,7 @@ import {
     Client, 
     ActivityType,
     ContextMenuCommandBuilder,
+    Collection,
     //Collection
 } from "discord.js"
 
@@ -31,7 +32,7 @@ const rdyEvent: DJSEvent = {
         client.user.setPresence({ activities: [{ name: 'Startup Complete!' }], status: 'online' })
 
         registerCommands(client)
-        //registerButtons(client)
+        registerButtons(client)
         //registerModals()
 
         const watchingActivities = [
@@ -123,21 +124,21 @@ async function registerCommands(client: Client) {
     )
 }
 
-// async function registerButtons(client: Client) {
-//     client['buttons'] = new Collection()
+async function registerButtons(client: Client) {
+    client['buttons'] = new Collection()
 
-//     const buttonsPath = `aurora/buttons`
-//     const buttons = fn.readTsFiles(buttonsPath)
+    const buttonsPath = `aurora/buttons`
+    const buttons = fn.readTsFiles(buttonsPath)
 
-//     for (const file of buttons) {
-//         const buttonFile = await import(`../../${buttonsPath}/${file}`)
-//         const button = buttonFile.default
+    for (const file of buttons) {
+        const buttonFile = await import(`../../${buttonsPath}/${file}`)
+        const button = buttonFile.default
 
-//         if (button.id) {
-//             client['buttons'].set(button.id)
-//         }
-//     }
-// }
+        if (button.id) {
+            client['buttons'].set(button.id)
+        }
+    }
+}
 
 // async function registerModals() {
 
