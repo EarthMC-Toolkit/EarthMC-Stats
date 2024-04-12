@@ -107,19 +107,6 @@ export default {
                         { key: 'residents', callback: (arr: string) => arr.length },
                         { key: 'area' }
                     ])
-
-                    // towns.sort((a, b) => {                       
-                    //     if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
-                    //     if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
-                        
-                    //     if (b.residents.length > a.residents.length) return 1
-                    //     if (b.residents.length < a.residents.length) return -1
-
-                    //     if (b.area > a.area) return 1
-                    //     if (b.area < a.area) return -1
-
-                    //     return 0
-                    // })
                 }
                 else { // /t list <nation>
                     const foundNation = towns.find(town => town.nation.toLowerCase() == arg1)
@@ -167,7 +154,8 @@ export default {
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
                 database.getPlayers().then(async players => {
-                    if (!players) return await m.edit({embeds: [fn.databaseError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                    if (!players) return await m.edit({ embeds: [fn.databaseError] })
+                        .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
                     // Sort by highest offline duration
                     town.residents.sort((a, b) => {
@@ -219,7 +207,7 @@ export default {
                 return await m.edit({embeds: [new Discord.EmbedBuilder()
                     .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
                     .setFooter(fn.devsFooter(client))
-                    .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setTimestamp()
                     .setColor(Discord.Colors.Red)
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
@@ -281,7 +269,7 @@ export default {
                     townEmbed.addFields(fn.embedField("Nation", nationString, true))
                 }
 
-                const multiplier = town.residents.length * 8
+                const multiplier = town.residents.length * 12
                 if (town.nation != "No Nation") {
                     const nationBonus = fn.auroraNationBonus(townNation?.residents.length ?? 0)
                     claimBonus = nationBonus + multiplier

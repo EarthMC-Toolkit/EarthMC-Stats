@@ -330,7 +330,7 @@ export default {
                     townEmbed.addFields(fn.embedField("Nation", nationString, true))
                 }
 
-                claimBonus = town.residents.length * 8
+                claimBonus = town.residents.length * 12
                 let townSizeStr = `${town.area} / ${Math.min(claimBonus, fn.maxTownSize)}`
 
                 if (town.nation != "No Nation") {
