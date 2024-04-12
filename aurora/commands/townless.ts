@@ -1,5 +1,7 @@
-import Discord from "discord.js"
-import type { Client, Message } from "discord.js"
+import { 
+    Client, Message,
+    EmbedBuilder,  Colors
+} from "discord.js"
 
 import * as fn from '../../bot/utils/fn.js'
 import { Aurora } from 'earthmc'
@@ -10,8 +12,8 @@ export default {
     description: "Lists all online players without a town.",
     run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        const m = await message.reply({embeds: [new Discord.EmbedBuilder()
-            .setColor(Discord.Colors.DarkPurple)
+        const m = await message.reply({embeds: [new EmbedBuilder()
+            .setColor(Colors.DarkPurple)
             .setTitle("<a:loading:966778243615191110> Fetching townless players, this may take a moment.")
         ]})   
                 
@@ -34,9 +36,9 @@ export default {
         const len = allData.length
         const townlessPlayersLen = townlessPlayers.length
 
-        const embed = new Discord.EmbedBuilder()
+        const embed = new EmbedBuilder()
             .setTitle(`(Aurora) Townless Players [${townlessPlayersLen}]`)
-            .setColor(Discord.Colors.DarkPurple)
+            .setColor(Colors.DarkPurple)
             .setTimestamp()
             .setAuthor({ 
                 name: message.author.username, 

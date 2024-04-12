@@ -4,7 +4,7 @@ import {
     linkPlayer 
 } from "../../bot/utils/linking.js"
 
-import * as fn from "../../bot/utils/fn.js"
+import { botDevs } from "../../bot/utils/fn.js"
 import * as MC from "../../bot/utils/minecraft.js"
 
 import {
@@ -24,7 +24,7 @@ export default {
     slashCommand: true,
     aliases: ["unlink"],
 	run: async (_: Client, message: Message, args: string[]) => {
-        if (!fn.botDevs.includes(message.author.id)) return
+        if (!botDevs.includes(message.author.id)) return
         
         const argsLen = args.length
         const { content, mentions } = message

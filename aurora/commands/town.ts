@@ -2,7 +2,11 @@ import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 import { Aurora, NotFoundError, formatString } from "earthmc"
 
-import Discord from "discord.js"
+import { 
+    Client, Message, EmbedBuilder,
+    Colors, 
+} from "discord.js"
+
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 export default {
@@ -10,14 +14,14 @@ export default {
     description: "Displays info for a town.",
     slashCommand: true,
     aliases: ["t"],
-    run: async (client: Discord.Client, message: Discord.Message, args: string[]) => {
+    run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" "),
-              m = await message.reply({embeds: [new Discord.EmbedBuilder()
+              m = await message.reply({embeds: [new EmbedBuilder()
                 .setTitle("<a:loading:966778243615191110> Fetching town data, this might take a moment.")
-                .setColor(Discord.Colors.Green)]})
+                .setColor(Colors.Green)]})
 
-        if (!req) return await m.edit({embeds: [new Discord.EmbedBuilder()
-            .setColor(Discord.Colors.Red)
+        if (!req) return await m.edit({embeds: [new EmbedBuilder()
+            .setColor(Colors.Red)
             .setTitle("Command Usage")
             .setDescription("`/town <name>`\n`/town list`")
         ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
@@ -28,9 +32,10 @@ export default {
                 return t
             })).catch(err => console.log(err))
 
-            const townEmbed = new Discord.EmbedBuilder()
-            let onlineResidents = [],
-                claimBonus = 0
+            const townEmbed = new EmbedBuilder()
+
+            let onlineResidents = []
+            let claimBonus = 0
 
             const opt = args[0]
             const arg1 = args[1]?.toLowerCase()
@@ -147,10 +152,10 @@ export default {
                 const town = towns.find(t => t.name.toLowerCase() == arg1)
 
                 if (!town) return m.edit({embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                     .setTitle("Invalid town name!")
                     .setDescription(args[1] + " doesn't seem to be a valid town name, please try again.")
-                    .setTimestamp().setColor(Discord.Colors.Red)
+                    .setTimestamp().setColor(Colors.Red)
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
                 database.getPlayers().then(async players => {
@@ -194,7 +199,7 @@ export default {
                         return t instanceof NotFoundError ? null : t.colourCodes
                     })
                     
-                    const colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+                    const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
                     new CustomEmbed(client, "Town Info | Activity in " + town.name)
                         .setColor(colour)
                         .setType(EntityType.Town)
@@ -204,22 +209,22 @@ export default {
                 }).catch(() => {})
             }
             else if (args.length > 3 || args.length == null || opt == null) {
-                return await m.edit({embeds: [new Discord.EmbedBuilder()
+                return await m.edit({embeds: [new EmbedBuilder()
                     .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
                     .setFooter(fn.devsFooter(client))
                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setTimestamp()
-                    .setColor(Discord.Colors.Red)
+                    .setColor(Colors.Red)
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
             }
             else { // /t <town>
                 const town = towns.find(t => t.name.toLowerCase() == opt.toLowerCase())
 
                 if (!town) return m.edit({embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                     .setTitle("Invalid town name!")
                     .setDescription(opt + " doesn't seem to be a valid town name, please try again.")
-                    .setTimestamp().setColor(Discord.Colors.Red)
+                    .setTimestamp().setColor(Colors.Red)
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
                 towns = fn.defaultSort(towns)
@@ -232,8 +237,8 @@ export default {
                     return t instanceof NotFoundError ? null : t.colourCodes
                 })
 
-                const colour = !townColours ? Discord.Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-                townEmbed.setColor(town.ruined ? Discord.Colors.Orange : colour)
+                const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+                townEmbed.setColor(town.ruined ? Colors.Orange : colour)
                          .setTitle(("Town Info | " + townName + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
                          .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 
@@ -361,7 +366,7 @@ function extractTownData(towns: any[]) {
     return townData
 }
 
-async function sendList(client: Discord.Client, msg: Discord.Message, comparator: string, towns: any[]) {
+async function sendList(client: Client, msg: Message, comparator: string, towns: any[]) {
     towns = fn.defaultSort(towns)
     
     const townData = extractTownData(towns),

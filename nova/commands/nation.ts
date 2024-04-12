@@ -387,8 +387,8 @@ export default {
                 const newsChannelMessages = await newsChannel?.messages.fetch()
 
                 // Get news descriptions that include the nation name, then sort by most recent.
-                const filteredMessages = newsChannelMessages?.filter(msg => filterNews(msg, nation)),
-                      mostRecentDate = new Date(Math.max.apply(null, filteredMessages?.map(e => new Date(e.createdTimestamp))))
+                const filteredMessages = newsChannelMessages?.filter(msg => filterNews(msg, nation))
+                const mostRecentDate = new Date(Math.max.apply(null, filteredMessages?.map(e => new Date(e.createdTimestamp))))
 
                 const recentNews = filteredMessages?.find(e => { 
                     const d = new Date(e.createdTimestamp)
@@ -415,7 +415,7 @@ export default {
                 if (nationTownsString.length >= 1024) {
                     nationEmbed.addFields(fn.embedField(
                         `Towns [${nation.towns.length}]`, 
-                        "Too many towns to display!\nClick the 'view all' button to see the full list."
+                        "Too many towns to display!\nClick the **View All Towns** button to see the full list."
                     ))
             
                     nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)

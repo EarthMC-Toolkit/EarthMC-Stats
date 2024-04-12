@@ -85,73 +85,74 @@ async function setTowns(towns: any[]) {
 }
 
 async function getAlliance(name: string) {
-    return getAlliances().then(async alliances => {
-        if (!alliances) return null
+    const alliances = await getAlliances() as any[]
+    if (!alliances) return null
 
-        const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase())
-        if (!foundAlliance) return null
+    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase())
+    if (!foundAlliance) return null
 
-        return getNations().then(async nations => {
-            // Get nations that are in the inputted alliance.
-            const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
-            let onlineInAlliance = []
-            
-            return getOnlinePlayerData().then(async (data: any) => {
-                allianceNations.forEach(n => {
-                    const onlineInNation = n.residents.filter(res => data.players.find(op => op.account == res))
-                    onlineInAlliance = onlineInAlliance.concat(onlineInNation)
-                })
+    const nations = await getNations()
+    if (!nations) return null
+
+    // Get nations that are in the inputted alliance.
+    const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
+    let onlineInAlliance = []
     
-                // Only get rank if 2 or more alliances exist.
-                const alliancesLen = alliances.length
-                if (alliancesLen >= 1) {      
-                    for (let i = 0; i < alliancesLen; i++) {
-                        const alliance = alliances[i]
-
-                        let currentAllianceResidents = 0,
-                            currentAllianceArea = 0,
-                            currentAllianceTowns = 0
-                        
-                        const allianceNationsLen = alliance.nations.length
-                        for (let j = 0; j < allianceNationsLen; j++) {
-                            const allianceNation = alliance.nations[j]
-
-                            const foundNation = nations.find(n => n.name == allianceNation)                       
-                            if (!foundNation) continue
-        
-                            currentAllianceResidents += foundNation.residents.length
-                            currentAllianceArea += foundNation.area
-                            currentAllianceTowns += foundNation.towns.length
-                        }
-
-                        alliance["residents"] = currentAllianceResidents
-                        alliance["towns"] = currentAllianceTowns
-                        alliance["area"] = currentAllianceArea
-                    }
-                    
-                    //#region Default sort
-                    sortByOrder(alliances, [
-                        { key: "residents" }, 
-                        { key: "area" },
-                        { key: "nations", callback: length }, 
-                        { key: "towns", callback: length }
-                    ])
-                    //#endregion
+    const data = await getOnlinePlayerData()
+    if (!data) return null
     
-                    const index = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName) as number
-                    foundAlliance["rank"] = index + 1
-                    foundAlliance["online"] = onlineInAlliance
-                }
-
-                return foundAlliance
-            })
-        }) 
+    allianceNations.forEach(n => {
+        const onlineInNation = n.residents.filter(res => data.players.find(op => op.account == res))
+        onlineInAlliance = onlineInAlliance.concat(onlineInNation)
     })
+
+    // Only get rank if 2 or more alliances exist.
+    const alliancesLen = alliances.length
+    if (alliancesLen >= 1) {      
+        for (let i = 0; i < alliancesLen; i++) {
+            const alliance = alliances[i]
+
+            let currentAllianceResidents = 0
+            let currentAllianceArea = 0
+            let currentAllianceTowns = 0
+            
+            const allianceNationsLen = alliance.nations.length
+            for (let j = 0; j < allianceNationsLen; j++) {
+                const allianceNation = alliance.nations[j]
+
+                const foundNation = nations.find(n => n.name == allianceNation)                       
+                if (!foundNation) continue
+
+                currentAllianceResidents += foundNation.residents.length
+                currentAllianceArea += foundNation.area
+                currentAllianceTowns += foundNation.towns.length
+            }
+
+            alliance["residents"] = currentAllianceResidents
+            alliance["towns"] = currentAllianceTowns
+            alliance["area"] = currentAllianceArea
+        }
+        
+        //#region Default sort
+        sortByOrder(alliances, [
+            { key: "residents" }, 
+            { key: "area" },
+            { key: "nations", callback: length }, 
+            { key: "towns", callback: length }
+        ])
+        //#endregion
+
+        const index = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName) as number
+        foundAlliance["rank"] = index + 1
+        foundAlliance["online"] = onlineInAlliance
+    }
+
+    return foundAlliance
 }
 
 async function getAlliances(skipCache = false) {
-    const cached = cache.get('aurora_alliances'),
-          skip = !skipCache ? cached : null
+    const cached = cache.get('aurora_alliances')
+    const skip = !skipCache ? cached : null
 
     return skip ?? allianceCollection().get().then(async doc => { 
         return doc.data().allianceArray 

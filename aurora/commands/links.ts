@@ -1,4 +1,8 @@
-import Discord from 'discord.js'
+import {
+    Client, Message, 
+    EmbedBuilder, Colors
+} from 'discord.js'
+
 import * as fn from '../../bot/utils/fn.js'
 
 export default {
@@ -6,9 +10,9 @@ export default {
     description: "Sends useful bot-related links",
     slashCommand: false,
     aliases: ["invite", "resources"],
-    run: async (client: Discord.Client, message: Discord.Message) => {
-        const general = new Discord.EmbedBuilder()
-            .setColor(Discord.Colors.Blue)
+    run: async (client: Client, message: Message) => {
+        const general = new EmbedBuilder()
+            .setColor(Colors.Blue)
             .setTitle("General")
             .setThumbnail(client.user.avatarURL())
             .addFields(
@@ -17,8 +21,8 @@ export default {
                 fn.embedField("Development Discord", "[Join](https://discord.gg/AVtgkcRgFs)", true)
             )
 
-        const toolkit = new Discord.EmbedBuilder()
-            .setColor(Discord.Colors.Red)
+        const toolkit = new EmbedBuilder()
+            .setColor(Colors.Red)
             .setTitle("Toolkit Resources")
             .setThumbnail("https://avatars.githubusercontent.com/u/99929501?s=400&u=7d6eeb131f448cdb960e09b155dcb190f8a2eb21&v=4")
             .addFields(

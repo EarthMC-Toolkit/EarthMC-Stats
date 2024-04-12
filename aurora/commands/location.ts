@@ -1,4 +1,4 @@
-import * as fn from '../../bot/utils/fn.js'
+import { devsFooter, embedField } from '../../bot/utils/fn.js'
 
 import { EmbedBuilder, Colors } from 'discord.js'
 import type { Client, Message, ColorResolvable } from 'discord.js'
@@ -19,7 +19,7 @@ const embed = (
 ) => new EmbedBuilder()
     .setTitle(title)
     .setColor(colour)
-    .setFooter(fn.devsFooter(client))
+    .setFooter(devsFooter(client))
     .setTimestamp()
 
 export default {
@@ -42,7 +42,7 @@ export default {
         else {
             if (!zoom) return message.reply({embeds: [
                 embed(client, `(Aurora) Map location for X: ${xcoord}, Z: ${zcoord}`, Colors.Green)
-                .addFields(fn.embedField("Dynmap Link", buildUrl(xcoord, zcoord)))
+                .addFields(embedField("Dynmap Link", buildUrl(xcoord, zcoord)))
             ]})
 
             const zoomNum = Number(zoom)
@@ -51,8 +51,8 @@ export default {
                 return message.reply({embeds: [
                     embed(client, `(Aurora) Map location for X: ${xcoord}, Z: ${zcoord}`, Colors.Green)
                     .addFields(
-                        fn.embedField("Dynmap Link", buildUrl(xcoord, zcoord, zoomNum)),
-                        fn.embedField("Zoom", zoom)
+                        embedField("Dynmap Link", buildUrl(xcoord, zcoord, zoomNum)),
+                        embedField("Zoom", zoom)
                     )
                 ]})
             }
