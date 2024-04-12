@@ -1,4 +1,4 @@
-import { Colors, EmbedBuilder } from "discord.js"
+import { ButtonStyle, Colors, EmbedBuilder } from "discord.js"
 import type { Message, Client, NewsChannel } from "discord.js"
 
 import { NotFoundError, Nova, formatString } from "earthmc"
@@ -31,8 +31,8 @@ export default {
             .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")]
         }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const nationEmbed = new EmbedBuilder()
-            .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+        const nationEmbed = new CustomEmbed(client)
+            .setDefaultAuthor(message)
             .setTimestamp()
         
         const townsWithDuplicates = [],
@@ -265,43 +265,42 @@ export default {
                     .editMessage(m)
             }
             else if (cmdType == "allies") {
-                database.Nova.getAlliances().then(async alliances => {
-                    if (!alliances) return await m.edit({ embeds: [fn.databaseError] })
-                        .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                const alliances = await database.Nova.getAlliances()
+                if (!alliances) return await m.edit({ embeds: [fn.databaseError] })
+                    .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                    const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
-                    if (!nation) return m.edit({embeds: [nationEmbed
-                        .setTitle("Invalid Nation")
-                        .setDescription(args[1] + " is not a valid nation, please try again.")
-                        .setColor(Colors.Red)
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
+                if (!nation) return m.edit({embeds: [nationEmbed
+                    .setTitle("Invalid Nation")
+                    .setDescription(args[1] + " is not a valid nation, please try again.")
+                    .setColor(Colors.Red)
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                    const alliancesWithNation = alliances.filter(a => a.nations.includes(nation.name))
-                    let allies = []
+                const alliancesWithNation = alliances.filter(a => a.nations.includes(nation.name))
+                let allies = []
 
-                    // If the nation is in one or more alliances.
-                    if (alliancesWithNation.length > 0) {
-                        allies = alliancesWithNation
-                            .flatMap(a => a.nations)
-                            .filter(n => n !== nation.name && !allies.includes(n))
-                    }
-                    else return m.edit({ embeds: [nationEmbed
-                        .setTitle("Unable to fetch allies")
-                        .setDescription(args[1] + " is not in any alliances.")
-                        .setColor(Colors.Red)
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                // If the nation is in one or more alliances.
+                if (alliancesWithNation.length > 0) {
+                    allies = alliancesWithNation
+                        .flatMap(a => a.nations)
+                        .filter(n => n !== nation.name && !allies.includes(n))
+                }
+                else return m.edit({ embeds: [nationEmbed
+                    .setTitle("Unable to fetch allies")
+                    .setDescription(args[1] + " is not in any alliances.")
+                    .setColor(Colors.Red)
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                    let page = 1
-                    if (isNaN(page)) page = 0
-                    else page--
+                let page = 1
+                if (isNaN(page)) page = 0
+                else page--
 
-                    const allData = allies.join('\n').match(/(?:^.*$\n?){1,10}/mg)
-                    new CustomEmbed(client, `(Nova) Nation Info | ${nation.name} Allies`)
-                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                        .setType(EntityType.Nation).setPage(page)
-                        .paginate(allData, "```", "```")
-                        .editMessage(m)
-                })
+                const allData = allies.join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                new CustomEmbed(client, `(Nova) Nation Info | ${nation.name} Allies`)
+                    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                    .setType(EntityType.Nation).setPage(page)
+                    .paginate(allData, "```", "```")
+                    .editMessage(m)
             }
             else { // /n <nation>
                 nations = nations.map(n => {
@@ -397,37 +396,50 @@ export default {
                 })
                 //#endregion
                 
-                database.Nova.getAlliances().then(alliances => {
-                    if (alliances) {
-                        const nationAlliances = alliances
-                            .filter(alliance => alliance.nations.map(e => e.toLowerCase())
-                            .includes(nation.name.toLowerCase())).map(a => a.allianceName)
+                const alliances = await database.Nova.getAlliances()
+                if (alliances) {
+                    const nationAlliances = alliances
+                        .filter(alliance => alliance.nations.map(e => e.toLowerCase())
+                        .includes(nation.name.toLowerCase())).map(a => a.allianceName)
 
-                        const nationAlliancesLen = nationAlliances.length
-                        if (nationAlliancesLen >= 1) nationEmbed.addFields(fn.embedField(
-                            `Alliances [${nationAlliancesLen}]`, 
-                            "```" + nationAlliances.join(", ") + "```"
-                        ))
-                    }
+                    const nationAlliancesLen = nationAlliances.length
+                    if (nationAlliancesLen >= 1) nationEmbed.addFields(fn.embedField(
+                        `Alliances [${nationAlliancesLen}]`, 
+                        "```" + nationAlliances.join(", ") + "```"
+                    ))
+                }
 
-                    const nationTownsString = nation.towns.join(", ").toString().replace(/^\s+|\s+$/gm, "")
-                    nationEmbed.addFields(fn.embedField(`Towns [${nation.towns.length}]`, "```" + nationTownsString + "```"))
-                    
-                    if (recentNews) {
-                        const news = new News(recentNews)
-                        const img = news.images[0]
+                const nationTowns = nation.towns.join(", ")
+                const nationTownsString = nationTowns.toString().replace(/^\s+|\s+$/gm, "")
+                
+                if (nationTownsString.length >= 1024) {
+                    nationEmbed.addFields(fn.embedField(
+                        `Towns [${nation.towns.length}]`, 
+                        "Too many towns to display! Click the 'view all' button to see the full list."
+                    ))
+            
+                    nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
+                } else {                   
+                    nationEmbed.addFields(fn.embedField(
+                        `Towns [${nation.towns.length}]`, 
+                        "```" + nationTownsString + "```"
+                    ))
+                }
+                
+                if (recentNews) {
+                    const news = new News(recentNews)
+                    const img = news.images[0]
 
-                        nationEmbed.addFields(fn.embedField(
-                            "Recent News",
-                            news.message + (img ? " ([Image](" + img + "))" : "")
-                        ))
-                    }
+                    nationEmbed.addFields(fn.embedField(
+                        "Recent News",
+                        news.message + (img ? " ([Image](" + img + "))" : "")
+                    ))
+                }
 
-                    nationEmbed.setFooter(fn.devsFooter(client))
+                const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail]
 
-                    const thumbnail = nation.flag ? [] : [fn.NOVA.thumbnail]
-                    return m.edit({embeds: [nationEmbed], files: thumbnail})
-                })
+                nationEmbed.setFiles(thumbnail)
+                nationEmbed.editMessage(m)
             }
         })
     }

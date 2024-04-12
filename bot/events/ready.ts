@@ -16,10 +16,9 @@ import {
     ActivityType,
     ContextMenuCommandBuilder,
     Collection,
-    //Collection
 } from "discord.js"
 
-import { DJSEvent } from "../types.js"
+import { Button, DJSEvent } from "../types.js"
 //#endregion
 
 let lastActivity = -1
@@ -132,10 +131,11 @@ async function registerButtons(client: Client) {
 
     for (const file of buttons) {
         const buttonFile = await import(`../../${buttonsPath}/${file}`)
-        const button = buttonFile.default
+        const button = buttonFile.default as Button
 
         if (button.id) {
-            client['buttons'].set(button.id)
+            let col = client['buttons'] as Collection<string, Button>
+            col.set(button.id, button)
         }
     }
 }

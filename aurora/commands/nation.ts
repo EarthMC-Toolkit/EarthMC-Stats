@@ -1,4 +1,12 @@
-import Discord, {ButtonStyle} from "discord.js"
+import {
+    ButtonStyle,
+    TextChannel,
+    Colors,
+    EmbedBuilder,
+    Client,
+    Message
+} from "discord.js"
+
 import { Aurora } from "earthmc"
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
@@ -13,17 +21,17 @@ export default {
     description: "Displays info for a nation.",
     slashCommand: true,
     aliases: ["n"],
-    run: async (client: Discord.Client, message: Discord.Message, args: string[]) => {
+    run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
         const m = await message.reply({embeds: [
-            new Discord.EmbedBuilder()
+            new EmbedBuilder()
                 .setTitle("<a:loading:966778243615191110> Fetching nation data, this might take a moment.")
-                .setColor(Discord.Colors.Aqua)
+                .setColor(Colors.Aqua)
         ]})
         
         if (!req) return await m.edit({embeds: [
-            new Discord.EmbedBuilder()
-            .setColor(Discord.Colors.Red)
+            new EmbedBuilder()
+            .setColor(Colors.Red)
             .setTitle("No Arguments Given")
             .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")]
         }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
@@ -45,72 +53,71 @@ export default {
                         if (!onlinePlayers) return await m.edit({ embeds: [fn.fetchError] })
                             .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                        database.Aurora.getTowns().then(async towns => {
-                            if (!towns) towns = await Aurora.Towns.all()
+                        let towns = await database.Aurora.getTowns()
+                        if (!towns) towns = await Aurora.Towns.all()
 
-                            const len = towns.length
-                            for (let i = 0; i < len; i++) {  
-                                const cur = towns[i]
-                                const nationName = cur.nation
+                        const len = towns.length
+                        for (let i = 0; i < len; i++) {  
+                            const cur = towns[i]
+                            const nationName = cur.nation
 
-                                if (nationName == "No Nation") continue
-                                else townsWithDuplicates.push({
-                                    name: cur.name,
-                                    nation: nationName,
-                                    residents: cur.residents.length,
-                                    residentNames: cur.residents,
-                                    onlineResidents: [],
-                                    chunks: cur.area
-                                })
-                            }
-                            
-                            // Function to get rid of duplicates and add up residents and chunks.
-                            townsWithDuplicates.forEach(function(town) {                             
-                                if (!this[town.nation]) {        
-                                    const onlineResidents = town.residentNames.filter(resident => 
-                                        onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
-                                    ))
-                                    
-                                    this[town.nation] = { 
-                                        nation: town.nation,
-                                        residentNames: town.residentNames,
-                                        onlineResidents: onlineResidents,
-                                        chunks: 0
-                                    }  
-
-                                    nationsWithoutDuplicates.push(this[town.nation])
-                                }
-
-                                // If it already exists, add up stuff.
-                                this[town.nation].residentNames = fn.removeDuplicates(this[town.nation].residentNames.concat(town.residentNames))
-                                this[town.nation].onlineResidents = this[town.nation].residentNames.filter(resident => 
+                            if (nationName == "No Nation") continue
+                            else townsWithDuplicates.push({
+                                name: cur.name,
+                                nation: nationName,
+                                residents: cur.residents.length,
+                                residentNames: cur.residents,
+                                onlineResidents: [],
+                                chunks: cur.area
+                            })
+                        }
+                        
+                        // Function to get rid of duplicates and add up residents and chunks.
+                        townsWithDuplicates.forEach(function(town) {                             
+                            if (!this[town.nation]) {        
+                                const onlineResidents = town.residentNames.filter(resident => 
                                     onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
                                 ))
-                                    
-                                this[town.nation].chunks += town.chunks                            
-                            }, Object.create(null))
+                                
+                                this[town.nation] = { 
+                                    nation: town.nation,
+                                    residentNames: town.residentNames,
+                                    onlineResidents: onlineResidents,
+                                    chunks: 0
+                                }  
 
-                            let page = 1
-                            const split = req.split(" ")
+                                nationsWithoutDuplicates.push(this[town.nation])
+                            }
 
-                            if (args[2]) if (split[2]) page = parseInt(split[2])
-                            else if (split[1]) page = parseInt(split[1])
+                            // If it already exists, add up stuff.
+                            this[town.nation].residentNames = fn.removeDuplicates(this[town.nation].residentNames.concat(town.residentNames))
+                            this[town.nation].onlineResidents = this[town.nation].residentNames.filter(resident => 
+                                onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
+                            ))
+                                
+                            this[town.nation].chunks += town.chunks                            
+                        }, Object.create(null))
 
-                            if (isNaN(page)) page = 0        
-                            else page--
+                        let page = 1
+                        const split = req.split(" ")
 
-                            nationsWithoutDuplicates.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+                        if (args[2]) if (split[2]) page = parseInt(split[2])
+                        else if (split[1]) page = parseInt(split[1])
 
-                            const allData = nationsWithoutDuplicates
-                                .map(nation => nation.nation + " - " + nation.onlineResidents.length)
-                                .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                        if (isNaN(page)) page = 0        
+                        else page--
 
-                            new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
-                                .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                                .setType(EntityType.Nation).setPage(page)
-                                .paginate(allData, "```", "```")
-                                .editMessage(m)
-                        }) 
+                        nationsWithoutDuplicates.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+
+                        const allData = nationsWithoutDuplicates
+                            .map(nation => nation.nation + " - " + nation.onlineResidents.length)
+                            .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+
+                        new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
+                            .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                            .setType(EntityType.Nation).setPage(page)
+                            .paginate(allData, "```", "```")
+                            .editMessage(m)
                     }
                     else if (args[1].toLowerCase() == "residents") {            
                         nations.sort((a, b) => b.residents.length - a.residents.length)
@@ -182,7 +189,7 @@ export default {
                 if (!nation) {
                     nationEmbed.setTitle("Invalid Nation")
                         .setDescription(args[0] + " is not a valid nation, please try again.")
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
 
                     return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
@@ -190,8 +197,8 @@ export default {
                 database.getPlayers().then(async players => {
                     // Sort by highest offline duration
                     nation.residents.sort((a, b) => {
-                        const foundPlayerA = players.find(p => p.name == a),
-                              foundPlayerB = players.find(p => p.name == b)
+                        const foundPlayerA = players.find(p => p.name == a)
+                        const foundPlayerB = players.find(p => p.name == b)
 
                         if (foundPlayerA && !foundPlayerB) return -1
                         if (!foundPlayerA && foundPlayerB) return 1
@@ -205,8 +212,8 @@ export default {
                             if (!loA) return 1
                             if (!loB) return -1
 
-                            const dateB = fn.unixFromDate(loB.aurora),
-                                  dateA = fn.unixFromDate(loA.aurora)
+                            const dateB = fn.unixFromDate(loB.aurora)
+                            const dateA = fn.unixFromDate(loA.aurora)
 
                             return dateB - dateA
                         }
@@ -217,8 +224,8 @@ export default {
                     else page--
 
                     const allData = nation.residents.map(resident => {
-                        const residentInPlayers = players.find(p => p.name == resident),
-                              lo = residentInPlayers.lastOnline
+                        const residentInPlayers = players.find(p => p.name == resident)
+                        const lo = residentInPlayers.lastOnline
 
                         return residentInPlayers && lo 
                             ? "``" + resident + "`` - " + `<t:${fn.unixFromDate(lo.aurora)}:R>`
@@ -237,7 +244,7 @@ export default {
                 if (!nation) {
                     nationEmbed.setTitle("Invalid Nation")
                         .setDescription(args[0] + " is not a valid nation, please try again.")
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
 
                     return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
@@ -264,7 +271,7 @@ export default {
                     if (!nation) {
                         nationEmbed.setTitle("Invalid Nation")
                             .setDescription(args[1] + " is not a valid nation, please try again.")
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
                     
                         return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     }
@@ -282,7 +289,7 @@ export default {
                     } else {
                         nationEmbed.setTitle("Unable to fetch allies")
                             .setDescription(args[1] + " is not in any alliances.")
-                            .setColor(Discord.Colors.Red)
+                            .setColor(Colors.Red)
 
                         return m.edit({embeds: [nationEmbed]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     }
@@ -294,7 +301,8 @@ export default {
                     const allData = allies.join('\n').match(/(?:^.*$\n?){1,10}/mg)
                     new CustomEmbed(client, `(Aurora) Nation Info | ${nation.name} Allies`)
                         .setDefaultAuthor(message)
-                        .setType(EntityType.Nation).setPage(page)
+                        .setType(EntityType.Nation)
+                        .setPage(page)
                         .paginate(allData, "```", "```")
                         .editMessage(m)
                 }).catch(() => {})
@@ -304,7 +312,7 @@ export default {
                 if (!nation) {
                     nationEmbed.setTitle("Invalid Nation")
                         .setDescription(args[0] + " is not a valid nation, please try again.")
-                        .setColor(Discord.Colors.Red)
+                        .setColor(Colors.Red)
 
                     return m.edit({embeds: [nationEmbed]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
@@ -312,7 +320,7 @@ export default {
                 const capitalColours = await api.get(`aurora/towns/${nation.capital.name}`)
                     .then((t: any) => t.colourCodes).catch(() => {})
 
-                const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Discord.Colors.Aqua
+                const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
                 nationEmbed.setColor(colour)
                 
                 //#region Prefixes
@@ -372,8 +380,8 @@ export default {
                 //#endregion
 
                 //#region Recent news logic
-                const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as Discord.TextChannel,
-                      newsChannelMessages = await newsChannel?.messages.fetch()
+                const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as TextChannel
+                const newsChannelMessages = await newsChannel?.messages.fetch()
 
                 const filterNews = msg => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
 
@@ -407,9 +415,9 @@ export default {
                 if (nationTownsString.length >= 1024) {
                     nationEmbed.addFields(fn.embedField(
                         `Towns [${nation.towns.length}]`, 
-                        "Too many towns to display! Click the 'view all' button to see the full list."
+                        "Too many towns to display!\nClick the 'view all' button to see the full list."
                     ))
-            
+                    
                     nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
                 } else {                   
                     nationEmbed.addFields(fn.embedField(
@@ -419,8 +427,8 @@ export default {
                 }
                 
                 if (recentNews) {
-                    const news = new News(recentNews),
-                            img = news?.images[0]
+                    const news = new News(recentNews)
+                    const img = news?.images[0]
 
                     nationEmbed.addFields(fn.embedField(
                         "Recent News",
