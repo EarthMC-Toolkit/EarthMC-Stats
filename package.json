@@ -25,7 +25,7 @@
     "start-js": "bun run compile && node ./dist/index.js",
     "start": "tsx index.ts",
     "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
-    "restart": "pm2 startOrRestart ecosystem.json --env production",
+    "restart": "pm2 startOrRestart ecosystem.json",
     "deploy": "pm2 deploy production"
   },
   "engines": {
