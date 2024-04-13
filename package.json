@@ -26,7 +26,7 @@
     "start": "tsx index.ts",
     "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
     "deploy": "pm2 startOrRestart ecosystem.json --env production",
-    "setup": "pm2 deploy production setup"
+    "setup": "pm2 deploy production"
   },
   "engines": {
     "node": ">=16.20.2",
