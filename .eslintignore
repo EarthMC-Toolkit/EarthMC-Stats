@@ -2,3 +2,5 @@ node_modules/
 firebase/
 bot/archive/
 dist/
+
+bun.lockb

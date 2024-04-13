@@ -22,7 +22,6 @@
         "no-unreachable": ["error"],
         "no-unexpected-multiline": ["error"],
         "prefer-const": "warn",
-        "linebreak-style": ["error", "windows"],
         "semi": ["error", "never"],
         "no-constant-condition": "off",
         "no-inner-declarations": "off",
