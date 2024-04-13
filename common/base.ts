@@ -13,6 +13,11 @@ class BaseHelper {
         this.embed.setFooter(fn.devsFooter(client)).setTimestamp()
         this.isNova = isNova
     }
+
+    addField(name: string, value: string, inline = false) {
+        this.embed.addFields({ name, value, inline })
+        return this.embed
+    }
 }
 
 export {

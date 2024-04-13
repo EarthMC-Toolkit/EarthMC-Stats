@@ -39,11 +39,6 @@ class ResidentHelper extends BaseHelper {
         this.embed.setColor('#A405BA')
     }
 
-    addField(name: string, value: string, inline = false) {
-        this.embed.addFields({ name, value, inline })
-        return this.embed
-    }
-
     async fetchResidents() {
         const arr = await (this.isNova ? database.Nova : database.Aurora).getResidents()
         return arr ? arr : await (this.isNova ? Nova : Aurora).Residents.all()

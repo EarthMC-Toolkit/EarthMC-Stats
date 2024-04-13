@@ -24,7 +24,9 @@
     "reinstall": "rimraf node_modules && bun install",
     "start-js": "bun run compile && node ./dist/index.js",
     "start": "tsx index.ts",
-    "deploy": "pm2 startOrGracefulReload --attach ecosystem.json"
+    "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
+    "deploy": "pm2 startOrRestart ecosystem.json --env production",
+    "setup": "pm2 deploy production setup"
   },
   "engines": {
     "node": ">=16.20.2",
