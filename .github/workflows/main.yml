@@ -1,0 +1,20 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - run: bun install --frozen-lockfile
+      - run: bun x eslint .
+    

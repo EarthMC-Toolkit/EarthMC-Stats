@@ -5,13 +5,13 @@ import {
     SlashCommandBuilder
 } from "discord.js"
 
-import { Service } from 'koyeb.js'
+//import { Service } from 'koyeb.js'
 import * as fn from '../../bot/utils/fn.js'
 
 import dotenv from 'dotenv'
 dotenv.config()
 
-const serviceID = "32ed6d7c-e2b2-4ddd-bd40-f574e154fc0a"
+//const serviceID = "32ed6d7c-e2b2-4ddd-bd40-f574e154fc0a"
 
 export default {
     name: "dev",
