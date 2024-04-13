@@ -3,7 +3,7 @@ import { devsFooter, embedField } from '../../bot/utils/fn.js'
 import { EmbedBuilder, Colors } from 'discord.js'
 import type { Client, Message, ColorResolvable } from 'discord.js'
 
-const buildUrl = (x, z, zoom = 4) =>
+const buildUrl = (x: number | string, z: number | string, zoom = 4) =>
     `[Click here](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=${zoom}&x=${x}&y=64&z=${z})`
 
 const inWorldBorder = (x, z) => {
@@ -34,32 +34,29 @@ export default {
                 .setDescription("Invalid arguments!\n\nUsage: `/loc xcoord zcoord`")
             ]}).then(m => setTimeout(() => m.delete(), 10000))
         }
-        else if (inWorldBorder(xcoord, zcoord)) {
-            return message.reply({embeds: [embed(client)
-                .setDescription("Please enter 2 values that are inside EarthMC's world border.")
+
+        if (inWorldBorder(xcoord, zcoord)) {
+            return message.reply({embeds: [
+                embed(client).setDescription("Please enter 2 values that are inside EarthMC's world border.")
             ]}).then(m => setTimeout(() => m.delete(), 10000))
         }
-        else {
-            if (!zoom) return message.reply({embeds: [
-                embed(client, `(Aurora) Map location for X: ${xcoord}, Z: ${zcoord}`, Colors.Green)
-                .addFields(embedField("Dynmap Link", buildUrl(xcoord, zcoord)))
-            ]})
-
-            const zoomNum = Number(zoom)
-
-            if (!isNaN(zoomNum) && zoomNum < 11) {
-                return message.reply({embeds: [
-                    embed(client, `(Aurora) Map location for X: ${xcoord}, Z: ${zcoord}`, Colors.Green)
-                    .addFields(
-                        embedField("Dynmap Link", buildUrl(xcoord, zcoord, zoomNum)),
-                        embedField("Zoom", zoom)
-                    )
-                ]})
-            }
         
-            return message.reply({embeds: [
-                embed(client).setDescription("`" + zoom + "`" + " is not a valid zoom! Please use a number from 1-10.")
-            ]}).then(msg => setTimeout(() => msg.delete(), 10000)).catch(() => {})
-        }
+        if (!zoom) return message.reply({embeds: [
+            embed(client, `(Aurora) Map location for X: ${xcoord}, Z: ${zcoord}`, Colors.Green)
+            .addFields(embedField("Dynmap Link", buildUrl(xcoord, zcoord)))
+        ]})
+
+        const zoomNum = Number(zoom)
+        if (!isNaN(zoomNum) && zoomNum < 11) return message.reply({embeds: [
+            embed(client, `(Aurora) Map location for X: ${xcoord}, Z: ${zcoord}`, Colors.Green)
+            .addFields(
+                embedField("Dynmap Link", buildUrl(xcoord, zcoord, zoomNum)),
+                embedField("Zoom", zoom)
+            )
+        ]})
+    
+        return message.reply({embeds: [
+            embed(client).setDescription("`" + zoom + "`" + " is not a valid zoom! Please use a number from 1-10.")
+        ]}).then(msg => setTimeout(() => msg.delete(), 10000)).catch(() => {})
     }
 }

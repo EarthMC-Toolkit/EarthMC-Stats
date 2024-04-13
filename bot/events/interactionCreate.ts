@@ -1,11 +1,12 @@
 import { 
-    BaseInteraction,
+    type BaseInteraction,
+    type ModalSubmitInteraction, 
+    type UserContextMenuCommandInteraction, 
     ButtonStyle, Colors, 
     EmbedBuilder, ModalBuilder, ActionRowBuilder,
     TextInputBuilder, TextInputStyle,
-    ModalSubmitInteraction, 
-    UserContextMenuCommandInteraction, 
-    GuildMemberRoleManager
+    GuildMemberRoleManager,
+    Collection
 } from 'discord.js'
 
 import cache from 'memory-cache'
@@ -15,6 +16,7 @@ import * as fn from '../utils/fn.js'
 
 import { getLinkedPlayer, linkPlayer } from '../utils/linking.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
+import { Button } from '../types.js'
 
 let target = null
 
@@ -68,9 +70,8 @@ export default {
                 if (alliance.discordInvite != "No discord invite has been set for this alliance") 
                     preview.setURL(alliance.discordInvite)
                 
-                const thumbnail = alliance.imageURL ? [] : [fn.AURORA.thumbnail],
-                      allianceNationsLength = alliance.nations.length,
-                      nationsString = alliance.nations.join(", ")
+                const allianceNationsLength = alliance.nations.length
+                const nationsString = alliance.nations.join(", ")
         
                 if (nationsString.length < 1024) {
                     const val = allianceNationsLength <= 0 
@@ -91,13 +92,15 @@ export default {
                 // let modal = new AllianceModal('alliance_extra', 'Extra options')
                 // modal.extra().show()
 
-                return interaction.reply({ embeds: [preview], files: thumbnail })
+                preview.setFiles(alliance.imageURL ? [] : [fn.AURORA.thumbnail])
+                return preview.modalReply(interaction)
                 //#endregion
             }
         }
 
         if (interaction.isButton()) {
-            const button = client['buttons'].get(interaction.customId)
+            const btns = client['buttons'] as Collection<string, Button>
+            const button = btns.get(interaction.customId)
             if (!button) return
             
             return button.execute(client, interaction).catch(console.error)

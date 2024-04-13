@@ -2,7 +2,8 @@ import * as fn from '../utils/fn.js'
 
 import type { 
     Client, ColorResolvable, 
-    Message, CommandInteraction, 
+    Message, CommandInteraction,
+    ModalSubmitInteraction,
 } from "discord.js"
 
 import { 
@@ -126,35 +127,34 @@ class CustomEmbed extends EmbedBuilder {
         return this
     }
 
-    async reply(interaction: CommandInteraction) {
-        if (!this.paginated) return await interaction.reply({embeds: [this], components: this.components })
+    modalReply = async(interaction: ModalSubmitInteraction) => await interaction.reply(this.payload())
 
-        return await interaction.reply({ 
-            embeds: [this.embeds[this.page]], 
-            components: this.components,
-            files: this.files
-        }).then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
+    async reply(interaction: CommandInteraction) {
+        if (!this.paginated) return await interaction.reply(this.payload())
+
+        return await interaction.reply(this.payload(true))
+            .then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
     }
 
     async editInteraction(interaction: CommandInteraction) {
-        if (!this.paginated) return await interaction.editReply({embeds: [this], components: this.components })
+        if (!this.paginated) return await interaction.editReply(this.payload())
 
-        return await interaction.editReply({ 
-            embeds: [this.embeds[this.page]], 
-            components: this.components,
-            files: this.files
-        }).then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
+        return await interaction.editReply(this.payload(true))
+            .then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
     }
     
     async editMessage(msg: Message) {
-        if (!this.paginated) return await msg.edit({embeds: [this], components: this.components })
+        if (!this.paginated) return await msg.edit(this.payload())
         
-        return await msg.edit({ 
-            embeds: [this.embeds[this.page]], 
-            components: this.components,
-            files: this.files
-        }).then(() => fn.paginator(msg.author.id, msg, this.embeds, this.page))
+        return await msg.edit(this.payload(true))
+            .then(() => fn.paginator(msg.author.id, msg, this.embeds, this.page))
     }
+
+    payload = (paginated = false) => ({
+        embeds: paginated ? [this.embeds[this.page]] : [this],
+        components: this.components,
+        files: this.files
+    })
 }
 
 export {

@@ -134,8 +134,7 @@ async function registerButtons(client: Client) {
         const button = buttonFile.default as Button
 
         if (button.id) {
-            let col = client['buttons'] as Collection<string, Button>
-            col.set(button.id, button)
+            (client['buttons'] as Collection<string, Button>).set(button.id, button)
         }
     }
 }

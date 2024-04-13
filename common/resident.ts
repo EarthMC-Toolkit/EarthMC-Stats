@@ -105,9 +105,9 @@ class ResidentHelper extends BaseHelper {
     }
 
     async setupResidentEmbed() {
-        const res = this.apiResident ?? this.dbResident,
-              formattedPlayerName = res.name.replace(/_/g, "\\_"),
-              affiliation = `${res.town ?? res.townName} (${res.nation ?? res.townNation})`
+        const res = this.apiResident ?? this.dbResident
+        const formattedPlayerName = res.name.replace(/_/g, "\\_")
+        const affiliation = `${res.town ?? res.townName} (${res.nation ?? res.townNation})`
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | ${formattedPlayerName}`)
         this.addField("Affiliation", affiliation, true)
@@ -118,19 +118,19 @@ class ResidentHelper extends BaseHelper {
     }
 
     async addCommonFields() {
-        if (this.apiResident) {
+        if (!this.apiResident) this.addDatesFromDB()
+        else {
             this.addBalance(this.apiResident?.balance)
             this.addDatesFromAPI()
         }
-        else this.addDatesFromDB()
 
         await this.addLinkedAcc()
     }
 
     addDatesFromAPI = () => {
-        const timestamps = this.apiResident.timestamps,
-              registeredTs = timestamps?.registered,
-              lastOnlineTs = timestamps?.lastOnline
+        const timestamps = this.apiResident.timestamps
+        const registeredTs = timestamps?.registered
+        const lastOnlineTs = timestamps?.lastOnline
 
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
         this.addField("Status", statusStr, true)
