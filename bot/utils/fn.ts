@@ -56,7 +56,8 @@ const staffListEmbed = (client: Discord.Client, arr: string[], active = true) =>
     color: Discord.Colors.Green,
 }).setThumbnail(client.user.avatarURL()).setTimestamp()
 
-const auroraNationBonus = (residentAmt: number) => residentAmt >= 120 ? 80
+const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 100
+    : residentAmt >= 120 ? 80
     : residentAmt >= 80 ? 60
     : residentAmt >= 60 ? 50
     : residentAmt >= 40 ? 30
