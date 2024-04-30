@@ -1,6 +1,17 @@
-import Discord, {ButtonBuilder} from "discord.js"
+import {
+    type Client,
+    type CommandInteraction,
+    type EmojiIdentifierResolvable,
+    ButtonBuilder, EmbedBuilder,
+    ActionRowBuilder, AttachmentBuilder,
+    ChannelType, ComponentType,
+    Colors, ButtonStyle, 
+    Channel, Message,
+    PermissionFlagsBits
+} from "discord.js"
+
 import moment from "moment"
-import admin from "firebase-admin"
+import { firestore } from "firebase-admin"
 
 import fs from 'fs'
 import { request } from "undici"
@@ -20,17 +31,17 @@ const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
 let townlessSubbedChannelArray: string[] = []
 const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
 
-const errorEmbed = (title: string, desc: string) => new Discord.EmbedBuilder()
+const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
     .setTitle(title)
     .setDescription(desc)
-    .setColor(Discord.Colors.Red)
+    .setColor(Colors.Red)
     .setTimestamp()
 
-const serverIssues = errorEmbed("Server Issues", "We are currently unable to reach EarthMC, it's most likely down."),
-      townyIssues = errorEmbed("Towny Issues","We are currently unable to fetch Towny data, try again later!" ),
-      dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fetch Dynmap data, try again later!"),
-      databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!"),
-      fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
+const serverIssues = errorEmbed("Server Issues", "We are currently unable to reach EarthMC, it's most likely down.")
+const townyIssues = errorEmbed("Towny Issues","We are currently unable to fetch Towny data, try again later!" )
+const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fetch Dynmap data, try again later!")
+const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
+const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
 const embedField = (name, value, inline = false) => ({ name, value, inline })
 const staff = {
@@ -49,11 +60,11 @@ const staff = {
     ]
 }
 
-const staffListEmbed = (client: Discord.Client, arr: string[], active = true) => new Discord.EmbedBuilder({
+const staffListEmbed = (client: Client, arr: string[], active = true) => new EmbedBuilder({
     title: `Staff List (${active ? "Active" : "Inactive"})`,
     description: alphabetSort(arr).join(", "),
     footer: devsFooter(client),
-    color: Discord.Colors.Green,
+    color: Colors.Green
 }).setThumbnail(client.user.avatarURL()).setTimestamp()
 
 const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 100
@@ -68,7 +79,7 @@ const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
     : residentAmt >= 30 ? 60
     : residentAmt >= 20 ? 40
     : residentAmt >= 10 ? 20
-    : residentAmt < 10 ? 10 : 0 
+    : residentAmt < 10 ? 10 : 0
 
 const NOVA = {
     thumbnail: attachmentFromFile('/bot/images/nova.png', 'nova.png'),
@@ -82,22 +93,22 @@ const AURORA = {
 
 const time = (date = moment()) => moment(date).utc().format("YYYY/MM/DD HH:mm:ss")
 
-const error = (client: Discord.Client, message: string, error: string) => new Discord.EmbedBuilder()
-    .setColor(Discord.Colors.Red)
+const error = (client: Client, message: string, error: string) => new EmbedBuilder()
+    .setColor(Colors.Red)
     .setTitle(message)
     .setDescription(`${error}`)
     .setFooter({ text: client.user.username, iconURL: client.user.avatarURL() })
     .setTimestamp()
 
-const devsFooter = (client: Discord.Client) => ({
+const devsFooter = (client: Client) => ({
     text: `Maintained by ${botDevs[0]}`, 
     iconURL: client.user.avatarURL()
 })
 
-function unixFromDate(date: Date | admin.firestore.Timestamp): number {
+function unixFromDate(date: Date | firestore.Timestamp): number {
     let result: Date = null
 
-    if (date instanceof admin.firestore.Timestamp) result = new Date(date["seconds"] * 1000)
+    if (date instanceof firestore.Timestamp) result = new Date(date["seconds"] * 1000)
     else if (date instanceof Date) result = date
     
     return result ? moment.utc(result).unix() : null
@@ -105,17 +116,17 @@ function unixFromDate(date: Date | admin.firestore.Timestamp): number {
 
 const removeDuplicates = (arr: any[]) => [...new Set(arr)]
 const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
-const getUserCount = (client: Discord.Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
 const isEmpty = (str: string) => (!str || str.length === 0)
 
 const paginator = async(
     author: string, 
-    msg: Discord.Message, 
-    embedArr: Discord.EmbedBuilder[], 
+    msg: Message, 
+    embedArr: EmbedBuilder[], 
     currentPage: number
 ) => {   
     // DM messages don't work with component collectors right now
-    if (msg?.channel?.type == Discord.ChannelType.DM) 
+    if (msg?.channel?.type == ChannelType.DM) 
         return await msg.edit("DMs do not support buttons yet! Try again in a server.")
 
     // Create collector which will listen for a button interaction. (If it passes the filter)
@@ -124,7 +135,11 @@ const paginator = async(
         return i.user.id === author 
     }
           
-    const collector = msg.createMessageComponentCollector({ filter, componentType: Discord.ComponentType.Button, time: 5*60*1000 })
+    const collector = msg.createMessageComponentCollector({ 
+        filter, componentType: ComponentType.Button,
+        time: 5*60*1000
+    })
+
     const lastPage = embedArr.length-1
 
     // Edit message to show arrow buttons
@@ -148,11 +163,11 @@ const paginator = async(
  * Helper method to create a paginator on an interaction.
  */
 const paginatorInteraction = async(
-    interaction: Discord.CommandInteraction, 
-    embeds: Discord.EmbedBuilder[], 
+    interaction: CommandInteraction, 
+    embeds: EmbedBuilder[], 
     currentPage: number
 ) => {
-    const msg = await interaction.fetchReply().catch(console.log) as Discord.Message
+    const msg = await interaction.fetchReply().catch(console.log) as Message
     paginator(interaction.user.id, msg, embeds, currentPage)
 }
 
@@ -160,7 +175,7 @@ async function buildButtons(currentPage: number, lastPage: number) {
     const noFurther = currentPage >= lastPage
     const noLess = currentPage <= 0
 
-    return new Discord.ActionRowBuilder<ButtonBuilder>().addComponents(
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
         emojiButton("first", "⏪", noLess), emojiButton("back", "◀", noLess), 
         emojiButton("forward", "▶", noFurther), emojiButton("last", "⏩", noFurther)
     )
@@ -168,13 +183,13 @@ async function buildButtons(currentPage: number, lastPage: number) {
 
 const emojiButton = (
     id: string, 
-    emoji: Discord.EmojiIdentifierResolvable, 
+    emoji: EmojiIdentifierResolvable, 
     disabled: boolean
-) => new Discord.ButtonBuilder({
+) => new ButtonBuilder({
     customId: id,
     emoji: emoji,
     disabled: disabled,
-    style: Discord.ButtonStyle.Primary
+    style: ButtonStyle.Primary
 })
 
 const paginatorDM = async (author, msg, embeds, pageNow, addReactions = true) => {
@@ -308,7 +323,7 @@ const maxTownSize = 940
 
 function attachmentFromFile(absolutePath: string, name: string, description?: string) {
     const file = fs.readFileSync(process.cwd() + absolutePath)
-    return new Discord.AttachmentBuilder(file, description ? { name, description } : { name })
+    return new AttachmentBuilder(file, description ? { name, description } : { name })
 }
 
 const random = (array: any[], last: number) => {
@@ -319,19 +334,17 @@ const random = (array: any[], last: number) => {
     }
 }
 
-/**
- * Checks whether the client can view and send messages in a channel
- */
-function canViewAndSend(channel: Discord.Channel) {
+/** Checks whether the client can view and send messages in a channel */
+function canViewAndSend(channel: Channel) {
     switch (channel.type) {
-        case Discord.ChannelType.GuildText:
-        case Discord.ChannelType.GuildAnnouncement: {
+        case ChannelType.GuildText:
+        case ChannelType.GuildAnnouncement: {
             if (!channel.viewable) return false
-            return channel.permissionsFor(channel.guild.members.me).has(Discord.PermissionFlagsBits.SendMessages)
+            return channel.permissionsFor(channel.guild.members.me).has(PermissionFlagsBits.SendMessages)
         }
-        case Discord.ChannelType.AnnouncementThread:
-        case Discord.ChannelType.PublicThread:
-        case Discord.ChannelType.PrivateThread: {
+        case ChannelType.AnnouncementThread:
+        case ChannelType.PublicThread:
+        case ChannelType.PrivateThread: {
             return channel.joinable && channel.sendable
         }
         default: return false
