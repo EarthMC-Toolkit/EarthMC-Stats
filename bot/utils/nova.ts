@@ -3,10 +3,18 @@ import cache from 'memory-cache'
 import { request } from "undici"
 
 import { db } from "../constants.js"
+import { MapResponse, PlayersResponse } from "earthmc"
 
 const novaUrl = 'https://earthmc.net/map/nova/'
-const getTownyData = () => request(`${novaUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`).then(res => res.body.json())
-const getOnlinePlayerData = () => request(`${novaUrl}standalone/MySQL_update.php?world=earth`).then(res => res.body.json())
+const getTownyData = async () => {
+    const res = await request(`${novaUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`)
+    return await res.body.json() as MapResponse
+}
+
+const getOnlinePlayerData = async () => {
+    const res = await request(`${novaUrl}standalone/MySQL_update.php?world=earth`)
+    return await res.body.json() as PlayersResponse
+}
 
 async function getResidents() {
     const residentDataCollection = db.collection("residentData")

@@ -30,8 +30,8 @@ export default {
             .setFooter(fn.devsFooter(client))]
         })
 
-        const townydata = await db.Aurora.getOnlinePlayerData() as any
-        if (!townydata) return m.edit({embeds: [new EmbedBuilder()
+        const opsData = await db.Aurora.getOnlinePlayerData()
+        if (!opsData) return m.edit({embeds: [new EmbedBuilder()
             .setTimestamp()
             .setColor(Colors.Red)
             .setTitle("Connection Issues")
@@ -40,7 +40,7 @@ export default {
             .setFooter(fn.devsFooter(client))]
         }).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
-        const onlinePlayers = townydata.players
+        const onlinePlayers = opsData.players
         const arg0 = args[0]?.toLowerCase()
 
         if (arg0 != "live") {
@@ -50,8 +50,7 @@ export default {
                 const acc = foundPlayer.account
 
                 if (foundPlayer.world == "-some-other-bogus-world-") {
-                    return m.edit({embeds: [
-                        new EmbedBuilder()
+                    return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Location Unavailable")
                         .setDescription(`${acc} seems to be invisible, under a block, or in the nether. Please try again later.`)
                         .setColor(Colors.DarkGold)
@@ -73,7 +72,7 @@ export default {
                     if (acc !== foundPlayerNickname) 
                         locationEmbed.addFields(fn.embedField("Nickname", foundPlayerNickname))
                       
-                    locationEmbed.addFields(fn.embedField("Coordinates", "X: " + foundPlayer.x + "\nY: " + (foundPlayer.y - 1) + "\nZ: " + foundPlayer.z))
+                    locationEmbed.addFields(fn.embedField("Coordinates", "X: " + foundPlayer.x + "\nY: " + (Number(foundPlayer.y) - 1) + "\nZ: " + foundPlayer.z))
                     locationEmbed.addFields(fn.embedField(
                         "Dynmap Link", "[" + foundPlayer.x + ", " + foundPlayer.z + "]" + 
                         "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayer.x + "&y=64&z=" + foundPlayer.z + ")"
@@ -81,17 +80,17 @@ export default {
 
                     return m.edit({ embeds: [locationEmbed] }).catch(() => {})
                 }
-            } else return m.edit({embeds: [
-                new EmbedBuilder()
-                    .setTitle("Error fetching player")
-                    .setDescription(args[0] + " isn't online or does not exist!")
-                    .setTimestamp()
-                    .setColor(Colors.Red)
-                    .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+            }
+            
+            return m.edit({embeds: [new EmbedBuilder()
+                .setTitle("Error fetching player")
+                .setDescription(args[0] + " isn't online or does not exist!")
+                .setTimestamp()
+                .setColor(Colors.Red)
+                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
             ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
         } else {
-            if (!args[1]) return m.edit({embeds: [
-                new EmbedBuilder()
+            if (!args[1]) return m.edit({embeds: [new EmbedBuilder()
                 .setTitle("No player specified")
                 .setDescription("Please specify a player! Usage: `/pos live playerName`")
                 .setTimestamp()
@@ -118,7 +117,7 @@ export default {
                 .setFooter(fn.devsFooter(client))
                 .setTitle("Location Info | " + foundPlayerOld.account)
                 .setDescription(
-                    "Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (foundPlayerOld.y - 1) + "\nZ: " + foundPlayerOld.z + 
+                    "Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (Number(foundPlayerOld.y) - 1) + "\nZ: " + foundPlayerOld.z + 
                     "\n\nDynmap Link: " + "[" + foundPlayerOld.x + ", " + foundPlayerOld.z + "]" + 
                     "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerOld.x + "&y=64&z=" + foundPlayerOld.z + ")"
                 )
@@ -188,22 +187,23 @@ export default {
                     liveLocationEmbed.setFooter({ text: `Embed will timeout in: ${minutes}m ${seconds}s` })
                     setTimeout(livePosFunc, 5000)
                 } else {
-                    if (lastValidLocation == null || lastValidLocation == undefined) return m.edit({embeds: [
-                        new EmbedBuilder()
-                        .setTitle("Live Location | Timed Out")
-                        .setDescription("No last known location!")
+                    const embed = new EmbedBuilder()
                         .setColor(Colors.DarkVividPink)
                         .setTimestamp()
-                    ]}).catch(() => {})
 
-                    return m.edit({embeds: [new EmbedBuilder()
+                    if (lastValidLocation == null || lastValidLocation == undefined) {
+                        return m.edit({embeds: [embed
+                            .setTitle("Live Location | Timed Out")
+                            .setDescription("No last known location!")
+                        ]}).catch(() => {})
+                    }
+
+                    return m.edit({embeds: [embed
                         .setTitle("Live Location | " + foundPlayerOld.account + " | Timed Out")
                         .setDescription(
                             "Last Known Location: \nX: " + lastValidLocation.x + "\nY: " + (lastValidLocation.y - 1) + "\nZ: " + lastValidLocation.z + 
                             "\n\nDynmap Link: " + "[" + lastValidLocation.x + ", " + lastValidLocation.z + "]" + 
                             "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")")
-                        .setColor(Colors.DarkVividPink)
-                        .setTimestamp()
                     ]}).catch(() => {})
                 }
             }

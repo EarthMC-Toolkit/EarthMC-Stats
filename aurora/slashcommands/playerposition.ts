@@ -22,8 +22,8 @@ export default {
             .setFooter(fn.devsFooter(client))
         ], ephemeral: true})
 
-        const townyData = await db.Aurora.getOnlinePlayerData()
-        if (!townyData) return interaction.reply({embeds: [new EmbedBuilder()
+        const opsData = await db.Aurora.getOnlinePlayerData()
+        if (!opsData) return interaction.reply({embeds: [new EmbedBuilder()
             .setTimestamp()
             .setColor(Colors.Red)
             .setTitle("Connection Issues")
@@ -32,7 +32,7 @@ export default {
             .setFooter(fn.devsFooter(client))
         ]}).then((m: any) => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const ops = townyData.players
+        const ops = opsData.players
         const foundPlayer = ops.find(op => op.account.toLowerCase() == player.toLowerCase())
           
         if (foundPlayer && !fn.botDevs.includes(player.toLowerCase())) {
@@ -60,7 +60,7 @@ export default {
             
             const { x, y, z } = foundPlayer
             locationEmbed.addFields(
-                fn.embedField("Coordinates", `X: ${x}\nY: ${parseInt(String(y))-1}\nZ: ${z}`),
+                fn.embedField("Coordinates", `X: ${x}\nY: ${Number(y) - 1}\nZ: ${z}`),
                 fn.embedField("Dynmap Link", `[${x}, ${z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
             )
 

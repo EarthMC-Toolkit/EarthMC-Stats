@@ -26,8 +26,8 @@ export default {
             .setFooter(fn.devsFooter(client))]
         })
 
-        const townyData = await db.Nova.getOnlinePlayerData() as any
-        if (!townyData) return m.edit({embeds: [new EmbedBuilder()
+        const opsData = await db.Nova.getOnlinePlayerData()
+        if (!opsData) return m.edit({embeds: [new EmbedBuilder()
             .setTimestamp()
             .setColor(Colors.Red)
             .setTitle("Connection Issues")
@@ -36,7 +36,7 @@ export default {
             .setFooter(fn.devsFooter(client))]
         }).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
-        const onlinePlayers = townyData.players
+        const onlinePlayers = opsData.players
           
         if (args[0].toLowerCase() != "live") {
             const foundPlayer = onlinePlayers.find(op => op.account.toLowerCase() == args[0].toLowerCase())
@@ -67,7 +67,7 @@ export default {
                       
                     locationEmbed.addFields(fn.embedField(
                         "Coordinates", 
-                        "X: " + foundPlayer.x + "\nY: " + (foundPlayer.y - 1) + "\nZ: " + foundPlayer.z
+                        "X: " + foundPlayer.x + "\nY: " + (Number(foundPlayer.y) - 1) + "\nZ: " + foundPlayer.z
                     ))
 
                     locationEmbed.addFields(fn.embedField(
@@ -109,7 +109,7 @@ export default {
               
             const liveLocationEmbed = new EmbedBuilder()
                 .setTitle("(Nova) Location Info | " + foundPlayerOld.account)
-                .setDescription("Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (foundPlayerOld.y - 1) + "\nZ: " + foundPlayerOld.z + 
+                .setDescription("Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (Number(foundPlayerOld.y) - 1) + "\nZ: " + foundPlayerOld.z + 
                     "\n\nDynmap Link: " + "[" + foundPlayerOld.x + ", " + foundPlayerOld.z + "]" + 
                     "(https://earthmc.net/map/nova/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerOld.x + "&y=64&z=" + foundPlayerOld.z + ")"
                 )
@@ -118,14 +118,14 @@ export default {
                 .setFooter(fn.devsFooter(client))
                 .setTimestamp()
               
-            let lastValidLocation = { x: 0, y: 0, z: 0 },
-                timedOut = false
+            let lastValidLocation = { x: 0, y: 0, z: 0 }
+            let timedOut = false
 
-            const fiveMin = 5*60*1000,
-                  countDownDate = Date.now() + fiveMin
+            const fiveMin = 5*60*1000
+            const countDownDate = Date.now() + fiveMin
 
             async function livePosFunc() { 
-                const townyData = await db.Nova.getOnlinePlayerData() as any
+                const townyData = await db.Nova.getOnlinePlayerData()
                 if (!townyData) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Connection Issues | Timed Out")
                     .setDescription(
@@ -152,13 +152,13 @@ export default {
                 // If they are in the earth world
                 if (foundPlayerNew.world != "-some-other-bogus-world-") {
                     lastValidLocation = {
-                        x: foundPlayerNew.x,
-                        y: foundPlayerNew.y,
-                        z: foundPlayerNew.z                        
+                        x: Number(foundPlayerNew.x),
+                        y: Number(foundPlayerNew.y),
+                        z: Number(foundPlayerNew.z)                       
                     }
                     
                     liveLocationEmbed.setDescription(
-                        "Live Location: \nX: " + foundPlayerNew.x + "\nY: " + (foundPlayerNew.y - 1) + "\nZ: " + foundPlayerNew.z + 
+                        "Live Location: \nX: " + foundPlayerNew.x + "\nY: " + (Number(foundPlayerNew.y) - 1) + "\nZ: " + foundPlayerNew.z + 
                         "\n\nDynmap Link: " + "[" + foundPlayerNew.x + ", " + foundPlayerNew.z + "]" + 
                         "(https://earthmc.net/map/nova/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerNew.x + "&y=64&z=" + foundPlayerNew.z + ")"
                     )                     
@@ -178,10 +178,10 @@ export default {
                 }
 
                 if (!timedOut) {
-                    const now = new Date().getTime(),
-                          diff = countDownDate - now,
-                          minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-                          seconds = Math.floor((diff % (1000 * 60)) / 1000)
+                    const now = new Date().getTime()
+                    const diff = countDownDate - now
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
             
                     liveLocationEmbed.setFooter({text: `Embed will timeout in: ${minutes}m ${seconds}s`})
                     setTimeout(livePosFunc, 5000) // Timeout after 5 minutes
