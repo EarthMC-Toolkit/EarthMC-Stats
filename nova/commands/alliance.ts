@@ -221,7 +221,7 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                 }
                 
-                database.Aurora.getAlliances().then(async alliances => {
+                database.Nova.getAlliances().then(async alliances => {
                     const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                     if (foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error creating alliance")
@@ -251,7 +251,7 @@ export default {
                     }
 
                     alliances.push(alliance)
-                    database.Aurora.setAlliances(alliances)
+                    database.Nova.setAlliances(alliances)
                 
                     const embed = new EmbedBuilder()
                         .setColor(Colors.DarkBlue)
