@@ -7,7 +7,9 @@ import {
     ChannelType, ComponentType,
     Colors, ButtonStyle, 
     Channel, Message,
-    PermissionFlagsBits
+    PermissionFlagsBits,
+    MessageReaction,
+    ButtonInteraction
 } from "discord.js"
 
 import moment from "moment"
@@ -17,7 +19,7 @@ import fs from 'fs'
 import { request } from "undici"
 import path from "path"
 
-const botDevs = ["Owen3H#5737", "263377802647175170"]
+const botDevs = ["Owen3H", "263377802647175170"]
 
 // eslint-disable-next-line
 let queueSubbedChannelArray: string[] = []
@@ -118,6 +120,7 @@ const removeDuplicates = (arr: any[]) => [...new Set(arr)]
 const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
 const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
 const isEmpty = (str: string) => (!str || str.length === 0)
+const fiveMin = 5 * 60 * 1000
 
 const paginator = async(
     author: string, 
@@ -130,21 +133,21 @@ const paginator = async(
         return await msg.edit("DMs do not support buttons yet! Try again in a server.")
 
     // Create collector which will listen for a button interaction. (If it passes the filter)
-    const filter = i => { 
-        i.deferUpdate() 
-        return i.user.id === author 
+    const filter = (i: ButtonInteraction) => { 
+        i.deferUpdate()
+        return i.user.id === author
     }
-          
+
     const collector = msg.createMessageComponentCollector({ 
         filter, componentType: ComponentType.Button,
-        time: 5*60*1000
+        time: fiveMin
     })
 
-    const lastPage = embedArr.length-1
+    const lastPage = embedArr.length - 1
 
     // Edit message to show arrow buttons
     await msg.edit({ components: [await buildButtons(currentPage, lastPage)] }).catch(() => {})
-    setTimeout(() => msg.edit({ components: [] }).catch(() => {}), 5*60*1000)
+    setTimeout(() => msg.edit({ components: [] }).catch(() => {}), fiveMin)
 
     // Decide what page to display according to the button interaction
     collector.on("collect", async interaction => {
@@ -159,12 +162,10 @@ const paginator = async(
     })
 }
 
-/**
- * Helper method to create a paginator on an interaction.
- */
+/** Helper method to create a paginator on an interaction. */
 const paginatorInteraction = async(
-    interaction: CommandInteraction, 
-    embeds: EmbedBuilder[], 
+    interaction: CommandInteraction,
+    embeds: EmbedBuilder[],
     currentPage: number
 ) => {
     const msg = await interaction.fetchReply().catch(console.log) as Message
@@ -192,41 +193,60 @@ const emojiButton = (
     style: ButtonStyle.Primary
 })
 
-const paginatorDM = async (author, msg, embeds, pageNow, addReactions = true) => {
+const reactionOpts = {
+    time: fiveMin, 
+    max: 1, 
+    errors: ['time']
+}
+
+const paginatorDM  = async (
+    author: string,
+    msg: Message,
+    embeds: EmbedBuilder[], 
+    curPage: number, 
+    addReactions = true
+) => {
     if (addReactions) {
         await msg.react("⏪")
         await msg.react("◀")
         await msg.react("▶")
         await msg.react("⏩")
 
-        setTimeout(() => msg.reactions.removeAll().catch(() => {}), 5*60*1000)
+        setTimeout(() => msg.reactions.removeAll().catch(() => {}), fiveMin)
     }
 
-    const reaction = await msg.awaitReactions((r, user) => {
-        user.id == author && ["◀","▶","⏪","⏩"].includes(r.emoji.name), 
-        { time: 5*60*1000, max:1, errors: ['time'] } 
-    }).catch(() => {})
+    const filter = (reaction: MessageReaction, user) => {
+        return user.id == author && ["◀","▶","⏪","⏩"].includes(reaction.emoji.name)
+    }
 
+    const reaction = await msg.awaitReactions({ filter, ...reactionOpts }).catch(() => {})
     if (!reaction) return msg.reactions.removeAll().catch(() => {})
 
-    let m = null
     switch (reaction.first().emoji.name) {
-        case "◀":
-            m = await msg.edit({ embeds: [embeds[Math.max(pageNow-1, 0)]] })
-            paginatorDM(author, m, embeds, Math.max(pageNow-1, 0), false)
+        case "◀": {
+            const m = await msg.edit({ embeds: [embeds[Math.max(curPage - 1, 0)]] })
+            paginatorDM(author, m, embeds, Math.max(curPage - 1, 0), false)
+
             break
-        case "▶":
-            m = await msg.edit({ embeds: [embeds[Math.min(pageNow+1, embeds.length-1)]] })
-            paginatorDM(author, m, embeds, Math.min(pageNow+1, embeds.length-1), false)
+        }
+        case "▶": {
+            const m = await msg.edit({ embeds: [embeds[Math.min(curPage + 1, embeds.length - 1)]] })
+            paginatorDM(author, m, embeds, Math.min(curPage + 1, embeds.length - 1), false)
+
             break
-        case "⏪":
-            m = await msg.edit({ embeds: [embeds[0]] })
+        }
+        case "⏪": {
+            const m = await msg.edit({ embeds: [embeds[0]] })
             paginatorDM(author, m, embeds, 0, false)
+
             break
-        case "⏩":
-            m = await msg.edit({ embeds: [embeds[embeds.length-1]] })
-            paginatorDM(author, m, embeds, embeds.length-1, false)
+        }
+        case "⏩": {
+            const m = await msg.edit({ embeds: [embeds[embeds.length - 1]] })
+            paginatorDM(author, m, embeds, embeds.length - 1, false)
+
             break
+        }
     }
 }
 

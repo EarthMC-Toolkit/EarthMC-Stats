@@ -139,8 +139,8 @@ class ResidentHelper extends BaseHelper {
 
     addDatesFromAPI = () => {
         const timestamps = this.apiResident.timestamps
-        const registeredTs = timestamps?.registered
-        const lastOnlineTs = timestamps?.lastOnline
+        const registeredTs = timestamps?.registered ?? 0
+        const lastOnlineTs = timestamps?.lastOnline ?? 0
 
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
         this.addField("Status", statusStr, true)

@@ -84,7 +84,8 @@ export default {
                 console.log("Error getting document:", err)
             }
         }
-        else if (arg0 == "townless") {
+        
+        if (arg0 == "townless") {
             try {
                 const townlessSubbedChannels = db.collection("subs").doc("townless")
                 const doc = await townlessSubbedChannels.get()
@@ -115,6 +116,8 @@ export default {
             }
         }
 
-        return message.reply({embeds: [invalidUsage]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+        return message.reply({ embeds: [invalidUsage] })
+            .then((m => setTimeout(() => m.delete(), 10000)))
+            .catch(() => {})
     }
 }
