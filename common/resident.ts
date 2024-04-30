@@ -19,6 +19,13 @@ import  {
 import { secToMs } from "../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
 
+const buildSkinURL = (opts: SkinOpts) => {
+    const domain = "https://visage.surgeplay.com/"
+    const params = `?width=${opts.width ?? 256}&height=${opts.height ?? 256}`
+
+    return `${domain}${opts.view}/${opts.subject}.png${params}`
+}
+
 class ResidentHelper extends BaseHelper {
     dbResident = null
     
@@ -155,7 +162,11 @@ class ResidentHelper extends BaseHelper {
 
     tryAddAvatar = () => {
         if (!this.player) return
-        this.setSkinThumbnail({ view: SkinType3D.BUST, subject: this.player.id })
+
+        this.embed.setThumbnail(buildSkinURL({ 
+            view: SkinType3D.BUST, 
+            subject: this.player.id
+        }))
     }
 
     tryAddNickname = () => {
@@ -177,10 +188,6 @@ class ResidentHelper extends BaseHelper {
         const disc = this.pInfo?.discord
         if (disc && disc != "")
             this.addField("Linked Account", `<@${disc}>`)
-    }
-
-    setSkinThumbnail = (opts: SkinOpts) => {
-        this.embed.setThumbnail(`https://visage.surgeplay.com/${opts.view}/${opts.subject}.png?width=256&height=256`)
     }
 }
 

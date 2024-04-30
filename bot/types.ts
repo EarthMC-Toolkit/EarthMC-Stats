@@ -75,7 +75,9 @@ export type MapDB = {
 
 export type SkinOpts = {
     view: SkinType2D | SkinType3D,
-    subject: string | number
+    subject: string | number,
+    width?: number,
+    height?: number
 }
 
 type SkinType2D = (typeof SkinType2D)[keyof typeof SkinType2D]
