@@ -34,10 +34,7 @@ const serverIssues = errorEmbed("Server Issues", "We are currently unable to rea
 
 const embedField = (name, value, inline = false) => ({ name, value, inline })
 const staff = {
-    inactive: [
-        "Mihailovic", "kiadmowi", "Scorpionzzx",
-        "BigshotWarrior", "TheAmazing_Moe", "jkmartindale"
-    ],
+    all: () => staff.active.concat(staff.inactive),
     active: [
         "Fix", "KarlOfDuty", "CorruptedGreed", "1212ra", "PolkadotBlueBear", "RlZ58", "Ebola_chan",
         "Fruitloopins", "Shia_Chan", "Professor__Pro", "Barbay1","WTDpuddles", "Coblobster",
@@ -46,7 +43,10 @@ const staff = {
         "knowlton", "32Basileios", "Shirazmatas", "YellowVictini", "UncleSn", "Zackaree", "_Precise_",
         "cactusinapumpkin", "Arkbomb", "Hodin", "BusDuster", "RoseBrugs", "FBI_Bro"
     ],
-    all: () => staff.active.concat(staff.inactive)
+    inactive: [
+        "Mihailovic", "kiadmowi", "Scorpionzzx",
+        "BigshotWarrior", "TheAmazing_Moe", "jkmartindale"
+    ]
 }
 
 const staffListEmbed = (client: Discord.Client, arr: string[], active = true) => new Discord.EmbedBuilder({
@@ -103,10 +103,10 @@ function unixFromDate(date: Date | admin.firestore.Timestamp): number {
     return result ? moment.utc(result).unix() : null
 }
 
-const removeDuplicates = (arr: any[]) => [...new Set(arr)],
-      deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr)),
-      getUserCount = (client: Discord.Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0),
-      isEmpty = (str: string) => (!str || str.length === 0)
+const removeDuplicates = (arr: any[]) => [...new Set(arr)]
+const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
+const getUserCount = (client: Discord.Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+const isEmpty = (str: string) => (!str || str.length === 0)
 
 const paginator = async(
     author: string, 
@@ -124,8 +124,8 @@ const paginator = async(
         return i.user.id === author 
     }
           
-    const collector = msg.createMessageComponentCollector({ filter, componentType: Discord.ComponentType.Button, time: 5*60*1000 }),
-          lastPage = embedArr.length-1
+    const collector = msg.createMessageComponentCollector({ filter, componentType: Discord.ComponentType.Button, time: 5*60*1000 })
+    const lastPage = embedArr.length-1
 
     // Edit message to show arrow buttons
     await msg.edit({ components: [await buildButtons(currentPage, lastPage)] }).catch(() => {})
@@ -157,8 +157,8 @@ const paginatorInteraction = async(
 }
 
 async function buildButtons(currentPage: number, lastPage: number) {
-    const noFurther = currentPage >= lastPage,
-          noLess = currentPage <= 0
+    const noFurther = currentPage >= lastPage
+    const noLess = currentPage <= 0
 
     return new Discord.ActionRowBuilder<ButtonBuilder>().addComponents(
         emojiButton("first", "⏪", noLess), emojiButton("back", "◀", noLess), 
@@ -238,8 +238,8 @@ function divideArray(arr: any[], n: number) {
 }
 
 const alphabetSort = (arr: any[], key?: string) => arr.sort((a, b) => {
-    const aVal = (key ? a[key] : a).toLowerCase(),
-          bVal = (key ? a[key] : b).toLowerCase()
+    const aVal = (key ? a[key] : a).toLowerCase()
+    const bVal = (key ? a[key] : b).toLowerCase()
 
     return (bVal < aVal) ? 1 : (bVal > aVal ? -1 : 0)
 })

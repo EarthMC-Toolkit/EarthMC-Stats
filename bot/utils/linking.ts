@@ -1,20 +1,25 @@
 import { setPlayers, getPlayers} from "./database.js"
 import { Players } from "./minecraft.js"
 
+import { firestore } from "firebase-admin"
+
 type ResidentProfile = {
     name: string
     linkedID: string | number
     lastOnline: {
-        nova: any
-        aurora: any
+        nova: Date | firestore.Timestamp
+        aurora: Date | firestore.Timestamp
     }
 }
 
+const strEqual = (p: { name: string }, name: string) => 
+    p.name.toLowerCase() == name.toLowerCase()
+
 async function linkPlayer(id: string | number, username: string) {
     getPlayers(true).then(async (players: ResidentProfile[]) => {
-        const filter = p => p.name.toLowerCase() == username.toLowerCase()
-        const foundResident = players.find(player => filter(player)),
-              residentIndex = players.findIndex(player => filter(player))
+
+        const foundResident = players.find(p => strEqual(p, username))
+        const residentIndex = players.findIndex(p => strEqual(p, username))
         
         if (!foundResident) {
             const player = await Players.get(username).catch(() => {})
@@ -39,8 +44,8 @@ async function unlinkPlayer(username: string) {
     getPlayers(true).then(async players => {
         const filter = p => p.name.toLowerCase() == username.toLowerCase()
 
-        const foundPlayer = players.find(player => filter(player)),
-              playerIndex = players.findIndex(player => filter(player))
+        const foundPlayer = players.find(player => filter(player))
+        const playerIndex = players.findIndex(player => filter(player))
         
         if (!foundPlayer) return
         delete players[playerIndex].linkedID
@@ -51,10 +56,11 @@ async function unlinkPlayer(username: string) {
 
 const lower = (k: string | number) => k.toString().toLowerCase()
 async function getLinkedPlayer(identifier: string | number) {
-    return getPlayers().then(async players => {
-        const foundPlayer = players.find(player => lower(player.name) === lower(identifier) || player.linkedID === identifier)
-        return !foundPlayer?.linkedID ? null : foundPlayer
-    })
+    const players = await getPlayers() as ResidentProfile[]
+    if (!players) return null
+
+    const foundPlayer = players.find(player => lower(player.name) === lower(identifier) || player.linkedID === identifier)
+    return !foundPlayer?.linkedID ? null : foundPlayer
 }
 
 export {

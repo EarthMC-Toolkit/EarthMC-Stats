@@ -72,3 +72,22 @@ export type MapDB = {
     getResidents(): Promise<any>
     setResidents(residents: any[]): Promise<void>
 }
+
+export type SkinOpts = {
+    view: SkinType2D | SkinType3D,
+    subject: string | number
+}
+
+type SkinType2D = (typeof SkinType2D)[keyof typeof SkinType2D]
+export const SkinType2D = {
+    FACE: 'face',
+    FRONT: 'front',
+    FULL: 'frontfull'
+} as const
+
+type SkinType3D = (typeof SkinType3D)[keyof typeof SkinType3D]
+export const SkinType3D = {
+    HEAD: 'head',
+    BUST: 'bust',
+    FULL: 'full'
+} as const

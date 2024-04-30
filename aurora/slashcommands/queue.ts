@@ -17,9 +17,9 @@ export default {
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const aurora = await database.Aurora.getOnlinePlayerData().catch(() => {}),
-              nova = await database.Nova.getOnlinePlayerData().catch(() => {}),
-              server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
+        const aurora = await database.Aurora.getOnlinePlayerData().catch(() => {})
+        const nova = await database.Nova.getOnlinePlayerData().catch(() => {})
+        const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
 
         const queue = new Queue(server, aurora, nova)
         await queue.init()
@@ -35,6 +35,6 @@ export default {
                 fn.embedField("Nova", queue.nova.formatted, true),
             )
 
-        await interaction.editReply({embeds: [embed]})
+        await interaction.editReply({ embeds: [embed] })
     }
 }

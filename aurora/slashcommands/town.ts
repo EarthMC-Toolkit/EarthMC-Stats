@@ -262,7 +262,7 @@ export default {
                     else townEmbed.addFields(fn.embedField("Residents", "There are no residents in this town?")) 
 
                     //#region "Online Residents" field
-                    const townyData = await database.Aurora.getOnlinePlayerData() as any
+                    const townyData = await database.Aurora.getOnlinePlayerData()
 
                     if (!townyData) {
                         townEmbed.addFields(fn.embedField(
@@ -329,8 +329,8 @@ export default {
 function extractTownData(towns: any[]) {
     if (!towns) return []
 
-    const townData = [],
-          len = towns.length
+    const townData = []
+    const len = towns.length
 
     for (let i = 0; i < len; i++) {     
         const cur = towns[i]

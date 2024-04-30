@@ -64,13 +64,6 @@ export default {
 
                 await interaction.editReply({ embeds: [embed] })
 
-                // embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-                // embed.addFields(
-                //     fn.embedField("Username", linkedPlayer.name, true),
-                //     fn.embedField("ID", linkedPlayer.linkedID, true)
-                // )
-                //await client.channels.cache.get("903771461746044949")?.send({embeds: [embed]})
-
                 break
             }
             case "discord": {
@@ -97,13 +90,6 @@ export default {
 
                 await interaction.editReply({ embeds: [embed] })
 
-                // embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-                // embed.addFields(
-                //     fn.embedField("Username", linkedPlayer.name, true),
-                //     fn.embedField("ID", linkedPlayer.linkedID, true)
-                // )
-                //await client.channels.cache.get("903771461746044949")?.send({embeds: [embed]})
-
                 break
             }
             case "flag": {
@@ -128,13 +114,6 @@ export default {
                 
                 if (!cleared) embed.setThumbnail(value)
                 await interaction.editReply({ embeds: [embed] })
-
-                // embed.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-                // embed.addFields(
-                //     fn.embedField("Username", linkedPlayer.name, true),
-                //     fn.embedField("ID", linkedPlayer.linkedID, true)
-                // )
-                //await client.channels.cache.get("903771461746044949")?.send({embeds: [embed]})
 
                 break
             }

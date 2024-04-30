@@ -11,7 +11,10 @@ import {
     type OnlinePlayer
 } from 'earthmc'
 
-import { type MCSessionProfile } from "../bot/types.js"
+import  { 
+    type MCSessionProfile,
+    type SkinOpts, SkinType3D, 
+} from "../bot/types.js"
 
 import { secToMs } from "../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
@@ -152,7 +155,7 @@ class ResidentHelper extends BaseHelper {
 
     tryAddAvatar = () => {
         if (!this.player) return
-        this.embed.setThumbnail(`https://visage.surgeplay.com/bust/${this.player.id}.png?width=256&height=256`)
+        this.setSkinThumbnail({ view: SkinType3D.BUST, subject: this.player.id })
     }
 
     tryAddNickname = () => {
@@ -166,7 +169,7 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = bal => this.addField("Balance", `${bal ?? 0}G`)
+    addBalance = (bal: string | number) => this.addField("Balance", `${bal ?? 0}G`)
 
     addLinkedAcc = async () => {
         if (!this.player?.name) return
@@ -174,6 +177,10 @@ class ResidentHelper extends BaseHelper {
         const disc = this.pInfo?.discord
         if (disc && disc != "")
             this.addField("Linked Account", `<@${disc}>`)
+    }
+
+    setSkinThumbnail = (opts: SkinOpts) => {
+        this.embed.setThumbnail(`https://visage.surgeplay.com/${opts.view}/${opts.subject}.png?width=256&height=256`)
     }
 }
 

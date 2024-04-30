@@ -164,9 +164,9 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                 }
                 
-                const alliances = await database.Aurora.getAlliances() as any[]
-
+                const alliances = await database.Aurora.getAlliances()
                 const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                
                 if (foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription("The alliance you're trying to create already exists! Please use /alliance add.")
@@ -239,8 +239,6 @@ export default {
                     .setColor(Colors.Red)
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                console.log(info)
 
                 const alliance = {
                     allianceName,

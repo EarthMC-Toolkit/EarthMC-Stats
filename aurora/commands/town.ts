@@ -46,10 +46,14 @@ export default {
 
                 if (arg1 == "online") {
                     const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                    if (!onlinePlayers) return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                    if (!onlinePlayers) {
+                        return await m.edit({ embeds: [fn.fetchError] })
+                            .then((m => setTimeout(() => m.delete(), 10000)))
+                            .catch(() => {})
+                    }
 
-                    const onlineTownData = [], 
-                          onlineTownDataFinal = []
+                    const onlineTownData = []
+                    const onlineTownDataFinal = []
 
                     const len = towns.length
                     for (let i = 0; i < len; i++) {        
@@ -152,62 +156,63 @@ export default {
             else if (opt.toLowerCase() == "activity" && arg1) {
                 const town = towns.find(t => t.name.toLowerCase() == arg1)
 
-                if (!town) return m.edit({embeds: [
-                    new EmbedBuilder()
+                if (!town) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Invalid town name!")
                     .setDescription(args[1] + " doesn't seem to be a valid town name, please try again.")
                     .setTimestamp().setColor(Colors.Red)
                 ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
-                database.getPlayers().then(async players => {
-                    if (!players) return await m.edit({ embeds: [fn.databaseError] })
-                        .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                const players = await database.getPlayers().catch(() => {})
+                if (!players) return await m.edit({ embeds: [fn.databaseError] })
+                    .then((m => setTimeout(() => m.delete(), 10000)))
+                    .catch(() => {})
 
-                    // Sort by highest offline duration
-                    town.residents.sort((a, b) => {
-                        const foundPlayerA = players.find(p => p.name == a),
-                              foundPlayerB = players.find(p => p.name == b)
+                // Sort by highest offline duration
+                town.residents.sort((a, b) => {
+                    const foundPlayerA = players.find(p => p.name == a)
+                    const foundPlayerB = players.find(p => p.name == b)
 
-                        if (foundPlayerA && !foundPlayerB) return -1
-                        if (!foundPlayerA && foundPlayerB) return 1
+                    if (foundPlayerA && !foundPlayerB) return -1
+                    if (!foundPlayerA && foundPlayerB) return 1
 
-                        if (foundPlayerA && foundPlayerB) {
-                            if (foundPlayerA.lastOnline === foundPlayerB.lastOnline.aurora) return 0 // identical? return 0 
-                            else if (foundPlayerA.lastOnline === null) return 1 // a is null? last 
-                            else if (foundPlayerB.lastOnline === null) return -1 // b is null? last
+                    if (foundPlayerA && foundPlayerB) {
+                        // Identical, do nothing.
+                        if (foundPlayerA.lastOnline === foundPlayerB.lastOnline.aurora) return 0 
 
-                            const dateB = fn.unixFromDate(foundPlayerB.lastOnline.aurora),
-                                  dateA = fn.unixFromDate(foundPlayerA.lastOnline.aurora)
+                        if (foundPlayerA.lastOnline === null) return 1
+                        if (foundPlayerB.lastOnline === null) return -1
 
-                            return dateB - dateA
-                        }
-                    })
+                        const dateB = fn.unixFromDate(foundPlayerB.lastOnline.aurora)
+                        const dateA = fn.unixFromDate(foundPlayerA.lastOnline.aurora)
 
-                    let page = 1
-                    if (isNaN(page)) page = 0
-                    else page--
+                        return dateB - dateA
+                    }
+                })
 
-                    const allData = town.residents.map(resident => {
-                        const residentInPlayers = players.find(p => p.name == resident)
+                let page = 1
+                if (isNaN(page)) page = 0
+                else page--
 
-                        if (residentInPlayers && residentInPlayers.lastOnline != null) 
-                            return "``" + resident + "`` - " + `<t:${fn.unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
+                const allData = town.residents.map(resident => {
+                    const residentInPlayers = players.find(p => p.name == resident)
 
-                        return "" + resident + " | Unknown"
-                    }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                    if (residentInPlayers && residentInPlayers.lastOnline != null) 
+                        return "``" + resident + "`` - " + `<t:${fn.unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
 
-                    const townColours = await Aurora.Towns.get(town.name).then((t: any) => {
-                        return t instanceof NotFoundError ? null : t.colourCodes
-                    })
-                    
-                    const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-                    new CustomEmbed(client, "Town Info | Activity in " + town.name)
-                        .setColor(colour)
-                        .setType(EntityType.Town)
-                        .setPage(page)
-                        .paginate(allData)
-                        .editMessage(m)
-                }).catch(() => {})
+                    return "" + resident + " | Unknown"
+                }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+
+                const townColours = await Aurora.Towns.get(town.name).then((t: any) => {
+                    return t instanceof NotFoundError ? null : t.colourCodes
+                })
+                
+                const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+                new CustomEmbed(client, "Town Info | Activity in " + town.name)
+                    .setColor(colour)
+                    .setType(EntityType.Town)
+                    .setPage(page)
+                    .paginate(allData)
+                    .editMessage(m)
             }
             else if (args.length > 3 || args.length == null || opt == null) {
                 return await m.edit({embeds: [new EmbedBuilder()
@@ -350,8 +355,8 @@ export default {
 function extractTownData(towns: any[]) {
     if (!towns) return []
 
-    const townData = [],
-          len = towns.length
+    const townData = []
+    const len = towns.length
 
     for (let i = 0; i < len; i++) {     
         const cur = towns[i]
@@ -370,10 +375,10 @@ function extractTownData(towns: any[]) {
 async function sendList(client: Client, msg: Message, comparator: string, towns: any[]) {
     towns = fn.defaultSort(towns)
     
-    const townData = extractTownData(towns),
-          allData = townData.map((town, index) => (index + 1) + ". **" + town.name + " (" + town.nation + ")**\n" + 
-                "```Residents: " + town.residentNames.length + 
-                "``````Chunks: " + town.area + "```").join('\n').match(/(?:^.*$\n?){1,8}/mg)
+    const townData = extractTownData(towns)
+    const allData = townData.map((town, index) => (index + 1) + ". **" + town.name + " (" + town.nation + ")**\n" + 
+        "```Residents: " + town.residentNames.length + 
+        "``````Chunks: " + town.area + "```").join('\n').match(/(?:^.*$\n?){1,8}/mg)
 
     const embed = new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)
