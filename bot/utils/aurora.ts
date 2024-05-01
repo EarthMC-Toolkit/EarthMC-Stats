@@ -161,7 +161,7 @@ async function getAlliances(skipCache = false) {
 
 async function setAlliances(alliances: any[]) {
     cache.put('aurora_alliances', alliances)
-    allianceCollection().set({ allianceArray: alliances })
+    return allianceCollection().set({ allianceArray: alliances })
 }
 
 const length = x => x.length

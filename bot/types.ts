@@ -8,6 +8,7 @@ import {
 } from "discord.js"
 
 import { Map } from "earthmc"
+import { WriteResult } from "firebase-admin/firestore"
 
 export type BaseCommand = {
     name: string
@@ -64,7 +65,7 @@ export type MCSessionProfile = MCUserProfile & {
 export type MapDB = {
     getAlliance(name: string): Promise<any>
     getAlliances(skipCache: boolean): Promise<any> 
-    setAlliances(alliances: any[]): Promise<void>
+    setAlliances(alliances: any[]): Promise<WriteResult>
     getTowns(): Promise<any>
     setTowns(towns: any[]): Promise<void>
     getNations(): Promise<any>

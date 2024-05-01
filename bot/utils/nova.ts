@@ -160,7 +160,7 @@ async function setAlliances(alliances: any[]) {
     cache.put('alliances', alliances)
 
     const allianceDoc = db.collection("alliances").doc("alliancesDoc")
-    allianceDoc.set({ allianceArray: alliances })
+    return allianceDoc.set({ allianceArray: alliances })
 }
 
 const length = x => x.length
