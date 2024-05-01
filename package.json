@@ -29,8 +29,7 @@
     "deploy": "pm2 deploy production"
   },
   "engines": {
-    "node": ">=16.20.2",
-    "pnpm": ">=8.6"
+    "node": ">=16.20.2"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",

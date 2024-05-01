@@ -1,14 +1,14 @@
 import { setPlayers, getPlayers} from "./database.js"
 import { Players } from "./minecraft.js"
 
-import { firestore } from "firebase-admin"
+import { Timestamp } from "firebase-admin/firestore"
 
 type ResidentProfile = {
     name: string
     linkedID: string | number
     lastOnline: {
-        nova: Date | firestore.Timestamp
-        aurora: Date | firestore.Timestamp
+        nova: Date | Timestamp
+        aurora: Date | Timestamp
     }
 }
 

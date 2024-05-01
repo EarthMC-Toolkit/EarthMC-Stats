@@ -13,7 +13,7 @@ import {
 } from "discord.js"
 
 import moment from "moment"
-import { firestore } from "firebase-admin"
+import { Timestamp } from "firebase-admin/firestore"
 
 import fs from 'fs'
 import { request } from "undici"
@@ -107,10 +107,10 @@ const devsFooter = (client: Client) => ({
     iconURL: client.user.avatarURL()
 })
 
-function unixFromDate(date: Date | firestore.Timestamp): number {
+function unixFromDate(date: Date | Timestamp): number {
     let result: Date = null
 
-    if (date instanceof firestore.Timestamp) result = new Date(date["seconds"] * 1000)
+    if (date instanceof Timestamp) result = new Date(date["seconds"] * 1000)
     else if (date instanceof Date) result = date
     
     return result ? moment.utc(result).unix() : null

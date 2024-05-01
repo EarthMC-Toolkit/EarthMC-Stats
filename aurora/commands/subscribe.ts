@@ -1,6 +1,7 @@
 import * as fn from '../../bot/utils/fn.js'
 
-import admin from 'firebase-admin'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+
 import {
     type Client, 
     type Message, 
@@ -8,7 +9,6 @@ import {
     PermissionFlagsBits, ChannelType,
 } from "discord.js"
 
-const FieldValue = admin.firestore.FieldValue
 const ManageMsgs = PermissionFlagsBits.ManageMessages
 
 export default {
@@ -35,7 +35,7 @@ export default {
         }
         
         const channelID = message.channel.id
-        const db = admin.firestore()
+        const db = getFirestore()
 
         const subscriptionSuccess = new EmbedBuilder()
             .setTitle("Subscription Success!")

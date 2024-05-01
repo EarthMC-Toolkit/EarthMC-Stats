@@ -8,8 +8,7 @@ import {
 
 import * as fn from '../../bot/utils/fn.js'
 
-import admin from 'firebase-admin'
-const FieldValue = admin.firestore.FieldValue
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
 const subscriptionSuccess = new EmbedBuilder()
     .setTitle("Subscription Success!")
@@ -53,7 +52,7 @@ export default {
 
         const channelID = channel.id
         const memberID = member.id
-        const db = admin.firestore()
+        const db = getFirestore()
 
         switch (subCmd.toLowerCase()) {
             case "queue": {
