@@ -8,11 +8,12 @@ import {
 
 import * as fn from '../../bot/utils/fn.js'
 
-import admin from "firebase-admin"
-const FieldValue = admin.firestore.FieldValue
+import { 
+    getFirestore, FieldValue, DocumentReference
+} from "firebase-admin/firestore"
 
 async function unsub(
-    subbedChannels: admin.firestore.DocumentReference, 
+    subbedChannels: DocumentReference, 
     interaction: ChatInputCommandInteraction, 
     subTypeName: string
 ) {
@@ -88,7 +89,9 @@ export default {
             invalidUsage.setFooter(fn.devsFooter(client))
         ], ephemeral: true})
 
-        const subsCollection = admin.firestore().collection("subs")
+        const db = getFirestore()
+
+        const subsCollection = db.collection("subs")
         unsub(subsCollection.doc(comparator), interaction, comparator)
     }, 
     data: new SlashCommandBuilder().setName("unsubscribe")

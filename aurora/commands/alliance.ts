@@ -459,7 +459,7 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
                 const formattedArgs = fn.argsHelper(args, 2)
-                const nationsToRemove = formattedArgs.asArray()
+                const nationsToRemove = formattedArgs.asArray() as any[]
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 
                 if (!nationsToRemove) {
@@ -467,7 +467,9 @@ export default {
                     return
                 }
 
+                console.log(nationsToRemove.toString())
                 const len = nationsToRemove.length
+                
                 for (let i = 0; i < len; i++) {
                     const cur = nationsToRemove[i]
                     
@@ -484,9 +486,9 @@ export default {
                             })
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     }
-                                
-                    const foundAllianceNations = foundAlliance.nations
-                    const lower = cur.toLowerCase()
+
+                    const foundAllianceNations = foundAlliance.nations as any[]
+                    const lower = cur?.toLowerCase()
 
                     const foundNation = foundAllianceNations.find(nation => nation.toLowerCase() == lower)
                     const foundNationIndex = foundAllianceNations.findIndex(nation => nation.toLowerCase() == lower)

@@ -150,7 +150,7 @@ async function getAlliance(name: string) {
     return foundAlliance
 }
 
-async function getAlliances(skipCache = false) {
+async function getAlliances(skipCache = false): Promise<any[]> {
     const cached = cache.get('aurora_alliances')
     const skip = !skipCache ? cached : null
 
