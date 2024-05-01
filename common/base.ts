@@ -18,6 +18,8 @@ class BaseHelper {
         this.embed.addFields({ name, value, inline })
         return this.embed
     }
+
+    raw = () => JSON.stringify(this.embed)
 }
 
 export {
