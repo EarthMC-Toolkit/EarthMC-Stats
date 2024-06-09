@@ -37,8 +37,8 @@ export default {
             .setTimestamp()
         ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const userID = interaction.user.id,
-              linkedPlayer = await getLinkedPlayer(userID)
+        const userID = interaction.user.id
+        const linkedPlayer = await getLinkedPlayer(userID)
 
         const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer.name.toLowerCase()
         if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [

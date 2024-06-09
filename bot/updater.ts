@@ -31,7 +31,11 @@ import {
     Message, TextChannel
 } from "discord.js"
 
-import type { MapInstance } from "./types.js"
+import type { 
+    MapInstance,
+    DBAlliance, DBResident,
+    ResidentRank
+} from "./types.js"
 //#endregion
 
 //#region Call Updates
@@ -101,70 +105,90 @@ async function updateAPI(news, alliances) {
     if (news) await updateNews()
 }
 
+const mapToString = (map: MapInstance) => map == AURORA ? "Aurora" : "Nova"
+
 async function updateAlliances(map: MapInstance) {
     const nations = await map.emc.Nations.all()
-    if (!nations) return console.warn("Couldn't update " + map + " alliances, failed to fetch nations.")
+    if (!nations) return console.warn(`Couldn't update ${mapToString(map)} alliances, failed to fetch nations.`)
 
-    map.db.getAlliances(true).then(async alliances => {
-        // For each alliance
-        alliances.forEach(alliance => {
-            if (nations.length > 0) {
-                // Filter out nations that do not exist.
-                const existing = nations.filter(nation => exists(nation.name, alliance))
+    const alliances = await map.db.getAlliances(true) as DBAlliance[]
+    if (!alliances) {
+        console.log("Couldn't update alliances, failed to fetch from DB.")
+        return
+    }
 
-                // No nations exist in the alliance anymore, disband it.
-                if (existing.length > 1) alliance.nations = existing.map(n => n.name)
-                else console.log(`Alliance '${alliance.allianceName}' has no nations.`)
+    const alliancesAmt = alliances.length
+    for (let index = 0; index < alliancesAmt; index++) {
+        const a = alliances[index]
+
+        if (nations.length > 0) {
+            // Filter out nations that do not exist.
+            const existing = nations.filter(n => !a.nations.includes(n.name))
+
+            // No nations exist in the alliance anymore, disband it.
+            if (existing.length < 2) {
+                console.log(`Alliance '${a.allianceName}' has no nations.`)
+
+                // TODO: Bring back disband logic (once bug is confirmed fixed)
+
+                return
             }
 
-            const noInvite = "No discord invite has been set for this alliance"
-            if (alliance.discordInvite == noInvite) return
+            a.nations = existing.map(n => n.name)
+        }
 
-            // Invalid or will expire, set it back to none.
-            client.fetchInvite(alliance.discordInvite)
-                .then(inv => { if (inv.maxAge > 0) alliance.discordInvite = noInvite })
-                .catch(err => { if (err.code == 10006) alliance.discordInvite = noInvite })
-        })
+        const noInvite = "No discord invite has been set for this alliance"
+        if (a.discordInvite == noInvite) return
 
-        map.db.setAlliances(alliances)
-    })
+        // Invalid or will expire, set it back to none.
+        client.fetchInvite(a.discordInvite)
+            .then(inv => { if (inv.maxAge > 0) a.discordInvite = noInvite })
+            .catch(err => { if (err.code == 10006) a.discordInvite = noInvite })
+    }
+
+    map.db.setAlliances(alliances)
 }
 
 async function checkForEmptyAlliances(map: MapInstance) {
-    const emptyAlliances = []
     const nations = await map.emc.Nations.all()
-    if (!nations) return console.warn("Couldn't check empty " + map + " alliances, failed to fetch nations.")
+    if (!nations) return console.warn(`Couldn't check empty ${mapToString(map)} alliances, failed to fetch nations.`)
 
-    map.db.getAlliances(true).then(async alliances => {
-        // For each alliance
-        alliances.forEach(alliance => {
-            if (nations.length > 1) {
-                // Filter out nations that do not exist.
-                const existing = nations.filter(nation => exists(nation.name, alliance))
+    const alliances = await map.db.getAlliances(true) as DBAlliance[]
+    if (!alliances) return 
 
-                // No nations exist in the alliance.
-                if (existing.length < 2) {
-                    console.log(`Alliance '${alliance.allianceName}' has less than 2 nations.`)
-                    emptyAlliances.push(alliance.allianceName)
-                }
-            } else {
-                console.log(`Alliance '${alliance.allianceName}' has less than 2 nations.`)
-                emptyAlliances.push(alliance.allianceName)
-            }
-        })
-    })
+    const emptyAlliances: string[] = []
+    const alliancesAmt = alliances.length
+
+    for (let index = 0; index < alliancesAmt; index++) {
+        const a = alliances[index]
+        
+        if (nations.length < 1) {
+            emptyAlliances.push(a.allianceName)
+            console.log(`Alliance '${a.allianceName}' has less than 2 nations.`)
+
+            continue
+        }
+
+        // Filter out nations that do not exist.
+        const existing = nations.filter(n => !a.nations.includes(n.name))
+
+        // No nations exist in the alliance.
+        if (existing.length < 2) {
+            emptyAlliances.push(a.allianceName)
+            console.log(`Alliance '${a.allianceName}' has less than 2 nations.`)
+        }
+    }
 
     if (emptyAlliances.length > 0) {
         const editorChannel = client.channels.cache.get("966398270878392382") as TextChannel
-        const mapToString = map == AURORA ? 'Aurora' : 'Nova'
         const embed = new EmbedBuilder()
-            .setTitle(`Empty alliances - ${mapToString}`)
+            .setTitle(`Empty alliances - ${mapToString(map)}`)
             .setDescription(emptyAlliances.join(', '))
+            .setColor(Colors.Orange)
             .setFooter(fn.devsFooter(client))
             .setTimestamp()
-            .setColor("ORANGE")
 
-        editorChannel.send({embeds: [embed]})
+        editorChannel.send({ embeds: [embed] })
     }
 }
 
@@ -182,8 +206,8 @@ async function updatePlayerData(players: any[], map: MapInstance) {
     for (let i = 0; i < len; i++) {
         const op = onlinePlayers[i]
 
-        const playerInDB = players.find(p => p.name == op.name),
-              playerIndex = players.findIndex(p => p.name == op.name)
+        const playerInDB = players.find(p => p.name == op.name)
+        const playerIndex = players.findIndex(p => p.name == op.name)
             
         const player: {
             name: string
@@ -237,8 +261,8 @@ async function updateMapData(map: MapInstance) {
     //#endregion
 
     //#region Resident Logic
-    const tLen = townsArray.length,
-          residentsArray = []
+    const tLen = townsArray.length
+    const residentsArray: DBResident[] = []
 
     for (let i = 0; i < tLen; i++) {
         const currentTown = townsArray[i]
@@ -247,10 +271,10 @@ async function updateMapData(map: MapInstance) {
         const rLen = currentTown.residents.length
         for (let j = 0; j < rLen; j++) {
             const currentResident = currentTown.residents[j]
-            let rank = currentTown.mayor == currentResident ? "Mayor" : "Resident"
+            let rank: ResidentRank = currentTown.mayor == currentResident ? "Mayor" : "Resident"
 
             if (rank == "Mayor" && currentTown.flags.capital) 
-                rank = "Nation Leader" 
+                rank = "Nation Leader"
                 
             residentsArray.push({
                 name: currentResident,
@@ -569,8 +593,6 @@ async function updateFallenTowns(map: MapInstance) {
 //#endregion
 
 //#region Helper Methods
-const exists = (name, obj, key='nations') => obj[key].includes(name)
-
 const purged = (timestamp: { seconds }, now: Date) => {
     const loDate = new Date(timestamp.seconds * 1000)
     const days = fn.daysBetween(loDate, now)

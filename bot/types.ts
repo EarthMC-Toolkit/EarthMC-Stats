@@ -74,6 +74,23 @@ export type MapDB = {
     setResidents(residents: any[]): Promise<void>
 }
 
+
+export type DBAlliance = {
+    allianceName: string
+    leaderName: string,
+    discordInvite: string,
+    nations: string[],
+    type: 'sub' | 'mega' | 'normal'
+}
+
+export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
+export type DBResident = {
+    name: string
+    townName: string
+    townNation: string
+    rank: ResidentRank
+}
+
 export type SkinOpts = {
     view: SkinType2D | SkinType3D,
     subject: string | number,
