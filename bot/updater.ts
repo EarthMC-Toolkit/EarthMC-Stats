@@ -62,6 +62,11 @@ async function initUpdates() {
     setInterval(async () => {
         await updateFallenTowns(AURORA)
     }, 2 * oneMinute)
+
+    setInterval(async () => {
+        await checkForEmptyAlliances(AURORA)
+        await checkForEmptyAlliances(NOVA)
+    }, 1440 * oneMinute)
 }
 
 async function updateNews() {
@@ -123,6 +128,44 @@ async function updateAlliances(map: MapInstance) {
 
         map.db.setAlliances(alliances)
     })
+}
+
+async function checkForEmptyAlliances(map: MapInstance) {
+    const emptyAlliances = []
+    const nations = await map.emc.Nations.all()
+    if (!nations) return console.warn("Couldn't check empty " + map + " alliances, failed to fetch nations.")
+
+    map.db.getAlliances(true).then(async alliances => {
+        // For each alliance
+        alliances.forEach(alliance => {
+            if (nations.length > 1) {
+                // Filter out nations that do not exist.
+                const existing = nations.filter(nation => exists(nation.name, alliance))
+
+                // No nations exist in the alliance.
+                if (existing.length < 2) {
+                    console.log(`Alliance '${alliance.allianceName}' has less than 2 nations.`)
+                    emptyAlliances.push(alliance.allianceName)
+                }
+            } else {
+                console.log(`Alliance '${alliance.allianceName}' has less than 2 nations.`)
+                emptyAlliances.push(alliance.allianceName)
+            }
+        })
+    })
+
+    if (emptyAlliances.length > 0) {
+        const editorChannel = client.channels.cache.get("966398270878392382") as TextChannel
+        const mapToString = map == AURORA ? 'Aurora' : 'Nova'
+        const embed = new EmbedBuilder()
+            .setTitle(`Empty alliances - ${mapToString}`)
+            .setDescription(emptyAlliances.join(', '))
+            .setFooter(fn.devsFooter(client))
+            .setTimestamp()
+            .setColor("ORANGE")
+
+        editorChannel.send({embeds: [embed]})
+    }
 }
 
 // Updates: Player info or remove if purged
