@@ -46,6 +46,9 @@ async function initUpdates() {
     await updateData(true, true, true)
     await updateAPI(false, true)
 
+    await sendEmptyAllianceNotif(AURORA)
+    await sendEmptyAllianceNotif(NOVA)
+
     setInterval(async () => { 
         await liveQueue() 
         liveTownless()
@@ -68,9 +71,9 @@ async function initUpdates() {
     }, 2 * oneMinute)
 
     setInterval(async () => {
-        await checkForEmptyAlliances(AURORA)
-        await checkForEmptyAlliances(NOVA)
-    }, 1440 * oneMinute)
+        await sendEmptyAllianceNotif(AURORA)
+        await sendEmptyAllianceNotif(NOVA)
+    }, 720 * oneMinute)
 }
 
 async function updateNews() {
@@ -122,8 +125,7 @@ async function updateAlliances(map: MapInstance) {
         const a = alliances[index]
 
         if (nations.length > 0) {
-            // Filter out nations that do not exist.
-            const existing = nations.filter(n => !a.nations.includes(n.name))
+            const existing = nations.filter(n => a.nations.includes(n.name))
 
             // No nations exist in the alliance anymore, disband it.
             if (existing.length < 2) {
@@ -149,7 +151,7 @@ async function updateAlliances(map: MapInstance) {
     map.db.setAlliances(alliances)
 }
 
-async function checkForEmptyAlliances(map: MapInstance) {
+async function sendEmptyAllianceNotif(map: MapInstance) {
     const nations = await map.emc.Nations.all()
     if (!nations) return console.warn(`Couldn't check empty ${mapToString(map)} alliances, failed to fetch nations.`)
 
@@ -169,10 +171,7 @@ async function checkForEmptyAlliances(map: MapInstance) {
             continue
         }
 
-        // Filter out nations that do not exist.
-        const existing = nations.filter(n => !a.nations.includes(n.name))
-
-        // No nations exist in the alliance.
+        const existing = nations.filter(n => a.nations.includes(n.name))
         if (existing.length < 2) {
             emptyAlliances.push(a.allianceName)
             console.log(`Alliance '${a.allianceName}' has less than 2 nations.`)
