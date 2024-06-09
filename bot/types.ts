@@ -63,17 +63,16 @@ export type MCSessionProfile = MCUserProfile & {
 }
 
 export type MapDB = {
-    getAlliance(name: string): Promise<any>
-    getAlliances(skipCache: boolean): Promise<any> 
-    setAlliances(alliances: any[]): Promise<WriteResult>
+    getAlliance(name: string): Promise<DBAlliance>
+    getAlliances(skipCache: boolean): Promise<DBAlliance[]> 
+    setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
+    getResidents(): Promise<DBResident[]>
+    setResidents(residents: DBResident[]): Promise<void>
     getTowns(): Promise<any>
     setTowns(towns: any[]): Promise<void>
     getNations(): Promise<any>
     setNations(nations: any[]): Promise<void>
-    getResidents(): Promise<any>
-    setResidents(residents: any[]): Promise<void>
 }
-
 
 export type DBAlliance = {
     allianceName: string

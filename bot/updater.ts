@@ -115,28 +115,18 @@ async function updateAlliances(map: MapInstance) {
     if (!nations) return console.warn(`Couldn't update ${mapToString(map)} alliances, failed to fetch nations.`)
 
     const alliances = await map.db.getAlliances(true) as DBAlliance[]
-    if (!alliances) {
-        console.log("Couldn't update alliances, failed to fetch from DB.")
-        return
-    }
+    if (!alliances) return console.log("Couldn't update alliances, failed to fetch from DB.")
 
     const alliancesAmt = alliances.length
     for (let index = 0; index < alliancesAmt; index++) {
         const a = alliances[index]
 
-        if (nations.length > 0) {
-            const existing = nations.filter(n => a.nations.includes(n.name))
+        const existing = nations.filter(n => a.nations.includes(n.name))
+        if (existing.length > 1) a.nations = existing.map(n => n.name)
+        else {
+            console.log(`Alliance '${a.allianceName}' has no nations.`)
 
-            // No nations exist in the alliance anymore, disband it.
-            if (existing.length < 2) {
-                console.log(`Alliance '${a.allianceName}' has no nations.`)
-
-                // TODO: Bring back disband logic (once bug is confirmed fixed)
-
-                return
-            }
-
-            a.nations = existing.map(n => n.name)
+            // TODO: Bring back disband logic (once bug is confirmed fixed)
         }
 
         const noInvite = "No discord invite has been set for this alliance"
@@ -155,21 +145,14 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
     const nations = await map.emc.Nations.all()
     if (!nations) return console.warn(`Couldn't check empty ${mapToString(map)} alliances, failed to fetch nations.`)
 
-    const alliances = await map.db.getAlliances(true) as DBAlliance[]
-    if (!alliances) return 
+    const alliances = await map.db.getAlliances(true)
+    if (!alliances) return console.log("Couldn't send notifs! Failed to fetch alliances from DB.")
 
     const emptyAlliances: string[] = []
     const alliancesAmt = alliances.length
 
     for (let index = 0; index < alliancesAmt; index++) {
         const a = alliances[index]
-        
-        if (nations.length < 1) {
-            emptyAlliances.push(a.allianceName)
-            console.log(`Alliance '${a.allianceName}' has less than 2 nations.`)
-
-            continue
-        }
 
         const existing = nations.filter(n => a.nations.includes(n.name))
         if (existing.length < 2) {
