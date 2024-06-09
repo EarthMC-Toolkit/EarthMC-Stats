@@ -8,7 +8,7 @@ import { Aurora } from "earthmc"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
-async function getStaff(activeOnly: boolean) {
+const getStaff = async(activeOnly: boolean) => {
     const players = await database.getPlayers()
     const staffList = activeOnly ? fn.staff.active : fn.staff.all()
 

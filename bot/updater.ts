@@ -31,7 +31,7 @@ import {
     Message, TextChannel
 } from "discord.js"
 
-import type { MapInstance } from "./types.js"
+import type { MapInstance, ResidentProfile } from "./types.js"
 //#endregion
 
 //#region Call Updates
@@ -139,26 +139,19 @@ async function updatePlayerData(players: any[], map: MapInstance) {
     for (let i = 0; i < len; i++) {
         const op = onlinePlayers[i]
 
-        const playerInDB = players.find(p => p.name == op.name),
-              playerIndex = players.findIndex(p => p.name == op.name)
+        const playerInDB = players.find(p => p.name == op.name)
+        const playerIndex = players.findIndex(p => p.name == op.name)
             
-        const player: {
-            name: string
-            lastOnline: {
-                nova: unknown
-                aurora: unknown
-            }
-            linkedID?: string
-        } = {
+        const player = {
             name: op.name,
             lastOnline: {
                 nova: playerInDB?.lastOnline?.nova ?? null,
                 aurora: playerInDB?.lastOnline?.aurora ?? null
             }
-        }
+        } as ResidentProfile
         
-        const linkedId = playerInDB?.linkedID
-        if (linkedId) player.linkedID = linkedId
+        const linkedID = playerInDB?.linkedID
+        if (linkedID) player.linkedID = linkedID
 
         player.lastOnline[mapName] = now
 
@@ -194,8 +187,8 @@ async function updateMapData(map: MapInstance) {
     //#endregion
 
     //#region Resident Logic
-    const tLen = townsArray.length,
-          residentsArray = []
+    const tLen = townsArray.length
+    const residentsArray = []
 
     for (let i = 0; i < tLen; i++) {
         const currentTown = townsArray[i]

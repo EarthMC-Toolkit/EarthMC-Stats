@@ -8,6 +8,10 @@ class TownHelper extends BaseHelper {
         super(client, isNova)
         this.embed.setColor(Colors.Green)
     }
+
+    async setupEmbed() {
+        
+    }
 }
 
 export {

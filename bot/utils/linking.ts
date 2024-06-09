@@ -1,16 +1,6 @@
 import { setPlayers, getPlayers} from "./database.js"
 import { Players } from "./minecraft.js"
-
-import { Timestamp } from "firebase-admin/firestore"
-
-type ResidentProfile = {
-    name: string
-    linkedID: string | number
-    lastOnline: {
-        nova: Date | Timestamp
-        aurora: Date | Timestamp
-    }
-}
+import { ResidentProfile } from "../types.js"
 
 const strEqual = (p: { name: string }, name: string) => 
     p.name.toLowerCase() == name.toLowerCase()

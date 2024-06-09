@@ -29,16 +29,14 @@ export default {
         const nationIndex = nations.findIndex(n => n.name.toLowerCase() == nationName)
 
         const nation = nations.find(n => n.name.toLowerCase() == nationName)
-        let save = false
-
         if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
             .setDescription(`${nationName} is not a registered nation, please try again.`)
             .setColor(Colors.Red)
             .setTimestamp()
-        ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const userID = interaction.user.id,
-              linkedPlayer = await getLinkedPlayer(userID)
+        const userID = interaction.user.id
+        const linkedPlayer = await getLinkedPlayer(userID)
 
         const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer.name.toLowerCase()
         if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
@@ -46,10 +44,15 @@ export default {
             .setDescription("You must be linked and be the owner of this nation in order to edit it.")
             .setColor(Colors.Red)
             .setTimestamp()
-        ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const value = interaction.options.getString("value")
         const cleared = value.toLowerCase() == "none" || value.toLowerCase() == "clear"
+
+        const save = (n: any) => {
+            nations[nationIndex] = n
+            mapDB.setNations(nations)
+        }
 
         switch (interaction.options.getString("type").toLowerCase()) {
             case "prefix": {
@@ -63,8 +66,7 @@ export default {
                     .setTimestamp()
 
                 await interaction.editReply({ embeds: [embed] })
-
-                break
+                return save(nation)
             }
             case "discord": {
                 if (cleared) nation.discord = ""
@@ -89,8 +91,7 @@ export default {
                     .setTimestamp()
 
                 await interaction.editReply({ embeds: [embed] })
-
-                break
+                return save(nation)
             }
             case "flag": {
                 if (cleared) nation.flag = ""
@@ -115,20 +116,12 @@ export default {
                 if (!cleared) embed.setThumbnail(value)
                 await interaction.editReply({ embeds: [embed] })
 
-                break
+                return save(nation)
             }
-            default: {
-                save = false
-                return interaction.editReply({embeds: [new EmbedBuilder()
-                    .setDescription("<:red_tick:1036290475012915270> Invalid arguments! Options: Prefix, Discord or Flag")
-                    .setColor(Colors.Red)
-                ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
-            }
-        }
-
-        if (save) {
-            nations[nationIndex] = nation
-            mapDB.setNations(nations)
+            default: return interaction.editReply({embeds: [new EmbedBuilder()
+                .setDescription("<:red_tick:1036290475012915270> Invalid arguments! Options: Prefix, Discord or Flag")
+                .setColor(Colors.Red)
+            ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
     }, data: new SlashCommandBuilder().setName("nationset")
         .setDescription(desc)

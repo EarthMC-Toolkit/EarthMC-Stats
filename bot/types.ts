@@ -8,7 +8,7 @@ import {
 } from "discord.js"
 
 import { Map } from "earthmc"
-import { WriteResult } from "firebase-admin/firestore"
+import { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type BaseCommand = {
     name: string
@@ -94,3 +94,12 @@ export const SkinType3D = {
     BUST: 'bust',
     FULL: 'full'
 } as const
+
+export type ResidentProfile = {
+    name: string
+    linkedID: string | number
+    lastOnline: {
+        nova: Date | Timestamp
+        aurora: Date | Timestamp
+    }
+}

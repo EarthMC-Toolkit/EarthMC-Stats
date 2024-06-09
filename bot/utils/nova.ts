@@ -163,7 +163,7 @@ async function setAlliances(alliances: any[]) {
     return allianceDoc.set({ allianceArray: alliances })
 }
 
-const length = x => x.length
+const length = (x: string | any[]) => x.length
 
 export {
     getResidents, setResidents,

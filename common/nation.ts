@@ -8,6 +8,10 @@ class NationHelper extends BaseHelper {
         super(client, isNova)
         this.embed.setColor(Colors.Orange)
     }
+
+    async setupEmbed() {
+        
+    }
 }
 
 export {

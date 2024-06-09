@@ -8,6 +8,10 @@ class AllianceHelper extends BaseHelper {
         super(client, isNova)
         this.embed.setColor(Colors.DarkBlue)
     }
+
+    async setupEmbed() {
+        
+    }
 }
 
 export {
