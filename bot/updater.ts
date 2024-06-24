@@ -425,7 +425,6 @@ async function updateFallenTowns(map: MapInstance) {
         t["ruined"] = (NPCRegex.test(t.mayor) || (t.residents?.length ?? 0) < 1) ? true : false
 
         return t
-    })).catch(() => null)
     }))
 
     if (!towns) return console.log("Could not update map data! Failed to fetch towns.")
