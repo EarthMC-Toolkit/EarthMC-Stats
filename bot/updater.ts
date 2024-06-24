@@ -10,7 +10,8 @@ import {
     Aurora, 
     MojangLib, 
     Nova, 
-    formatString
+    formatString,
+    RouteInfo
 } from "earthmc"
 
 import { 
@@ -379,8 +380,8 @@ async function liveQueue() {
         fn.embedField("Nova", queue.nova.formatted)
     )
         
-    const queueSubbedChannelIDs = fn.queueSubbedChannelArray,
-          len = queueSubbedChannelIDs.length
+    const queueSubbedChannelIDs = fn.queueSubbedChannelArray
+    const len = queueSubbedChannelIDs.length
 
     for (let i = 0; i < len; i++) {
         const cur = queueSubbedChannelIDs[i]
@@ -425,6 +426,7 @@ async function updateFallenTowns(map: MapInstance) {
 
         return t
     })).catch(() => null)
+    }))
 
     if (!towns) return console.log("Could not update map data! Failed to fetch towns.")
     // const msgs = await townFlowChannel.messages.fetch()
@@ -490,7 +492,7 @@ async function updateFallenTowns(map: MapInstance) {
             const residentBatch2 = []
             const mayor = town.mayor.replace(/_/g, "\\_")
 
-            const route = await Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
+            const route: RouteInfo = await Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
             const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`
 
             const fallenTownEmbed = new EmbedBuilder()
