@@ -4,7 +4,7 @@ import striptags from 'striptags'
 import * as MC from '../bot/utils/minecraft.js'
 import * as database from '../bot/utils/database.js'
 
-import { 
+import {
     OfficialAPI, 
     Nova, Aurora,
     type OAPIResident, 
@@ -73,14 +73,14 @@ class ResidentHelper extends BaseHelper {
         if (!this.isNova) {
             let res: OAPIResident
             try {
-                res = await OfficialAPI.resident(arg1)
+                res = await OfficialAPI.V2.resident(arg1)
             } catch (e) {
                 console.log(e)
                 return false
             }
 
             if (res.town) {
-                const resTown = await OfficialAPI.town(res.town.toLowerCase())
+                const resTown = await OfficialAPI.V2.town(res.town.toLowerCase())
 
                 let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
                 if (rank == "Mayor" && resTown.status.isCapital) 

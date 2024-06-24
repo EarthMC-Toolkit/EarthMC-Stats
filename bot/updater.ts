@@ -485,10 +485,10 @@ async function updateFallenTowns(map: MapInstance) {
         }
 
         for (let i = 0; i < fallenTownsLen; i++) {
-            const town = fallenTowns[i],
-                  residentBatch1 = [], 
-                  residentBatch2 = [],
-                  mayor = town.mayor.replace(/_/g, "\\_")
+            const town = fallenTowns[i]
+            const residentBatch1 = []
+            const residentBatch2 = []
+            const mayor = town.mayor.replace(/_/g, "\\_")
 
             const route = await Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
             const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`

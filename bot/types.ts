@@ -7,7 +7,7 @@ import {
     SharedNameAndDescription
 } from "discord.js"
 
-import { Map } from "earthmc"
+import { Dynmap, Squaremap } from "earthmc"
 import { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type BaseCommand = {
@@ -43,7 +43,7 @@ export type DJSEvent = {
 }
 
 export type MapInstance = { 
-    emc: Map,
+    emc: Squaremap | Dynmap,
     db: MapDB
 }
 
