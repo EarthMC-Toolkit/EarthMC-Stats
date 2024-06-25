@@ -45,7 +45,7 @@ export default {
 
                 if (comparator == "online") {         
                     const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                    if (!onlinePlayers) return await interaction.editReply({embeds: [fn.fetchError]})
+                    if (!onlinePlayers) return await interaction.editReply({ embeds: [fn.fetchError] })
                         .then(() => setTimeout(() => interaction.deleteReply(), 10000)).catch(() => {})
 
                     let towns = await database.Aurora.getTowns()
@@ -152,11 +152,12 @@ export default {
                 nationEmbed.setDescription(interaction.options.getString("name") + " is not a valid nation, please try again.")
                 nationEmbed.setColor(Colors.Red)
 
-                return interaction.editReply({embeds: [nationEmbed]})
+                return interaction.editReply({ embeds: [nationEmbed] })
             }
 
             const players = await database.getPlayers()
-            if (!players) return await interaction.editReply({embeds: [fn.databaseError]}).then(() => setTimeout(() => interaction.deleteReply(), 10000))
+            if (!players) return await interaction.editReply({ embeds: [fn.databaseError] })
+                .then(() => setTimeout(() => interaction.deleteReply(), 10000))
 
             // Sort by highest offline duration
             nation.residents.sort((a, b) => {
@@ -207,7 +208,7 @@ export default {
                 nationEmbed.setDescription(interaction.options.getString("name") + " is not a valid nation, please try again.")
                 nationEmbed.setColor(Colors.Red)
 
-                return interaction.editReply({embeds: [nationEmbed]})
+                return interaction.editReply({ embeds: [nationEmbed] })
             }
             
             const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: any) => {
