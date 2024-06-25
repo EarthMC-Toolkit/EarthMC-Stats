@@ -1,5 +1,4 @@
 import * as fn from '../../bot/utils/fn.js'
-import * as emc from "earthmc"
 import * as database from "../../bot/utils/database.js"
 
 import {
@@ -12,6 +11,8 @@ import {
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
+
+import { Aurora, NotFoundError } from 'earthmc'
 
 export default {
     name: "nation",
@@ -34,7 +35,7 @@ export default {
         const nationsWithoutDuplicates = []
 
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await emc.Aurora.Nations.all().catch(err => console.log(err))
+        if (!nations) nations = await Aurora.Nations.all().catch(err => console.log(err))
 
         if (subCmd == "list") {
             let comparator = interaction.options.getString("comparator")
@@ -43,12 +44,12 @@ export default {
                 comparator = comparator.toLowerCase()
 
                 if (comparator == "online") {         
-                    const onlinePlayers = await emc.Aurora.Players.online().catch(() => {})
+                    const onlinePlayers = await Aurora.Players.online().catch(() => {})
                     if (!onlinePlayers) return await interaction.editReply({embeds: [fn.fetchError]})
                         .then(() => setTimeout(() => interaction.deleteReply(), 10000)).catch(() => {})
 
                     let towns = await database.Aurora.getTowns()
-                    if (!towns) towns = await emc.Aurora.Towns.all()
+                    if (!towns) towns = await Aurora.Towns.all()
 
                     const len = towns.length
                     for (let i = 0; i < len; i++) {
@@ -209,8 +210,8 @@ export default {
                 return interaction.editReply({embeds: [nationEmbed]})
             }
             
-            const capitalColours = await emc.Aurora.Towns.get(nation.capital.name).then((t: any) => {
-                return t instanceof emc.NotFoundError ? null : t.colourCodes
+            const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: any) => {
+                return t instanceof NotFoundError ? null : t.colourCodes
             })
 
             const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
@@ -260,7 +261,7 @@ export default {
             if (nation.discord) 
                 nationEmbed.setURL(nation.discord)
 
-            const onlinePlayers = await emc.Aurora.Players.online().catch(() => {})
+            const onlinePlayers = await Aurora.Players.online().catch(() => {})
             if (onlinePlayers) {
                 // Filter nation residents by which are online
                 const onlineNationResidents = fn.removeDuplicates(

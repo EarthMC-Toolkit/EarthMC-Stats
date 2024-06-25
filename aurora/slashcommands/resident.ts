@@ -4,8 +4,8 @@ import {
     EmbedBuilder, SlashCommandBuilder, Colors
 } from "discord.js"
 
-import * as fn from '../../bot/utils/fn.js'
 import { ResidentHelper } from '../../common/resident.js'
+import { devsFooter } from "../../bot/utils/fn.js"
 
 export default {
     name: "resident",
@@ -20,7 +20,7 @@ export default {
                 .setTitle("Invalid Arguments!")
                 .setDescription("Usage: `/resident playerName`")
                 .setColor(Colors.Red)
-                .setFooter(fn.devsFooter(client))
+                .setFooter(devsFooter(client))
                 .setTimestamp()
             ], ephemeral: true })
         }
@@ -33,7 +33,7 @@ export default {
             return interaction.followUp({embeds: [new EmbedBuilder()
                 .setTitle(name + " isn't a registered player name, please try again.")
                 .setColor(Colors.Red)
-                .setFooter(fn.devsFooter(client))
+                .setFooter(devsFooter(client))
                 .setTimestamp()
             ], ephemeral: true })
         }
