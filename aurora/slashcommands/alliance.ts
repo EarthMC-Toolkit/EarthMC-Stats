@@ -8,7 +8,7 @@ import {
 import * as database from '../../bot/utils/database.js'
 import * as fn from '../../bot/utils/fn.js'
 import AllianceModal from '../../bot/objects/AllianceModal.js'
-import { SlashCommand } from "../../bot/types.js"
+import type { SlashCommand } from "../../bot/types.js"
 
 const editingChannels = ["971408026516979813"]
 
@@ -111,7 +111,7 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
 
         // Handle success message
 
-    }, 
+    }
 }
 
 export default allianceCmd

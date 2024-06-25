@@ -9,7 +9,8 @@ import {
 import * as fn from '../../bot/utils/fn.js'
 
 import { 
-    getFirestore, FieldValue, DocumentReference
+    getFirestore, FieldValue, 
+    type DocumentReference
 } from "firebase-admin/firestore"
 
 async function unsub(

@@ -9,6 +9,10 @@ class AllianceHelper extends BaseHelper {
         this.embed.setColor(Colors.DarkBlue)
     }
 
+    async init(_input: string) {
+        return false
+    }
+
     async setupEmbed() {
         
     }

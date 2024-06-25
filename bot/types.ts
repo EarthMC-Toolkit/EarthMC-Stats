@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { 
+import type { 
     Client,
     Message,
     BaseInteraction,
@@ -7,8 +7,8 @@ import {
     SharedNameAndDescription
 } from "discord.js"
 
-import { Dynmap, Squaremap } from "earthmc"
-import { Timestamp, WriteResult } from "firebase-admin/firestore"
+import type { Dynmap, Squaremap } from "earthmc"
+import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type BaseCommand = {
     name: string

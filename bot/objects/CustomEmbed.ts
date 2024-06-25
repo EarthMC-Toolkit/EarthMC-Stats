@@ -4,6 +4,8 @@ import type {
     Client, ColorResolvable, 
     Message, CommandInteraction,
     ModalSubmitInteraction,
+    AttachmentBuilder,
+    Attachment
 } from "discord.js"
 
 import { 
@@ -11,9 +13,7 @@ import {
     Colors,
     ButtonBuilder,
     ActionRowBuilder,
-    ButtonStyle,
-    AttachmentBuilder,
-    Attachment
+    ButtonStyle
 } from "discord.js"
 
 const EntityType = {

@@ -1,15 +1,18 @@
+import type { 
+    Channel, Message,
+    MessageReaction,
+    ButtonInteraction,
+    Client,
+    CommandInteraction,
+    EmojiIdentifierResolvable
+} from "discord.js"
+
 import {
-    type Client,
-    type CommandInteraction,
-    type EmojiIdentifierResolvable,
     ButtonBuilder, EmbedBuilder,
     ActionRowBuilder, AttachmentBuilder,
     ChannelType, ComponentType,
-    Colors, ButtonStyle, 
-    Channel, Message,
-    PermissionFlagsBits,
-    MessageReaction,
-    ButtonInteraction
+    Colors, ButtonStyle,
+    PermissionFlagsBits
 } from "discord.js"
 
 import moment from "moment"
@@ -40,7 +43,7 @@ const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
     .setTimestamp()
 
 const serverIssues = errorEmbed("Server Issues", "We are currently unable to reach EarthMC, it's most likely down.")
-const townyIssues = errorEmbed("Towny Issues","We are currently unable to fetch Towny data, try again later!" )
+const townyIssues = errorEmbed("Towny Issues", "We are currently unable to fetch Towny data, try again later!" )
 const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fetch Dynmap data, try again later!")
 const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
 const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
@@ -50,7 +53,7 @@ const staff = {
     all: () => staff.active.concat(staff.inactive),
     active: [
         "Fix", "KarlOfDuty", "CorruptedGreed", "1212ra", "PolkadotBlueBear", "RlZ58", "Ebola_chan",
-        "Fruitloopins", "Shia_Chan", "Professor__Pro", "Barbay1","WTDpuddles", "Coblobster",
+        "Fruitloopins", "Shia_Chan", "Professor__Pro", "Barbay1", "WTDpuddles", "Coblobster",
         "aas5aa_OvO", "Fijiloopins", "Masrain", "linkeron1", "Warriorrr", "AD31", "Proser",
         "Fu_Mu", "Mednis", "yellune", "XxSlayerMCxX", "32Andrew", "KeijoDPutt", "SuperHappyBros", 
         "knowlton", "32Basileios", "Shirazmatas", "YellowVictini", "UncleSn", "Zackaree", "_Precise_",
@@ -216,7 +219,7 @@ const paginatorDM  = async (
     }
 
     const filter = (reaction: MessageReaction, user) => {
-        return user.id == author && ["◀","▶","⏪","⏩"].includes(reaction.emoji.name)
+        return user.id == author && ["◀", "▶", "⏪", "⏩"].includes(reaction.emoji.name)
     }
 
     const reaction = await msg.awaitReactions({ filter, ...reactionOpts }).catch(() => {})

@@ -12,13 +12,13 @@ import {
 } from "../constants.js"
 
 import { 
-    Client, 
+    type Client,
     ActivityType,
     ContextMenuCommandBuilder,
-    Collection,
+    Collection
 } from "discord.js"
 
-import { Button, DJSEvent } from "../types.js"
+import type { Button, DJSEvent } from "../types.js"
 //#endregion
 
 let lastActivity = -1

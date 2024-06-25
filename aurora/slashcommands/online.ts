@@ -9,7 +9,7 @@ import {
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import * as fn from '../../bot/utils/fn.js'
-import { Aurora, Player } from "earthmc"
+import { Aurora, type Player } from "earthmc"
 
 const EMBED_COLOUR = "#d67a82"
 
@@ -31,10 +31,7 @@ export default {
         await interaction.deferReply()
 
         const ops: Player[] | null = await Aurora.Players.online().catch(() => null)
-        if (!ops) return interaction.editReply({
-            embeds: [fn.fetchError], 
-            //ephemeral: true
-        })
+        if (!ops) return interaction.editReply({ embeds: [fn.fetchError] /*ephemeral: true */ })
 
         switch(interaction.options.getSubcommand().toLowerCase()) {
             case "all": {
@@ -58,7 +55,7 @@ export default {
             case "mayors": {
                 const allTowns = await Aurora.Towns.all().catch(() => {})
                 if (!allTowns || allTowns.length < 1) return await interaction.editReply({
-                    embeds: [fn.fetchError], 
+                    embeds: [fn.fetchError]
                     //ephemeral: true
                 })
 
@@ -75,7 +72,7 @@ export default {
             case "kings": {
                 const allNations = await Aurora.Nations.all().catch(err => console.log(err))
                 if (!allNations || allNations.length < 1) return await interaction.editReply({
-                    embeds: [fn.fetchError], 
+                    embeds: [fn.fetchError]
                     //ephemeral: true
                 })
 
@@ -89,13 +86,11 @@ export default {
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
                     .editInteraction(interaction)
             }
-            default: return await interaction.editReply({embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Red)
-                    .setTitle("Invalid Arguments")
-                    .setDescription("Arguments: `all`, `staff`, `mayors`, `kings`")
-                ], //ephemeral: true
-            })
+            default: return await interaction.editReply({embeds: [new EmbedBuilder()
+                .setColor(Colors.Red)
+                .setTitle("Invalid Arguments")
+                .setDescription("Arguments: `all`, `staff`, `mayors`, `kings`")
+            ] /* ephemeral: true */ })
         }
     }, data: new SlashCommandBuilder()
         .setName("online")

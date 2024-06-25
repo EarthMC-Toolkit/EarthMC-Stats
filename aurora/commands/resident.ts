@@ -1,7 +1,7 @@
 import { devsFooter } from '../../bot/utils/fn.js'
 
 import { ResidentHelper } from '../../common/resident.js'
-import { MessageCommand } from '../../bot/types.js'
+import type { MessageCommand } from '../../bot/types.js'
 
 import { 
     type Client, 

@@ -1,12 +1,12 @@
 import { 
+    type GuildMemberRoleManager,
+    type Collection,
     type BaseInteraction,
     type ModalSubmitInteraction, 
     type UserContextMenuCommandInteraction, 
     ButtonStyle, Colors, 
     EmbedBuilder, ModalBuilder, ActionRowBuilder,
-    TextInputBuilder, TextInputStyle,
-    GuildMemberRoleManager,
-    Collection
+    TextInputBuilder, TextInputStyle
 } from 'discord.js'
 
 import cache from 'memory-cache'
@@ -16,7 +16,7 @@ import * as fn from '../utils/fn.js'
 
 import { getLinkedPlayer, linkPlayer } from '../utils/linking.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
-import { Button } from '../types.js'
+import type { Button } from '../types.js'
 
 let target = null
 

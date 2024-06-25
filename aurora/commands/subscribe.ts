@@ -6,7 +6,7 @@ import {
     type Client, 
     type Message, 
     EmbedBuilder, Colors, 
-    PermissionFlagsBits, ChannelType,
+    PermissionFlagsBits, ChannelType
 } from "discord.js"
 
 const ManageMsgs = PermissionFlagsBits.ManageMessages

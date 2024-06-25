@@ -1,8 +1,8 @@
 import {
     type Client,
     type Message,
+    type TextChannel,
     ButtonStyle,
-    TextChannel,
     Colors,
     EmbedBuilder
 } from "discord.js"

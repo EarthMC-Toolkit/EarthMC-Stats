@@ -3,7 +3,7 @@ import cache from 'memory-cache'
 import { request } from "undici"
 
 import { db } from "../constants.js"
-import { MapResponse, PlayersResponse } from "earthmc"
+import type { MapResponse, PlayersResponse } from "earthmc"
 
 const novaUrl = 'https://earthmc.net/map/nova/'
 const getTownyData = async () => {

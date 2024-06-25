@@ -1,7 +1,7 @@
 {
-
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
+    "plugins": ["@typescript-eslint", "named-import-spacing"],
     "root": true,
     "env": {
         "browser": true,
@@ -9,22 +9,40 @@
         "es2021": true,
         "node": true
     },
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "parserOptions": {
         "ecmaVersion": "latest"
     },
     "rules": {
+        "prefer-spread": "warn",
+        "prefer-const": "warn",
+        "semi": ["error", "never"],
+        "comma-spacing": 2,
+        "comma-style": 2,
+        "comma-dangle": ["error", "never"],
+        "camelcase": 2,
         "no-console": "off",
         "no-useless-escape": "off",
-        "no-unused-vars": "warn",
+        "no-unused-vars": "off",
         "no-undef": "warn",
         "no-var-requires": "off",
         "no-unreachable": ["error"],
         "no-unexpected-multiline": ["error"],
-        "prefer-const": "warn",
-        "semi": ["error", "never"],
         "no-constant-condition": "off",
         "no-inner-declarations": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "no-self-compare": "error",
+        "@typescript-eslint/consistent-type-imports": "warn",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": ["warn", {
+            "args": "all",
+            "argsIgnorePattern": "^_",
+            "caughtErrors": "all",
+            "caughtErrorsIgnorePattern": "^_",
+            "destructuredArrayIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "ignoreRestSiblings": true
+        }],
+        "named-import-spacing/named-import-spacing": 2
     }
 }

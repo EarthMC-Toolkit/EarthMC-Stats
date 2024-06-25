@@ -1,4 +1,4 @@
-import { 
+import type { 
     MCSessionProfile, 
     MCUserProfile 
 } from '../types.js'

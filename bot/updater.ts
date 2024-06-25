@@ -7,11 +7,11 @@ import * as fn from "../bot/utils/fn.js"
 
 import { 
     type RawPlayer,
+    type RouteInfo,
     Aurora, 
     MojangLib, 
     Nova, 
-    formatString,
-    RouteInfo
+    formatString
 } from "earthmc"
 
 import { 
@@ -27,9 +27,10 @@ import {
 } from "firebase-admin/firestore"
 
 import { 
-    Collection,
-    Colors, EmbedBuilder, 
-    Message, TextChannel
+    type Collection,
+    type Message, 
+    type TextChannel,
+    Colors, EmbedBuilder 
 } from "discord.js"
 
 import type { 

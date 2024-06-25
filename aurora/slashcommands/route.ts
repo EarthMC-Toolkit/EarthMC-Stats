@@ -40,7 +40,7 @@ export default {
             .setFields(
                 embedField("Nearest Nation", `/n spawn ${route.nation.name}`,  true),
                 embedField("Distance", `${route.distance} blocks`, true),
-                embedField("Direction", direction, true),
+                embedField("Direction", direction, true)
             )
 
         return interaction.reply({ embeds: [embed] })

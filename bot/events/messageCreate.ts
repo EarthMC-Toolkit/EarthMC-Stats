@@ -1,14 +1,14 @@
 import {
-    Message,
+    type Message,
+    type Collection,
     EmbedBuilder,
     PermissionFlagsBits,
-    Colors, ChannelType,
-    Collection
+    Colors, ChannelType
 } from 'discord.js'
 
 import { AURORA, NOVA } from '../utils/fn.js'
 import { sendNews } from '../utils/api.js'
-import { MessageCommand } from '../types.js'
+import type { MessageCommand } from '../types.js'
 
 const { SendMessages, EmbedLinks } = PermissionFlagsBits
 const requiredPerms = [SendMessages, EmbedLinks]

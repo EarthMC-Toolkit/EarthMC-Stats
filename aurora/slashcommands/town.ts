@@ -47,8 +47,8 @@ export default {
                     const onlinePlayers = await emc.Aurora.Players.online().catch(() => {})
                     if (!onlinePlayers) return await interaction.editReply({embeds: [fn.fetchError]})
 
-                    const onlineTownData = [],
-                          onlineTownDataFinal = []
+                    const onlineTownData = []
+                    const onlineTownDataFinal = []
 
                     const len = towns.length
                     for (let i = 0; i < len; i++) {
@@ -59,7 +59,7 @@ export default {
                             nation: cur.nation,
                             residentNames: cur.residents,
                             onlineResidents: [],
-                            onlineResidentAmount: 0,
+                            onlineResidentAmount: 0
                         }) 
                     }
 
@@ -74,8 +74,8 @@ export default {
                                 name: a.name, 
                                 nation: a.nation,
                                 onlineResidents: a.onlineResidents,
-                                onlineResidentAmount: a.onlineResidents.length,
-                            }    
+                                onlineResidentAmount: a.onlineResidents.length
+                            }
 
                             onlineTownDataFinal.push(temp[a.name])
                         }     
@@ -108,7 +108,7 @@ export default {
                             .setTitle("Invalid town name!")
                             .setDescription(comparator + " doesn't seem to be a valid town name, please try again.")
                             .setTimestamp().setColor(Colors.Red)
-                        ], //ephemeral: true 
+                        ] //ephemeral: true 
                     })
                         
                     // It exists, get only towns within the nation, and sort.
@@ -119,13 +119,11 @@ export default {
             else if (subCmdName == "activity" && nameArg != null) {  
                 const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
 
-                if (!town) return interaction.editReply({embeds: [
-                    new EmbedBuilder()
-                        .setTitle("Invalid town name!")
-                        .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
-                        .setTimestamp().setColor(Colors.Red)
-                    ], //ephemeral: true
-                })
+                if (!town) return interaction.editReply({embeds: [new EmbedBuilder()
+                    .setTitle("Invalid town name!")
+                    .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
+                    .setTimestamp().setColor(Colors.Red)
+                ] /* ephemeral: true */})
 
                 database.getPlayers().then(async players => {
                     if (!players) return await interaction.editReply({embeds: [fn.databaseError]})
@@ -167,13 +165,11 @@ export default {
             else if (subCmdName == "lookup") { // /t <town>
                 const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
 
-                if (!town) return await interaction.editReply({embeds: [
-                    new EmbedBuilder()
-                        .setTitle("Invalid town name!")
-                        .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
-                        .setTimestamp().setColor(Colors.Red)
-                    ], //ephemeral: true
-                })
+                if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
+                    .setTitle("Invalid town name!")
+                    .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
+                    .setTimestamp().setColor(Colors.Red)
+                ] /*ephemeral: true */})
 
                 towns = fn.defaultSort(towns)
 

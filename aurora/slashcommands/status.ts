@@ -4,7 +4,7 @@ import {
     Colors, EmbedBuilder
 } from "discord.js"
 
-import { MojangLib, MapResponse } from 'earthmc'
+import { MojangLib, type MapResponse } from 'earthmc'
 
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"

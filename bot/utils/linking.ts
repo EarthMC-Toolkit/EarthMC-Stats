@@ -1,6 +1,6 @@
-import { setPlayers, getPlayers} from "./database.js"
+import { setPlayers, getPlayers } from "./database.js"
 import { Players } from "./minecraft.js"
-import { ResidentProfile } from "../types.js"
+import type { ResidentProfile } from "../types.js"
 
 const strEqual = (p: { name: string }, name: string) => 
     p.name.toLowerCase() == name.toLowerCase()

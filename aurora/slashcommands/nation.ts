@@ -4,10 +4,10 @@ import * as database from "../../bot/utils/database.js"
 
 import {
     type Client, 
+    type TextChannel,
     type ChatInputCommandInteraction, 
     EmbedBuilder, SlashCommandBuilder, 
-    Colors,ButtonStyle,
-    TextChannel,
+    Colors, ButtonStyle
 } from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"

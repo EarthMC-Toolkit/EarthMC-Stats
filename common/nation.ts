@@ -9,6 +9,10 @@ class NationHelper extends BaseHelper {
         this.embed.setColor(Colors.Orange)
     }
 
+    async init(_input: string) {
+        return false
+    }
+
     async setupEmbed() {
         
     }

@@ -115,7 +115,7 @@ class ResidentHelper extends BaseHelper {
     }
 
     async setupResidentEmbed() {
-        const res = this.apiResident ?? this.dbResident
+        const res = this.apiResident || this.dbResident
         const formattedPlayerName = res.name.replace(/_/g, "\\_")
         const affiliation = `${res.town ?? res.townName} (${res.nation ?? res.townNation})`
 

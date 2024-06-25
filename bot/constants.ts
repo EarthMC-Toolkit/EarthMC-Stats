@@ -1,8 +1,8 @@
 import * as emc from "earthmc"
 
-import { Client } from "discord.js"
-import { Firestore } from "firebase-admin/firestore"
-import { MapInstance } from "./types.js"
+import type { Client } from "discord.js"
+import type { Firestore } from "firebase-admin/firestore"
+import type { MapInstance } from "./types.js"
 
 import { 
     type DocReference, 

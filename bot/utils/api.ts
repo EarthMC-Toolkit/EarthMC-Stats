@@ -34,8 +34,8 @@ const sendNews = async (client, map) => {
 }
 
 async function sendNewsReq(msgs, mapName) {
-    const route = `${mapName}/news`,
-          newsArr = msgs.map(m => new News(m))
+    const route = `${mapName}/news`
+    const newsArr = msgs.map(m => new News(m))
 
     const newsObj = { 
         all: newsArr, 

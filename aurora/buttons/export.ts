@@ -3,7 +3,7 @@ import {
     type ChatInputCommandInteraction
 } from "discord.js"
 
-import { Button } from "../../bot/types.js"
+import type { Button } from "../../bot/types.js"
 
 const exportBtn: Button = {
     id: "export",

@@ -7,7 +7,7 @@ import { Aurora, NotFoundError, formatString } from "earthmc"
 import { 
     type Client, 
     type Message, 
-    EmbedBuilder, Colors, 
+    EmbedBuilder, Colors
 } from "discord.js"
 
 export default {
@@ -16,10 +16,10 @@ export default {
     slashCommand: true,
     aliases: ["t"],
     run: async (client: Client, message: Message, args: string[]) => {
-        const req = args.join(" "),
-              m = await message.reply({embeds: [new EmbedBuilder()
-                .setTitle("<a:loading:966778243615191110> Fetching town data, this might take a moment.")
-                .setColor(Colors.Green)]})
+        const req = args.join(" ")
+        const m = await message.reply({embeds: [new EmbedBuilder()
+            .setTitle("<a:loading:966778243615191110> Fetching town data, this might take a moment.")
+            .setColor(Colors.Green)]})
 
         if (!req) return await m.edit({embeds: [new EmbedBuilder()
             .setColor(Colors.Red)
@@ -64,7 +64,7 @@ export default {
                             nation: cur.nation,
                             residentNames: cur.residents,
                             onlineResidents: [],
-                            onlineResidentAmount: 0,
+                            onlineResidentAmount: 0
                         }) 
                     }
 
@@ -78,7 +78,7 @@ export default {
                                 name: a.name, 
                                 nation: a.nation,
                                 onlineResidents: a.onlineResidents,
-                                onlineResidentAmount: a.onlineResidents.length,
+                                onlineResidentAmount: a.onlineResidents.length
                             }    
 
                             onlineTownDataFinal.push(this[a.name])

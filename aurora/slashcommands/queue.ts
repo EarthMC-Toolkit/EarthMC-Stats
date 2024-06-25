@@ -6,10 +6,10 @@ import {
 
 import { MojangLib } from 'earthmc'
 
-import * as fn from "../../bot/utils/fn.js"
 import * as database from "../../bot/utils/database.js"
 
 import Queue from "../../bot/objects/Queue.js"
+import { embedField } from "../../bot/utils/fn.js"
 
 export default {
     name: "queue",
@@ -29,10 +29,10 @@ export default {
             .setTitle("Queue & Player Info")
             .setColor(Colors.Green)
             .addFields(
-                fn.embedField("Players In Queue", queue.get()),
-                fn.embedField("Total", `${queue.totalPlayers}/${totalMax}`),
-                fn.embedField("Aurora", queue.aurora.formatted, true),
-                fn.embedField("Nova", queue.nova.formatted, true),
+                embedField("Players In Queue", queue.get()),
+                embedField("Total", `${queue.totalPlayers}/${totalMax}`),
+                embedField("Aurora", queue.aurora.formatted, true),
+                embedField("Nova", queue.nova.formatted, true)
             )
 
         await interaction.editReply({ embeds: [embed] })
