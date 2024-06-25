@@ -13,7 +13,7 @@ import {
 
 import  { 
     type MCSessionProfile,
-    type SkinOpts, SkinType3D, 
+    type SkinOpts, SkinType3D
 } from "../bot/types.js"
 
 import { secToMs } from "../bot/utils/fn.js"
