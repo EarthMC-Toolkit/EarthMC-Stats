@@ -5,6 +5,15 @@
   "license": "CC-BY-NC-SA",
   "main": "index.js",
   "type": "module",
+  "scripts": {
+    "compile": "rimraf dist && tsc",
+    "reinstall": "rimraf node_modules && bun install",
+    "start-js": "bun run compile && node ./dist/index.js",
+    "start": "tsx index.ts",
+    "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
+    "restart": "bun run reinstall && pm2 startOrRestart ecosystem.json",
+    "deploy": "pm2 deploy production"
+  },
   "dependencies": {
     "discord.js": "14.13.0",
     "dotenv": "^16.4.5",
@@ -19,18 +28,6 @@
     "tsx": "latest",
     "undici": "5.28.4"
   },
-  "scripts": {
-    "compile": "rimraf dist && tsc",
-    "reinstall": "rimraf node_modules && bun install",
-    "start-js": "bun run compile && node ./dist/index.js",
-    "start": "tsx index.ts",
-    "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
-    "restart": "bun run reinstall && pm2 startOrRestart ecosystem.json",
-    "deploy": "pm2 deploy production"
-  },
-  "engines": {
-    "node": ">=16.20.2"
-  },
   "devDependencies": {
     "@types/node": "^20.8.6",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
@@ -39,6 +36,9 @@
     "eslint-plugin-named-import-spacing": "^1.0.3",
     "rimraf": "^5.0.5",
     "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=16.20.2"
   },
   "trustedDependencies": [
     "protobufjs",
