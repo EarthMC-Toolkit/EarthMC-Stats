@@ -17,7 +17,7 @@
     "striptags": "^3.2.0",
     "tslib": "latest",
     "tsx": "latest",
-    "undici": "6.19.2"
+    "undici": "5.28.4"
   },
   "scripts": {
     "compile": "rimraf dist && tsc",
