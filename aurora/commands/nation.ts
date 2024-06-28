@@ -354,7 +354,7 @@ export default {
                     fn.embedField("Capital", nation.capital.name, true),
                     fn.embedField("Location", 
                         "[" + nation.capital.x + ", " + nation.capital.z + "]" + 
-                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + 
+                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=" + 
                         nation.capital.x + "&y=64&z=" + nation.capital.z + ")"
                     ),
                     fn.embedField("Chunks", nation.area.toString(), true),

@@ -75,7 +75,7 @@ export default {
                     locationEmbed.addFields(fn.embedField("Coordinates", "X: " + foundPlayer.x + "\nY: " + (Number(foundPlayer.y) - 1) + "\nZ: " + foundPlayer.z))
                     locationEmbed.addFields(fn.embedField(
                         "Dynmap Link", "[" + foundPlayer.x + ", " + foundPlayer.z + "]" + 
-                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayer.x + "&y=64&z=" + foundPlayer.z + ")"
+                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayer.x + "&y=64&z=" + foundPlayer.z + ")"
                     ))
 
                     return m.edit({ embeds: [locationEmbed] }).catch(() => {})
@@ -119,7 +119,7 @@ export default {
                 .setDescription(
                     "Live Location: \nX: " + foundPlayerOld.x + "\nY: " + (Number(foundPlayerOld.y) - 1) + "\nZ: " + foundPlayerOld.z + 
                     "\n\nDynmap Link: " + "[" + foundPlayerOld.x + ", " + foundPlayerOld.z + "]" + 
-                    "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerOld.x + "&y=64&z=" + foundPlayerOld.z + ")"
+                    "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerOld.x + "&y=64&z=" + foundPlayerOld.z + ")"
                 )
               
             let lastValidLocation = { x: 0, y: 0, z: 0 }
@@ -135,7 +135,7 @@ export default {
                     .setDescription(
                         "Last Known Location: \nX: " + lastValidLocation.x + "\nY: " + (lastValidLocation.y - 1) + "\nZ: " + lastValidLocation.z + 
                         "\n\nDynmap Link: " + "[" + lastValidLocation.x + ", " + lastValidLocation.z + "]" + 
-                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")"
+                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")"
                     )
                     .setColor(Colors.Red)
                     .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
@@ -164,7 +164,7 @@ export default {
                     liveLocationEmbed.setDescription(
                         "Live Location: \nX: " + foundPlayerNew.x + "\nY: " + (Number(foundPlayerNew.y) - 1) + "\nZ: " + foundPlayerNew.z + 
                         "\n\nDynmap Link: " + "[" + foundPlayerNew.x + ", " + foundPlayerNew.z + "]" + 
-                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerNew.x + "&y=64&z=" + foundPlayerNew.z + ")"
+                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=7&x=" + foundPlayerNew.x + "&y=64&z=" + foundPlayerNew.z + ")"
                     )    
                 } else {
                     if (!lastValidLocation) liveLocationEmbed.setDescription("Can't get location, please wait until this player appears on the dynmap.")
@@ -172,7 +172,7 @@ export default {
                         liveLocationEmbed.setDescription(
                             "Last Known Location: \nX: " + lastValidLocation.x + "\nY: " + (lastValidLocation.y - 1) + "\nZ: " + lastValidLocation.z + 
                             "\n\nDynmap Link: " + "[" + lastValidLocation.x + ", " + lastValidLocation.z + "]" + 
-                            "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")"
+                            "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")"
                         )
                     }
                 }
@@ -203,7 +203,7 @@ export default {
                         .setDescription(
                             "Last Known Location: \nX: " + lastValidLocation.x + "\nY: " + (lastValidLocation.y - 1) + "\nZ: " + lastValidLocation.z + 
                             "\n\nDynmap Link: " + "[" + lastValidLocation.x + ", " + lastValidLocation.z + "]" + 
-                            "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")")
+                            "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=7&x=" + lastValidLocation.x + "&y=64&z=" + lastValidLocation.z + ")")
                     ]}).catch(() => {})
                 }
             }

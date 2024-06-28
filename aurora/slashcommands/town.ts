@@ -237,7 +237,7 @@ export default {
 
                 townEmbed.addFields(fn.embedField(
                     "Location", 
-                    `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
+                    `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
                     true
                 ))
 

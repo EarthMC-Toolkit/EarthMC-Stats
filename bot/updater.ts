@@ -455,7 +455,7 @@ async function updateFallenTowns(map: MapInstance) {
     //         const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
     //         ruinEmbed.addFields(
     //             fn.embedField("Town Size", town.area.toString(), true), 
-    //             fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
+    //             fn.embedField("Location", `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
     //             fn.embedField("Flags", `
     //                 ${town.pvp ? green : red } PVP
     //                 ${town.mobs ? green : red } Mobs 
@@ -530,7 +530,7 @@ async function updateFallenTowns(map: MapInstance) {
 
             fallenTownEmbed.addFields(
                 fn.embedField("Town Size", town.area.toString(), true),
-                fn.embedField("Location", `[${town.x}, ${town.z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
+                fn.embedField("Location", `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
             )
 
             if (residentBatch1.length < 1) {

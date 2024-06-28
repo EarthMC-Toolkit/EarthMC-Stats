@@ -53,7 +53,7 @@ class Queue {
 
     async #fetchConfigs() {
         this.nova.config = await fn.jsonReq("https://earthmc.net/map/nova/standalone/MySQL_configuration.php")
-        this.aurora.config = await fn.jsonReq("https://earthmc.net/map/aurora/standalone/MySQL_configuration.php")
+        this.aurora.config = await fn.jsonReq("https://map.earthmc.netstandalone/MySQL_configuration.php")
     }
 
     #formatMaps() {

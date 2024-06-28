@@ -31,7 +31,7 @@ export default {
             ], ephemeral: true})
         }
         else {
-            const dynmapLink = `[Click here](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=${zoom ?? 4}&x=${xcoord}&y=64&z=${zcoord})`
+            const dynmapLink = `[Click here](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=${zoom ?? 4}&x=${xcoord}&y=64&z=${zcoord})`
             const embed = new EmbedBuilder()
                 .setColor(Colors.Green)
                 .setTitle("Map location for X:" + xcoord + ", Z:" + zcoord)

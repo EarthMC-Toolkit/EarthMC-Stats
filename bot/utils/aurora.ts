@@ -21,7 +21,7 @@ const nationDataCollection = () => auroraDoc().collection("nationData")
 const townDataCollection = () => auroraDoc().collection("townData")
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
 
-const auroraUrl = 'https://earthmc.net/map/aurora/'
+const auroraUrl = 'https://map.earthmc.net'
 const getTownyData = async () => {
     const res = await request(`${auroraUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`)
     return await res.body.json() as MapResponse

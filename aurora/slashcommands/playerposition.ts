@@ -61,7 +61,7 @@ export default {
             const { x, y, z } = foundPlayer
             locationEmbed.addFields(
                 fn.embedField("Coordinates", `X: ${x}\nY: ${Number(y) - 1}\nZ: ${z}`),
-                fn.embedField("Dynmap Link", `[${x}, ${z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
+                fn.embedField("Dynmap Link", `[${x}, ${z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
             )
 
             return interaction.reply({ embeds: [locationEmbed] }).catch(() => {})

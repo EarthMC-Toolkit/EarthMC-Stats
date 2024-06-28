@@ -4,7 +4,7 @@ import { EmbedBuilder, Colors } from 'discord.js'
 import type { Client, Message, ColorResolvable } from 'discord.js'
 
 const buildUrl = (x: number | string, z: number | string, zoom = 4) =>
-    `[Click here](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=${zoom}&x=${x}&y=64&z=${z})`
+    `[Click here](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=${zoom}&x=${x}&y=64&z=${z})`
 
 const inWorldBorder = (x, z) => {
     const [numX, numZ] = [Number(x), Number(z)]
