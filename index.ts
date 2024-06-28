@@ -5,7 +5,7 @@ dotenv.config()
 import { 
     Client, 
     IntentsBitField,
-    Collection,
+    Collection
 } from "discord.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
@@ -17,7 +17,7 @@ import {
     setDatabase 
 } from "./bot/constants.js"
 
-import { DJSEvent } from "./bot/types.js"
+import type { DJSEvent } from "./bot/types.js"
 import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
