@@ -27,8 +27,8 @@ export default {
         if (!req) return await message.reply({embeds: [new EmbedBuilder()
             .setColor(Colors.Red)
             .setTitle("Command Usage")
-            .setDescription("`/town <name>`\n`/town list`")
-        ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+            .setDescription("**Command Usage**:\nGet info on a single town - `/town <name>`\nShows a page-by-page display of all towns - `/town list`")
+        ]}).then((m => setTimeout(() => m.delete(), 15000))).catch(() => {})
         
         const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching town data, this might take a moment.")
