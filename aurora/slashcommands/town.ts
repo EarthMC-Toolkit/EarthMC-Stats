@@ -266,7 +266,7 @@ export default {
                             "No residents are online in " + town.name + "."
                         ))
                     } else {
-                        onlineResidents = fn.removeDuplicates(town.residents.filter(resident => townyData.players.find(op => resident === op.account)))
+                        onlineResidents = fn.removeDuplicates(town.residents.filter(res => townyData.players.find(op => res === op.name)))
                         const onlineResLen = onlineResidents.length
 
                         if (onlineResLen > 0) {

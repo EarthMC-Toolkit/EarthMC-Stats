@@ -102,7 +102,7 @@ async function getAlliance(name: string) {
     if (!data) return null
     
     allianceNations.forEach(n => {
-        const onlineInNation = n.residents.filter(res => data.players.find(op => op.account == res))
+        const onlineInNation = n.residents.filter(res => data.players.find(op => op.name == res))
         onlineInAlliance = onlineInAlliance.concat(onlineInNation)
     })
 
