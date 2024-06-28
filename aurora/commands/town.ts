@@ -229,7 +229,7 @@ export default {
                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 .setTimestamp()
                 .setColor(Colors.Red)
-            ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
         
         //#region /t <name>
@@ -238,7 +238,7 @@ export default {
             .setTitle("Invalid town name!")
             .setDescription(opt + " doesn't seem to be a valid town name, please try again.")
             .setTimestamp().setColor(Colors.Red)
-        ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         towns = defaultSort(towns)
 
