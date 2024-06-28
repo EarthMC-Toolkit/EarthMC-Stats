@@ -38,10 +38,12 @@ export default {
                 if (args[1] != null) {
                     if (args[1].toLowerCase() == "online") {
                         const onlinePlayers = await Nova.Players.online().catch(() => {})
-                        if (!onlinePlayers) return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                        if (!onlinePlayers) return await m.edit({ embeds: [fn.fetchError] })
+                            .then(m => setTimeout(() => m.delete(), 10000))
+                            .catch(() => {})
 
-                        const onlineTownData = [], 
-                              onlineTownDataFinal = []
+                        const onlineTownData = []
+                        const onlineTownDataFinal = []
 
                         const len = towns.length
                         for (let i = 0; i < len; i++) {
@@ -52,7 +54,7 @@ export default {
                                 nation: curTown.nation,
                                 residentNames: curTown.residents,
                                 onlineResidents: [],
-                                onlineResidentAmount: 0,
+                                onlineResidentAmount: 0
                             }) 
                         }
 
@@ -66,7 +68,7 @@ export default {
                                     name: a.name, 
                                     nation: a.nation,
                                     onlineResidents: a.onlineResidents,
-                                    onlineResidentAmount: a.onlineResidents.length,
+                                    onlineResidentAmount: a.onlineResidents.length
                                 }    
 
                                 onlineTownDataFinal.push(this[a.name])
@@ -135,8 +137,8 @@ export default {
                     }
                     
                     if (args[1].toLowerCase() != "online") {
-                        const townData = [],
-                              len = towns.length
+                        const townData = []
+                        const len = towns.length
 
                         for (let i = 0; i < len; i++) {  
                             const curTown = towns[i]
@@ -145,7 +147,7 @@ export default {
                                 name: curTown.name,
                                 nation: curTown.nation,
                                 residentNames: curTown.residents,
-                                area: curTown.area,
+                                area: curTown.area
                             }) 
                         }        
 
@@ -175,8 +177,8 @@ export default {
                 else { // No args (/t list)
                     towns = fn.defaultSort(towns)
                     
-                    const townData = [],
-                          len = towns.length
+                    const townData = []
+                    const len = towns.length
 
                     for (let i = 0; i < len; i++) {        
                         const curTown = towns[i]
@@ -185,7 +187,7 @@ export default {
                             name: curTown.name,
                             nation: curTown.nation,
                             residents: curTown.residents,
-                            area: curTown.area,
+                            area: curTown.area
                         }) 
                     }
 
@@ -284,8 +286,8 @@ export default {
 
                 towns = fn.defaultSort(towns)
 
-                const townRank = (towns.findIndex(t => t.name == town.name)) + 1,
-                      mayor = town.mayor.replace(/_/g, "\\_")
+                const townRank = (towns.findIndex(t => t.name == town.name)) + 1
+                const mayor = town.mayor.replace(/_/g, "\\_")
                 
                 const townColours = await Nova.Towns.get(town.name).then((t: any) => {
                     return t instanceof NotFoundError ? null : t.colourCodes

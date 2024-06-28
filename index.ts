@@ -87,14 +87,14 @@ for (const file of eventFiles) {
 //#endregion
 
 //#region Error Handling
-client.on('error', (err: Error & { code: number }) => {
+type ErrorWithCode = Error & { code: number }
+
+client.on('error', (err: ErrorWithCode) => {
     if (err.code != 50013) console.log(err)
 })
 
-process.on('unhandledRejection', (err: Error & { code: number }) => console.error('Unhandled promise rejection: ', err))
-
-process.on('uncaughtException', (err: Error & { code: number }) => {
-    if (err.code != 50013) 
-        console.error('Uncaught Exception!\n', err)
+process.on('unhandledRejection', (err: ErrorWithCode) => console.error('Unhandled promise rejection: ', err))
+process.on('uncaughtException', (err: ErrorWithCode) => {
+    if (err.code != 50013) console.error('Uncaught Exception!\n', err)
 })
 //#endregion
