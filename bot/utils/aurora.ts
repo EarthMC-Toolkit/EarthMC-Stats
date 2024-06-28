@@ -7,8 +7,8 @@ import cache from 'memory-cache'
 import { request } from "undici"
 
 import type { 
-    MapResponse,
-    PlayersResponse 
+    SquaremapMapResponse, 
+    SquaremapPlayersResponse
 } from "earthmc"
 
 import { divideArray, sortByOrder } from "./fn.js"
@@ -23,13 +23,13 @@ const allianceCollection = () => auroraDoc().collection("alliances").doc("allian
 
 const auroraUrl = 'https://map.earthmc.net'
 const getTownyData = async () => {
-    const res = await request(`${auroraUrl}standalone/MySQL_markers.php?marker=_markers_/marker_earth.json`)
-    return await res.body.json() as MapResponse
+    const res = await request(`${auroraUrl}/tiles/minecraft_overworld/markers.json`)
+    return await res.body.json() as SquaremapMapResponse
 }
 
 const getOnlinePlayerData = async () => {
-    const res = await request(`${auroraUrl}standalone/MySQL_update.php?world=earth`)
-    return await res.body.json() as PlayersResponse
+    const res = await request(`${auroraUrl}/tiles/players.json`)
+    return await res.body.json() as SquaremapPlayersResponse
 }
 
 async function getResidents() {
