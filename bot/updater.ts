@@ -319,8 +319,8 @@ const editEmbed = (msg: Message, arr: RawPlayer[], mapName: string) => {
 }
 
 async function liveTownless() {
-    const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray,
-          len = townlessSubbedChannelIDs.length
+    const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray
+    const len = townlessSubbedChannelIDs.length
 
     const promiseArr = await Promise.all([
         Aurora.Players.townless(), 
@@ -488,12 +488,14 @@ async function updateFallenTowns(map: MapInstance) {
 
         for (let i = 0; i < fallenTownsLen; i++) {
             const town = fallenTowns[i]
-            const residentBatch1 = []
-            const residentBatch2 = []
             const mayor = town.mayor.replace(/_/g, "\\_")
 
             const route: RouteInfo = await Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
             const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`
+
+            // TODO: Check if new arrays inside the loop are intended.
+            const residentBatch1 = []
+            const residentBatch2 = []
 
             const fallenTownEmbed = new EmbedBuilder()
                 .setTitle("A town has fallen!")
