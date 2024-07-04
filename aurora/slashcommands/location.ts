@@ -5,7 +5,7 @@ import {
     type ColorResolvable
 } from 'discord.js'
 
-import { devsFooter, inWorldBorder } from '../../bot/utils/fn.js'
+import { devsFooter, embedField, inWorldBorder } from '../../bot/utils/fn.js'
 import { Aurora } from 'earthmc'
 
 const embed = (
@@ -45,13 +45,10 @@ export default {
         
         const mapUrl = Aurora.buildMapLink(zoom, { x: numX, z: numZ })
         return interaction.reply({embeds: [new EmbedBuilder()
-            .setTitle(`Map Location Info`)
-            .setDescription(`
-                [Open in browser](${mapUrl.toString()})\n\n
-                X Coord: ${numX}\n
-                Z Coord: ${numZ}\n
-                Zoom: ${zoom}
-            `)
+            .setTitle(`(Aurora) Map Location`)
+            .addFields(embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true))
+            .addFields(embedField("Zoom", `\`${zoom}\`x`, true))
+            .addFields(embedField("Map Link", `[Click to open](${mapUrl.toString()})`))
             .setColor(Colors.Green)
             .setFooter(devsFooter(client))
             .setTimestamp()

@@ -6,7 +6,7 @@ import * as database from "../bot/utils/database.js"
 import * as fn from "../bot/utils/fn.js"
 
 import { 
-    type RawPlayer,
+    type Player,
     type RouteInfo,
     Aurora, 
     MojangLib, 
@@ -296,8 +296,8 @@ const filterLiveEmbeds = (arr: Collection<string, Message>, mapName: string) => 
     )
 }
 
-const editEmbed = (msg: Message, arr: RawPlayer[], mapName: string) => {
-    const names = arr.map(player => player.name).join('\n')
+const editEmbed = (msg: Message, players: Player[], mapName: string) => {
+    const names = players.map(p => p.name).join('\n')
     const newEmbed = new EmbedBuilder()
         .setTitle(`Live Townless Players (${mapName})`)
         .setColor(Colors.DarkPurple)
@@ -305,13 +305,13 @@ const editEmbed = (msg: Message, arr: RawPlayer[], mapName: string) => {
         .setTimestamp()
 
     let desc = ""
-    const arrLen = arr.toString().length
+    const arrLen = players.toString().length
 
     if (arrLen < 1) desc = "There are currently no townless players!"
     else {
-        desc = arrLen >= 2048 
+        desc = arrLen >= 2048
             ? "```" + (names.match(/(?:^.*$\n?){1,30}/mg))[0] + "```"
-            : desc = "```" + arr[0].name + "\n" + names + "```"
+            : desc = "```" + players[0].name + "\n" + names + "```"
     }
 
     newEmbed.setDescription(desc)
@@ -325,10 +325,10 @@ async function liveTownless() {
     const promiseArr = await Promise.all([
         Aurora.Players.townless(), 
         Nova.Players.townless()
-    ]).catch(e => { console.error(e); return null })
+    ]).catch(e => { console.error(e) }) as [Player[], Player[]]
     
-    if (!promiseArr) return
     const [auroraTownless, novaTownless] = promiseArr
+    if (!novaTownless && !auroraTownless) return
 
     // For every townless subbed channel
     for (let i = 0; i < len; i++) {
@@ -349,13 +349,18 @@ async function liveTownless() {
             if (!fn.canViewAndSend(curChannel)) continue
             
             // Fetch the channel's messages.
-            curChannel.messages.fetch().then(async msgs => {
+            const msgs = await curChannel.messages.fetch().catch(e => { console.error(e); return null })
+            if (!msgs) return
+
+            if (auroraTownless) {
                 const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora')
                 if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
+            }
 
+            if (novaTownless) {
                 const novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
                 if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
-            }).catch(console.error)
+            }
         }
     }
 }

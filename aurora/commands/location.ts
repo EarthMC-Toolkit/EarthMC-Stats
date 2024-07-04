@@ -42,8 +42,8 @@ export default {
         if (!isNaN(zoomNum) && zoomNum < 11) return message.reply({embeds: [
             embed(client, `(Aurora) Map location for X: ${xCoord}, Z: ${zCoord}`, Colors.Green)
             .addFields(
-                embedField("Map Link", `[Click here](${mapUrl.toString()})`),
-                embedField("Zoom", zoom)
+                embedField("Map Link", `[Click here](${mapUrl.toString()})`, true),
+                embedField("Zoom", `${zoom}x`)
             )
         ]})
     
