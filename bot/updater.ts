@@ -325,7 +325,7 @@ async function liveTownless() {
     const promiseArr = await Promise.all([
         Aurora.Players.townless(), 
         Nova.Players.townless()
-    ]).catch(e => { console.error(e) }) as [Player[], Player[]]
+    ])
     
     const [auroraTownless, novaTownless] = promiseArr
     if (!novaTownless && !auroraTownless) return
