@@ -395,6 +395,12 @@ function argsHelper(args: string[], spliceAmt: number) {
     }
 }
 
+const inWorldBorder = (x: number, z: number) => {
+    const [numX, numZ] = [x, z]
+    return numX >= 33081 || numX < -33280 || 
+           numZ >= 16508 || numZ < -16640
+}
+
 export {
     jsonReq,
     readTsFiles,
@@ -440,5 +446,6 @@ export {
     setQueueSubbedChannels,
     setNewsSubbedChannels,
     setTownlessSubbedChannels,
-    argsHelper
+    argsHelper,
+    inWorldBorder
 }
