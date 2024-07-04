@@ -1,4 +1,4 @@
-import cache from 'memory-cache'
+import { cache } from '../constants.js'
 
 import { unixFromDate, divideArray } from "./fn.js"
 import * as Nova from "./nova.js"
@@ -11,17 +11,18 @@ import type {
     DocumentData 
 } from "firebase-admin/firestore"
 
-const playerCollection = () => db.collection("players")
+import type { DBPlayer } from '../types.js'
 
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
 const getPlayers = async (skipCache = false) => {
     const skip = !skipCache ? cache.get('players') : null
+    if (skip) return skip
 
-    return skip ?? playerCollection().get().then(async snapshot => { 
+    return skip ?? db.collection("players").get().then(async snapshot => { 
         return snapshot.docs.flatMap(doc => doc.data().playerArray)
-    }).catch(() => {})
+    }).catch(() => null)
 }
 
 const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
@@ -42,15 +43,18 @@ const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().t
     return player
 })
 
-async function setPlayers(players: any[]) {
-    cache.put('players', players, 298*1000)
+async function setPlayers(players: DBPlayer[]) {
+    cache.set('players', players, { ttl: 298 * 1000 })
 
     let counter = 0
     const dividedPlayerArray = divideArray(players, 8)
     
     for (const array of dividedPlayerArray) {      
         counter++
-        playerCollection().doc("playerArray" + counter).set({ playerArray: array })
+
+        db.collection("players")
+            .doc(`playerArray${counter}`)
+            .set({ playerArray: array })
     }
 }
 

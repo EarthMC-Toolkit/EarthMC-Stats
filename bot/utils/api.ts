@@ -9,41 +9,42 @@ import {
 
 import News from "../objects/News.js"
 
+import type { Client, Collection, Message, TextChannel } from "discord.js"
+import type { ReqMethod } from "../types.js"
+
 const reqHeaders = {
     'Content-Type': 'application/json',
     'authorization': process.env.API_AUTH_KEY
 }
 
-const sendRequest = async (route, method, content) => request(`https://emctoolkit.vercel.app/api/${route}`, {
+const sendRequest = async (route: string, method: ReqMethod, content) => request(`https://emctoolkit.vercel.app/api/${route}`, {
     method: method,
     body: JSON.stringify(content),
     headers: reqHeaders
-}).catch(e => console.log(e))
+}).catch(console.warn)
 
 const replaceWithUnix = (arr, map) => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
     .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
 
-const sendNews = async (client, map) => {
-    const channel = await client.channels.fetch(map == 'nova' ? NOVA.newsChannel : AURORA.newsChannel)
+const sendNews = async (client: Client, map: 'aurora' | 'nova') => {
+    const channel = await client.channels.fetch(map == 'nova' ? NOVA.newsChannel : AURORA.newsChannel) as TextChannel
     const msgArr = await channel.messages.fetch().then(msgs => msgs.filter(m => 
         m.content != "[Original Message Deleted]" && 
         !m.content.startsWith("/")
-    )).catch(console.error)
+    )).catch(e => { console.error(e); return null })
 
-    sendNewsReq(msgArr, map)
+    if (!msgArr) return
+    return sendNewsReq(msgArr, map)
 }
 
-async function sendNewsReq(msgs, mapName) {
+async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora' | 'nova') {
     const route = `${mapName}/news`
-    const newsArr = msgs.map(m => new News(m))
-
-    const newsObj = { 
-        all: newsArr, 
+    await sendRequest(route, 'POST', { 
+        all: msgs.map(m => new News(m)), 
         latest: new News(msgs.first())
-    }
-
-    await sendRequest(route, 'POST', newsObj)
-    console.log('Sent POST request to ' + route)
+    })
+    
+    console.log(`Sent POST request to ${route}`)
 }
 
 async function sendAlliances() {

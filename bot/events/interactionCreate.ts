@@ -9,14 +9,16 @@ import {
     TextInputBuilder, TextInputStyle
 } from 'discord.js'
 
-import cache from 'memory-cache'
+import { cache } from '../constants.js'
 
 import * as MC from '../utils/minecraft.js'
 import * as fn from '../utils/fn.js'
 
 import { getLinkedPlayer, linkPlayer } from '../utils/linking.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
+
 import type { Button } from '../types.js'
+import type AllianceModal from '../objects/AllianceModal.js'
 
 let target = null
 
@@ -54,7 +56,7 @@ export default {
 
             if (interaction.customId == "alliance_create") {
                 const key = interaction.member.user.id
-                const modal = cache.get(`${key}_creating`)
+                const modal = cache.get(`${key}_creating`) as AllianceModal
 
                 //console.log(`Created a new alliance!\n${JSON.stringify(modal.alliance)}`)
                 const alliance = modal.asObject(interaction)

@@ -26,7 +26,7 @@ export default {
         await interaction.deferReply()
 
         database.Aurora.getTowns().then(async towns => {
-            if (!towns) towns = await emc.Aurora.Towns.all().catch(err => console.log(err))
+            if (!towns) towns = await emc.Aurora.Towns.all() // Handle this error case
 
             towns = towns.map(t => {
                 t.name = emc.formatString(t.name, false)
@@ -187,8 +187,8 @@ export default {
                 townEmbed.setColor(town.ruined ? Colors.Orange : colour)
                 townEmbed.setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
                 
-                const townNation = await database.Aurora.getNation(town.nation).catch(() => {}) ?? await emc.Aurora.Nations.get(town.nation),
-                      townResidentsLength = town.residents.length
+                const townNation = await database.Aurora.getNation(town.nation).catch(() => {}) ?? await emc.Aurora.Nations.get(town.nation)
+                const townResidentsLength = town.residents.length
 
                 if (!town.ruined) {
                     if (town.capital) {

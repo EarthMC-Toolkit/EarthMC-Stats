@@ -35,7 +35,7 @@ export default {
         const nationsWithoutDuplicates = []
 
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await Aurora.Nations.all().catch(err => console.log(err))
+        if (!nations) nations = await Aurora.Nations.all() // TODO: Should probably handle this error case
 
         if (subCmd == "list") {
             let comparator = interaction.options.getString("comparator")
@@ -246,7 +246,7 @@ export default {
             const capitalZ = nation.capital.z
             
             nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
-                .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
+                .setThumbnail(nation.flag || 'attachment://aurora.png')
                 .setFooter(fn.devsFooter(client))
                 .addFields(
                     fn.embedField("King", kingPrefix + nation.king.replace(/_/g, "\\_"), true),

@@ -10,6 +10,9 @@ import type {
 import type { Dynmap, Squaremap } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
+export type ErrorWithCode = Error & { code: number }
+export type ReqMethod = 'GET' | 'PUT' | 'POST'
+
 export type BaseCommand = {
     name: string
     description?: string
@@ -62,7 +65,7 @@ export type MCSessionProfile = MCUserProfile & {
     profileActions: any[]
 }
 
-export type MapDB = {
+export interface MapDB {
     getAlliance(name: string): Promise<DBAlliance>
     getAlliances(skipCache: boolean): Promise<DBAlliance[]> 
     setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
@@ -74,7 +77,7 @@ export type MapDB = {
     setNations(nations: any[]): Promise<void>
 }
 
-export type DBAlliance = {
+export interface DBAlliance {
     allianceName: string
     leaderName: string,
     discordInvite: string,
@@ -83,14 +86,23 @@ export type DBAlliance = {
 }
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
-export type DBResident = {
+export interface DBResident {
     name: string
     townName: string
     townNation: string
     rank: ResidentRank
 }
 
-export type SkinOpts = {
+export interface DBPlayer {
+    name: string,
+    linkedID?: string | number,
+    lastOnline: {
+        aurora?: Timestamp,
+        nova?: Timestamp
+    }
+}
+
+export interface SkinOpts {
     view: SkinType2D | SkinType3D,
     subject: string | number,
     width?: number,
@@ -110,12 +122,3 @@ export const SkinType3D = {
     BUST: 'bust',
     FULL: 'full'
 } as const
-
-export type ResidentProfile = {
-    name: string
-    linkedID: string | number
-    lastOnline: {
-        nova: Date | Timestamp
-        aurora: Date | Timestamp
-    }
-}

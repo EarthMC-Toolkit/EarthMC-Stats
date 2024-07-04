@@ -185,7 +185,7 @@ export default {
                     leaderName: leaderName,
                     discordInvite: "No discord invite has been set for this alliance",
                     nations: [],
-                    type: 'Normal'
+                    type: 'normal'
                 }
                 
                 alliances.push(alliance)
@@ -255,7 +255,7 @@ export default {
                     allianceName,
                     leaderName: info[2] ?? "No leader set.",
                     nations: info[3]?.split(",") ?? [],
-                    type: info[4] ?? 'Normal',
+                    type: info[4] ?? 'normal',
                     discordInvite: info[5] ?? "No discord invite has been set for this alliance",
                     ...{
                         fullName: info[1],
@@ -1033,24 +1033,20 @@ async function sendSingleAlliance(
     args: string[]
 ) {
     const foundAlliance = await database.Aurora.getAlliance(args[0])
-    if (!foundAlliance) {
-        return m.edit({embeds: [
-            new EmbedBuilder()
-            .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-            .setTitle("Error fetching alliance")
-            .setDescription("That alliance does not exist! Please try again.")
-            .setColor(Colors.Red)
-            .setTimestamp()
-        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-    }
+    if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
+        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+        .setTitle("Error fetching alliance")
+        .setDescription("That alliance does not exist! Please try again.")
+        .setColor(Colors.Red)
+        .setTimestamp()
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
     const leaderNames = foundAlliance.leaderName.split(', ')
     const players = await database.getPlayers().then(arr => arr.filter(p => 
         leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase())
     ))
 
-    if (!players) return m.edit({embeds: [
-        new EmbedBuilder()
+    if (!players) return m.edit({embeds: [new EmbedBuilder()
         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         .setTitle("Database error occurred")
         .setDescription("Failed to fetch players needed for this command to work.")

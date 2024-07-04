@@ -17,7 +17,7 @@ import {
     setDatabase 
 } from "./bot/constants.js"
 
-import type { DJSEvent } from "./bot/types.js"
+import type { DJSEvent, ErrorWithCode } from "./bot/types.js"
 import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
@@ -87,8 +87,6 @@ for (const file of eventFiles) {
 //#endregion
 
 //#region Error Handling
-type ErrorWithCode = Error & { code: number }
-
 client.on('error', (err: ErrorWithCode) => {
     if (err.code != 50013) console.log(err)
 })
