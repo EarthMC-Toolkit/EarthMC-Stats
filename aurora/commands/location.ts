@@ -32,20 +32,30 @@ export default {
             embed(client).setDescription("Specified coordinates are not inside EarthMC's world border!")
         ]}).then(m => setTimeout(() => m.delete(), 10000))
 
-        const mapUrl = Aurora.buildMapLink(zoom ? Number(zoom) : 4, { x: xCoord, z: zCoord })
-        if (!zoom) return message.reply({embeds: [
-            embed(client, `(Aurora) Map location for X: ${xCoord}, Z: ${zCoord}`, Colors.Green)
-            .addFields(embedField("Map Link", `[Click here](${mapUrl.toString()})`))
-        ]})
+        if (!zoom) {
+            const mapUrl = Aurora.buildMapLink(zoom ? Number(zoom) : null, { x: xCoord, z: zCoord })
+            return message.reply({embeds: [
+                embed(client, `(Aurora) Location Info`, Colors.Green)
+                .addFields(
+                    embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true),
+                    embedField("Map Link", `[Click to open](${mapUrl.toString()})`)
+                )
+            ]})
+        }
 
         const zoomNum = Number(zoom)
-        if (!isNaN(zoomNum) && zoomNum < 11) return message.reply({embeds: [
-            embed(client, `(Aurora) Map location for X: ${xCoord}, Z: ${zCoord}`, Colors.Green)
-            .addFields(
-                embedField("Map Link", `[Click here](${mapUrl.toString()})`, true),
-                embedField("Zoom", `${zoom}x`)
-            )
-        ]})
+        if (!isNaN(zoomNum) && zoomNum < 11) {
+            const mapUrl = Aurora.buildMapLink(zoomNum, { x: xCoord, z: zCoord })
+
+            return message.reply({embeds: [
+                embed(client, `(Aurora) Location Info`, Colors.Green)
+                .addFields(
+                    embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true),
+                    embedField("Zoom", `\`${zoom}\`x`, true),
+                    embedField("Map Link", `[Click to open](${mapUrl.toString()})`)
+                )
+            ]})
+        }
     
         return message.reply({embeds: [
             embed(client).setDescription("`" + zoom + "`" + " is not a valid zoom! Please use a number from 1-10.")
