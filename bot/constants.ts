@@ -40,7 +40,7 @@ const AURORA: MapInstance = {
     db: AuroraDB 
 }
 
-const cache = new TTLCache<string, any>() 
+const cache = new TTLCache<string, any>({ ttl: 60 * 1000 }) 
 
 export {
     prod, setProduction,
