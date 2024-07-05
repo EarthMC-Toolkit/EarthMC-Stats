@@ -356,6 +356,10 @@ export default {
         // ${town.explosion ? green : red } Explosions 
         // ${town.fire ? green : red } Fire Spread
 
+        if (town.board) {
+            townEmbed.setDescription(town.board)
+        }
+
         m.edit({
             embeds: [townEmbed],
             files: [AURORA.thumbnail] 

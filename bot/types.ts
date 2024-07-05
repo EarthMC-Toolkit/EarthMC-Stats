@@ -7,7 +7,7 @@ import type {
     SharedNameAndDescription
 } from "discord.js"
 
-import type { Dynmap, Nation, Squaremap, SquaremapTown, Town } from "earthmc"
+import type { Dynmap, Nation, Squaremap, SquaremapTown } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type ErrorWithCode = Error & { code: number }
@@ -113,7 +113,7 @@ export interface DBPlayer {
     }
 }
 
-export type DBTown = (Town | SquaremapTown) & {
+export type DBTown = SquaremapTown & {
     ruined?: boolean
     capital?: boolean
 }

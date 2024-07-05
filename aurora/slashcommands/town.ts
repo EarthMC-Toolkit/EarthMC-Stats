@@ -312,6 +312,10 @@ export default {
             // ${town.flags.explosion ? green : red } Explosions 
             // ${town.flags.fire ? green : red } Fire Spread
 
+            if (town.board) {
+                townEmbed.setDescription(town.board)
+            }
+
             return interaction.editReply({
                 embeds: [townEmbed],
                 files: [AURORA.thumbnail]
