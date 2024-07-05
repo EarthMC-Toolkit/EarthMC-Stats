@@ -8,8 +8,9 @@ import {
 import { Aurora } from "earthmc"
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
-import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
+import type { AllianceType } from "../../bot/types.js"
+import { argsHelper, AURORA, botDevs, defaultSortAlliance, embedField, jsonReq, paginator } from "../../bot/utils/fn.js"
 
 const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
     .setTitle("That command is for developers only!")
@@ -128,7 +129,7 @@ export default {
                     })
                 }
 
-                return await m.edit({ embeds: [botembed[0]] }).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
+                return await m.edit({ embeds: [botembed[0]] }).then(msg => paginator(message.author.id, msg, botembed, 0))
             }
 
             //#region Alliance editing
@@ -147,7 +148,7 @@ export default {
 
             // Correct channel, but not an editor or dev.
             const isEditor = message.member.roles.cache.has(editorID)
-            if (!fn.botDevs.includes(message.author.id) && !isEditor) return sendDevsOnly(m)
+            if (!botDevs.includes(message.author.id) && !isEditor) return sendDevsOnly(m)
 
             const seniorEditor = message.member.roles.cache.has(seniorEditorID)
 
@@ -157,7 +158,7 @@ export default {
             // Creating an alliance
             if (arg1 == "create" || arg1 == "new") {   
                 const allianceName = args[1]
-                const leaderName = !args[2] ? "No leader set." : fn.argsHelper(args, 2).asString()
+                const leaderName = !args[2] ? "No leader set." : argsHelper(args, 2).asString()
                 
                 if (typeof(allianceName) == "number") {
                     return m.edit({embeds: [new EmbedBuilder()
@@ -185,7 +186,7 @@ export default {
                     leaderName: leaderName,
                     discordInvite: "No discord invite has been set for this alliance",
                     nations: [],
-                    type: 'normal'
+                    type: 'normal' as AllianceType
                 }
                 
                 alliances.push(alliance)
@@ -255,7 +256,7 @@ export default {
                     allianceName,
                     leaderName: info[2] ?? "No leader set.",
                     nations: info[3]?.split(",") ?? [],
-                    type: info[4] ?? 'normal',
+                    type: (info[4] ?? 'normal') as AllianceType,
                     discordInvite: info[5] ?? "No discord invite has been set for this alliance",
                     ...{
                         fullName: info[1],
@@ -366,7 +367,7 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                 // Remove first 2 args, then remove commas from every other argument.
-                const formattedArgs = fn.argsHelper(args, 2)
+                const formattedArgs = argsHelper(args, 2)
                 let nationsToAdd = formattedArgs.asArray()
 
                 if (nationsToAdd.includes("$override")) {
@@ -458,7 +459,7 @@ export default {
                     })
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-                const formattedArgs = fn.argsHelper(args, 2)
+                const formattedArgs = argsHelper(args, 2)
                 const nationsToRemove = formattedArgs.asArray() as any[]
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 
@@ -548,7 +549,7 @@ export default {
                         })
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                     
-                    foundAlliance.leaderName = fn.argsHelper(args, 3).asString()
+                    foundAlliance.leaderName = argsHelper(args, 3).asString()
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                     alliances[allianceIndex] = foundAlliance
@@ -847,7 +848,7 @@ export default {
             if (arg1 == "backup") {
                 if (isEditor) return sendDevsOnly(m)
                 
-                const backupData = await fn.jsonReq(arg2).catch(e => console.error(e)) as any
+                const backupData = await jsonReq(arg2).catch(e => console.error(e)) as any
                 if (!backupData) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`\`${arg2}\` isn't a valid JSON file, please try again.`)
                     .setTimestamp()
@@ -925,11 +926,11 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
     const arg3 = args[2]?.toLowerCase()
 
     // /alliances <option>
-    if (!arg2) fn.defaultSortAlliance(alliances)
+    if (!arg2) defaultSortAlliance(alliances)
     else if (arg2 == "towns") {
         alliances.sort((a, b) => {
-            if (b.towns.length > a.towns.length) return 1
-            if (b.towns.length < a.towns.length) return -1
+            if (b.towns > a.towns) return 1
+            if (b.towns < a.towns) return -1
         })
     } else if (arg2 == "nations") {
         alliances.sort((a, b) => {
@@ -947,7 +948,7 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
             if (b.area < a.area) return -1
         })
     } else { // /alliances <option> <option> ... ...
-        fn.defaultSortAlliance(alliances)
+        defaultSortAlliance(alliances)
 
         const arg1 = args[0]?.toLowerCase()
         const filterAlliances = (arr: any[], key: string) => 
@@ -963,6 +964,8 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
     }
     //#endregion
 
+    const botEmbed = []
+
     //#region Search or send all
     if (searching) {
         if (foundAlliances.length == 0) return m.edit({embeds: [new EmbedBuilder()
@@ -976,7 +979,6 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
             })
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const botembed = []
         const allData = foundAlliances.map(alliance => 
             "**" + getName(alliance) + "**" + " (" + getType(alliance) + ")" +
             "```Leader(s): " + alliance.leaderName + 
@@ -988,7 +990,7 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
 
         const len = allData.length
         for (let i = 0; i < len; i++) {
-            botembed[i] = new EmbedBuilder()
+            botEmbed[i] = new EmbedBuilder()
             .setColor(Colors.DarkBlue)
             .setTitle("List of Alliances")
             .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
@@ -997,11 +999,10 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
             .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
         }
 
-        return await m.edit({ embeds: [botembed[0]] })
-            .then(msg => fn.paginator(message.author.id, msg, botembed, 0))
+        return await m.edit({ embeds: [botEmbed[0]] })
+            .then(msg => paginator(message.author.id, msg, botEmbed, 0))
     }
 
-    const botembed = []
     const allData = alliances.map((alliance, index) => 
         (index + 1) + ". **" + getName(alliance) + "**" + " (" + getType(alliance) + ")" +
         "```Leader(s): " + alliance.leaderName + 
@@ -1013,16 +1014,22 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
 
     const len = allData.length
     for (let i = 0; i < len; i++) {
-        botembed[i] = new EmbedBuilder()
+        botEmbed[i] = new EmbedBuilder()
         .setColor(Colors.DarkBlue)
         .setTitle("List of Alliances")
-        .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
         .setDescription(allData[i])
         .setTimestamp()
-        .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
+        .setAuthor({
+            name: message.author.username, 
+            iconURL: message.author.displayAvatarURL()
+        })
+        .setFooter({
+            text: `Page ${i+1}/${len}`, 
+            iconURL: client.user.avatarURL()
+        })
     }
 
-    return await m.edit({ embeds: [botembed[0]] }).then(msg => fn.paginator(message.author.id, msg, botembed, 0))
+    return await m.edit({ embeds: [botEmbed[0]] }).then(msg => paginator(message.author.id, msg, botEmbed, 0))
     //#endregion
 }
 
@@ -1090,32 +1097,32 @@ async function sendSingleAlliance(
         .setDefaultAuthor(message)
         .setTimestamp()
         .addFields(
-            fn.embedField("Leader(s)", leadersStr, true),
-            fn.embedField("Towns", foundAlliance.towns.toString(), true),
-            fn.embedField("Residents", foundAlliance.residents.toString(), true),
-            fn.embedField("Type", allianceType, true),
-            fn.embedField("Size", foundAlliance.area + " Chunks", true),
-            fn.embedField("Online", foundAlliance.online.length.toString(), true)
+            embedField("Leader(s)", leadersStr, true),
+            embedField("Towns", foundAlliance.towns.toString(), true),
+            embedField("Residents", foundAlliance.residents.toString(), true),
+            embedField("Type", allianceType, true),
+            embedField("Size", foundAlliance.area + " Chunks", true),
+            embedField("Online", foundAlliance.online.length.toString(), true)
         )
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") 
         allianceEmbed.setURL(foundAlliance.discordInvite)
     
-    const thumbnail = foundAlliance.imageURL ? [] : [fn.AURORA.thumbnail],
+    const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail],
           nationsString = foundAlliance.nations.join(", ")
 
     const allianceNationsLen = foundAlliance.nations.length
     if (nationsString.length < 1024) {
         if (allianceNationsLen <= 0) {
-            allianceEmbed.addFields(fn.embedField("Nations [0]", "There are no nations in this alliance."))
+            allianceEmbed.addFields(embedField("Nations [0]", "There are no nations in this alliance."))
         }
-        else allianceEmbed.addFields(fn.embedField(
+        else allianceEmbed.addFields(embedField(
             `Nations [${allianceNationsLen}]`, 
             "```" + nationsString + "```"
         ))
     }
     else {
-        allianceEmbed.addFields(fn.embedField(
+        allianceEmbed.addFields(embedField(
             `Nations [${allianceNationsLen}]`, 
             "Too many nations to display! Click the 'view all' button to see the full list."
         ))

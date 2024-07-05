@@ -39,7 +39,7 @@ export default {
             .setTimestamp()
         
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await Aurora.Nations.all().catch(err => console.log(err))
+        if (!nations) nations = await Aurora.Nations.all()
 
         if (args[0].toLowerCase() == "list") {
             if (args[1] != null) {
@@ -112,8 +112,9 @@ export default {
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
                     new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
-                        .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                        .setType(EntityType.Nation).setPage(page)
+                        .setType(EntityType.Nation)
+                        .setPage(page)
+                        .setDefaultAuthor(message)
                         .paginate(allData, "```", "```")
                         .editMessage(m)
                 }

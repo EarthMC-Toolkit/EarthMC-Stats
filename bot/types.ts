@@ -7,7 +7,7 @@ import type {
     SharedNameAndDescription
 } from "discord.js"
 
-import type { Dynmap, Squaremap } from "earthmc"
+import type { Dynmap, Nation, Squaremap, SquaremapTown, Town } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type ErrorWithCode = Error & { code: number }
@@ -77,13 +77,24 @@ export interface MapDB {
     setNations(nations: any[]): Promise<void>
 }
 
-export interface DBAlliance {
+export type AllianceType = 'sub' | 'mega' | 'normal'
+export type DBAlliance = {
     allianceName: string
-    leaderName: string,
-    discordInvite: string,
-    nations: string[],
-    type: 'sub' | 'mega' | 'normal'
-}
+    leaderName: string
+    discordInvite: string
+    type: AllianceType
+    nations: string[]
+} & Partial<{
+    fullName: string
+    imageURL: string
+    colours: {
+        fill: string
+        outline: string
+    }
+    towns: number
+    residents: number
+    area: number
+}>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
 export interface DBResident {
@@ -94,18 +105,29 @@ export interface DBResident {
 }
 
 export interface DBPlayer {
-    name: string,
-    linkedID?: string | number,
+    name: string
+    linkedID?: string | number
     lastOnline: {
-        aurora?: Timestamp,
+        aurora?: Timestamp
         nova?: Timestamp
     }
 }
 
+export type DBTown = (Town | SquaremapTown) & {
+    ruined?: boolean
+    capital?: boolean
+}
+
+export type DBNation = Nation & {
+    kingPrefix?: string
+    flag?: string
+    discord?: string
+}
+
 export interface SkinOpts {
-    view: SkinType2D | SkinType3D,
-    subject: string | number,
-    width?: number,
+    view: SkinType2D | SkinType3D
+    subject: string | number
+    width?: number
     height?: number
 }
 

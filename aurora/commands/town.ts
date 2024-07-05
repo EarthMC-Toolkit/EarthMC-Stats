@@ -17,6 +17,8 @@ import {
     AURORA
 } from "../../bot/utils/fn.js"
 
+import type { DBNation } from "../../bot/types.js"
+
 export default {
     name: "town",
     description: "Displays info for a town.",
@@ -43,7 +45,7 @@ export default {
         if (!towns) towns = await Aurora.Towns.all().then(arr => arr.map(t => {
             t.name = formatString(t.name, false)
             return t
-        })).catch(console.log)
+        }))
 
         const townEmbed = new EmbedBuilder()
 
@@ -253,8 +255,13 @@ export default {
             .setTitle(("Town Info | " + townName + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         
-        const townNation = await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)
         const townResidentsLength = town.residents.length
+
+        // TODO: Handle NotFoundError
+        let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBNation
+        if (townNation instanceof NotFoundError) {
+            townNation = null
+        }
 
         if (!town.ruined) {
             if (town.capital) {
@@ -342,12 +349,13 @@ export default {
 
         const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
         townEmbed.addFields(embedField("Flags", `
-            ${town.pvp ? green : red } PVP
-            ${town.mobs ? green : red } Mobs 
-            ${town.public? green : red } Public
-            ${town.explosion ? green : red } Explosions 
-            ${town.fire ? green : red } Fire Spread`
-        ))
+            ${town.flags.pvp ? green : red } PVP
+        `))
+
+        // ${town.mobs ? green : red } Mobs 
+        // ${town.public? green : red } Public
+        // ${town.explosion ? green : red } Explosions 
+        // ${town.fire ? green : red } Fire Spread
 
         m.edit({
             embeds: [townEmbed],

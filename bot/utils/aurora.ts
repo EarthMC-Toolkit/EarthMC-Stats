@@ -7,15 +7,13 @@ import { cache } from '../constants.js'
 import { request } from "undici"
 
 import type { 
-    Nation,
     SquaremapMapResponse, 
-    SquaremapPlayersResponse,
-    SquaremapTown
+    SquaremapPlayersResponse
 } from "earthmc"
 
 import { divideArray, sortByOrder } from "./fn.js"
 import { db } from "../constants.js"
-import type { DBAlliance } from '../types.js'
+import type { DBAlliance, DBNation, DBTown } from '../types.js'
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -52,11 +50,11 @@ async function setResidents(residents: any[]) {
     }
 }
 
-const getNations = async (): Promise<Nation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
+const getNations = async (): Promise<DBNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
     return snapshot.docs.flatMap(doc => doc.data().nationArray)
 }) 
 
-const getNation = (nationName: string): Promise<Nation> => getNations().then(arr => { 
+const getNation = (nationName: string): Promise<DBNation> => getNations().then(arr => { 
     const nation = arr.find(n => n.name.toLowerCase() == nationName.toLowerCase())
     return nation ?? null
 })
@@ -72,7 +70,7 @@ async function setNations(nations: any[]) {
     }
 }
 
-const getTowns = async (): Promise<SquaremapTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
+const getTowns = async (): Promise<DBTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
 async function setTowns(towns: any[]) {
