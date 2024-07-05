@@ -41,7 +41,7 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000))
         
         if (!zoom) {
-            const mapUrl = Aurora.buildMapLink(null, { x: xCoord, z: zCoord })
+            const mapUrl = Aurora.buildMapLink({ x: xCoord, z: zCoord })
             return interaction.reply({embeds: [
                 embed(client, `(Aurora) Location Info`, Colors.Green)
                 .addFields(
@@ -51,7 +51,7 @@ export default {
             ]})
         }
 
-        const mapUrl = Aurora.buildMapLink(zoom, { x: numX, z: numZ })
+        const mapUrl = Aurora.buildMapLink({ x: numX, z: numZ }, zoom)
         return interaction.reply({embeds: [
             embed(client, `(Aurora) Location Info`, Colors.Green)
             .addFields(

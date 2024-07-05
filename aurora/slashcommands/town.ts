@@ -302,10 +302,10 @@ export default {
                 //#endregion
             }
 
-            const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-            townEmbed.addFields(embedField("Flags", `
-                ${town.flags.pvp ? green : red } PVP
-            `))
+            // const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
+            // townEmbed.addFields(embedField("Flags", `
+            //     ${town.flags.pvp ? green : red } PVP
+            // `))
 
             // ${town.flags.mobs ? green : red } Mobs 
             // ${town.flags.public ? green : red } Public

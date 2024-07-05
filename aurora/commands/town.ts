@@ -257,7 +257,6 @@ export default {
         
         const townResidentsLength = town.residents.length
 
-        // TODO: Handle NotFoundError
         let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBNation
         if (townNation instanceof NotFoundError) {
             townNation = null
@@ -347,10 +346,10 @@ export default {
             }
         }
 
-        const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-        townEmbed.addFields(embedField("Flags", `
-            ${town.flags.pvp ? green : red } PVP
-        `))
+        // const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
+        // townEmbed.addFields(embedField("Flags", `
+        //     ${town.flags.pvp ? green : red } PVP
+        // `))
 
         // ${town.mobs ? green : red } Mobs 
         // ${town.public? green : red } Public
