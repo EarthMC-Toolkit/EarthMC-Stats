@@ -247,10 +247,9 @@ export default {
                 const nationBonus = auroraNationBonus(townNation.residents.length)
                 const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
 
-                townEmbed.addFields(embedField(
-                    "Town Size", 
-                    `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`
-                ))
+                townEmbed.addFields(
+                    embedField("Town Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
+                )
             } else {
                 const claimBonus = Math.min(multiplier, maxTownSize)
                 townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}`, true))
