@@ -401,6 +401,19 @@ const inWorldBorder = (x: number, z: number) => {
            numZ >= 16508 || numZ < -16640
 }
 
+// Thoroughly tested, faster than both spread and concat w/ high No. of items.
+export const fastMerge = <T>(original: T[], args: T[]) => {
+    // eslint-disable-next-line prefer-spread
+    original.push.apply(original, args)
+    return original
+}
+
+// Fast merge, but convert to set and back to ensure duplicates are removed.
+export const fastMergeUnique = <T>(original: T[], args: T[]) => {
+    fastMerge(original, args)
+    return [...new Set(original)]
+}
+
 export {
     jsonReq,
     readTsFiles,

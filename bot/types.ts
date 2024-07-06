@@ -94,6 +94,8 @@ export type DBAlliance = {
     towns: number
     residents: number
     area: number
+    online: string[]
+    rank: number
 }>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
@@ -115,7 +117,6 @@ export interface DBPlayer {
 
 export type DBTown = SquaremapTown & {
     ruined?: boolean
-    capital?: boolean
 }
 
 export type DBNation = Nation & {

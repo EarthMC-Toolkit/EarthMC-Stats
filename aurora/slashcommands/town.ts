@@ -188,7 +188,7 @@ export default {
 
             towns = defaultSort(towns)
 
-            let onlineResidents = []
+            //let onlineResidents = []
 
             const townRank = (towns.findIndex(t => t.name == town.name)) + 1
             const mayor = town.mayor.replace(/_/g, "\\_")
@@ -200,17 +200,20 @@ export default {
             const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
             
             townEmbed.setColor(town.ruined ? Colors.Orange : colour)
-            townEmbed.setTitle(("Town Info | " + town.name + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
+            townEmbed.setTitle(("Town Info | `" + town.name + `\`${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
             
-            const townResidentsLength = town.residents.length
+            if (town.board) {
+                townEmbed.setDescription(`*${town.board}*`)
+            }
 
             let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBNation
             if (townNation instanceof NotFoundError) {
                 townNation = null
             }
 
+            const townResidentsLength = town.residents.length
             if (!town.ruined) {
-                if (town.capital) {
+                if (town.flags.capital) {
                     const nationResidentsLength = townNation?.residents?.length ?? 0
 
                     townEmbed.addFields(embedField("Mayor", `${nationResidentsLength >= 60 ? "God Emperor "
@@ -218,7 +221,7 @@ export default {
                         : nationResidentsLength >= 30 ? "King "
                         : nationResidentsLength >= 20 ? "Duke "
                         : nationResidentsLength >= 10 ? "Count "
-                        : nationResidentsLength >= 0 ? "Leader " : ""}` + mayor, true
+                        : nationResidentsLength >= 0  ? "Leader " : "" }\`${mayor}\``, true
                     ))
                 } else {
                     townEmbed.addFields(embedField("Mayor", `${ townResidentsLength >= 28 ? "Lord "
@@ -226,10 +229,10 @@ export default {
                         : townResidentsLength >= 20 ? "Earl "
                         : townResidentsLength >= 14 ? "Count "
                         : townResidentsLength >= 10 ? "Viscount "
-                        : townResidentsLength >= 6 ? "Baron "
-                        : townResidentsLength >= 2 ? "Chief "
-                        : townResidentsLength == 1 ? "Hermit " : "" }` +  mayor, true
-                    ))   
+                        : townResidentsLength >= 6  ? "Baron "
+                        : townResidentsLength >= 2  ? "Chief "
+                        : townResidentsLength == 1  ? "Hermit " : "" }\`${mayor}\``, true
+                    ))
                 }
 
                 const disc = townNation?.discord
@@ -238,7 +241,7 @@ export default {
                 townEmbed.addFields(embedField("Nation", nationString, true))
             }
 
-            const townAreaStr = `${town.area} / `
+            const townAreaStr = `\`${town.area}\` / `
             const multiplier = townResidentsLength * 12
             
             if (town.nation != "No Nation") {
@@ -247,15 +250,19 @@ export default {
 
                 townEmbed.addFields(embedField(
                     "Town Size", 
-                    `${townAreaStr}${claimBonus} [NationBonus: ${nationBonus}]`
+                    `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`
                 ))
             } else {
                 const claimBonus = Math.min(multiplier, maxTownSize)
-                townEmbed.addFields(embedField("Town Size", townAreaStr + claimBonus))
+                townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}`, true))
+            }
+
+            if (town.wealth) {
+                townEmbed.addFields(embedField("Wealth", `\`${town.wealth}\`G`, true))
             }
 
             townEmbed.addFields(embedField(
-                "Location", 
+                "Location",
                 `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
                 true
             ))
@@ -276,30 +283,43 @@ export default {
                 } 
                 else townEmbed.addFields(embedField("Residents", "There are no residents in this town?")) 
 
-                //#region "Online Residents" field
-                const townyData = await database.Aurora.getOnlinePlayerData()
-
-                if (!townyData) {
-                    townEmbed.addFields(embedField(
-                        "Online Residents", 
-                        "No residents are online in " + town.name + "."
-                    ))
-                } else {
-                    onlineResidents = removeDuplicates(town.residents.filter(res => townyData.players.find(op => res === op.name)))
-                    const onlineResLen = onlineResidents.length
-
-                    if (onlineResLen > 0) {
+                const townCouncillorsLen = town.councillors.length
+                if (townCouncillorsLen > 0) {
+                    if (townCouncillorsLen <= 50) {
                         townEmbed.addFields(embedField(
-                            `Online Residents [${onlineResLen}]`, 
-                            "```" + onlineResidents.join(", ") + "```"
+                            `Councillors [${townCouncillorsLen}]`, 
+                            "```" + town.councillors.join(", ") + "```"
                         ))
-                    }
-                    else townEmbed.addFields(embedField(
-                        "Online Residents", 
-                        "No residents are online in " + town.name + "."
-                    ))
-                }
-                //#endregion
+                    }    
+                    else townEmbed.addFields(embedField("Councillors", townCouncillorsLen.toString()))
+                } 
+                else townEmbed.addFields(embedField("Councillors", "There are no residents in this town?")) 
+
+                // //#region "Online Residents" field
+                // const townyData = await database.Aurora.getOnlinePlayerData()
+
+                // if (!townyData) {
+                //     townEmbed.addFields(embedField(
+                //         "Online Residents", 
+                //         "No residents are online in " + town.name + "."
+                //     ))
+                // } else {
+                //     onlineResidents = removeDuplicates(town.residents.filter(res => townyData.players.find(op => res === op.name)))
+                //     const onlineResLen = onlineResidents.length
+
+                //     if (onlineResLen > 0) {
+                //         townEmbed.addFields(embedField(
+                //             `Online Residents [${onlineResLen}]`, 
+                //             "```" + onlineResidents.join(", ") + "```"
+                //         ))
+                //     }
+                //     else townEmbed.addFields(embedField(
+                //         "Online Residents", 
+                //         "No residents are online in " + town.name + "."
+                //     ))
+                // }
+                // //#endregion
+                
             }
 
             // const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
@@ -311,10 +331,6 @@ export default {
             // ${town.flags.public ? green : red } Public
             // ${town.flags.explosion ? green : red } Explosions 
             // ${town.flags.fire ? green : red } Fire Spread
-
-            if (town.board) {
-                townEmbed.setDescription(town.board)
-            }
 
             return interaction.editReply({
                 embeds: [townEmbed],

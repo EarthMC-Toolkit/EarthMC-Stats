@@ -385,7 +385,7 @@ async function liveQueue() {
         fn.embedField("Aurora", queue.aurora.formatted),
         fn.embedField("Nova", queue.nova.formatted)
     )
-        
+    
     const queueSubbedChannelIDs = fn.queueSubbedChannelArray
     const len = queueSubbedChannelIDs.length
 

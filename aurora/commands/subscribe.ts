@@ -15,6 +15,7 @@ export default {
     name: "subscribe",
     description: "Subscribes a channel to receive live data.",
     aliases: ["sub"],
+    disabled: true,
     run: async (client: Client, message: Message, args: string[]) => {
         if (message.channel.type == ChannelType.DM) return message.reply({embeds: [new EmbedBuilder()
             .setTitle("Error while using /subscribe:")

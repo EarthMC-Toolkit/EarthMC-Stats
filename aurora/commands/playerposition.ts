@@ -101,8 +101,7 @@ export default {
             const foundPlayerOld = onlinePlayers.find(op => op.name.toLowerCase() == args[1].toLowerCase())
               
             if (!foundPlayerOld || fn.botDevs.includes(args[1].toLowerCase())) {
-                return m.edit({embeds: [
-                    new EmbedBuilder()
+                return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error fetching player")
                     .setDescription(args[1] + " is offline or does not exist!")
                     .setTimestamp()
@@ -111,7 +110,8 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
               
-            const liveLocationEmbed = new EmbedBuilder().setTimestamp()
+            const liveLocationEmbed = new EmbedBuilder()
+                .setTimestamp()
                 .setColor(Colors.DarkVividPink)
                 .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                 .setFooter(fn.devsFooter(client))
@@ -129,8 +129,8 @@ export default {
             const countDownDate = Date.now() + fiveMin
 
             async function livePosFunc() { 
-                const townydata = await db.Aurora.getOnlinePlayerData()
-                if (!townydata) return m.edit({embeds: [new EmbedBuilder()
+                const townyData = await db.Aurora.getOnlinePlayerData()
+                if (!townyData) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Connection Issues | Timed Out")
                     .setDescription(
                         "Last Known Location: \nX: " + lastValidLocation.x + "\nZ: " + lastValidLocation.z + 
@@ -142,7 +142,7 @@ export default {
                     .setTimestamp()
                 ]}).catch(() => {})
                 
-                const onlinePlayersNew = townydata.players                    
+                const onlinePlayersNew = townyData.players                    
                 const foundPlayerNew = onlinePlayersNew.find(op => op.name.toLowerCase() == args[1].toLowerCase())
                   
                 if (!foundPlayerNew) return m.edit({embeds: [new EmbedBuilder()

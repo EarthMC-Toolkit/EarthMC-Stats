@@ -24,6 +24,7 @@ const invalidUsage = new EmbedBuilder()
 export default {
     name: "subscribe",
     description: "Subscribes a channel to receive live data.",
+    disabled: true,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         if (!interaction.guild) interaction.reply({embeds: [
             new EmbedBuilder()

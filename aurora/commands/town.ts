@@ -252,7 +252,7 @@ export default {
 
         const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
         townEmbed.setColor(town.ruined ? Colors.Orange : colour)
-            .setTitle(("Town Info | " + townName + `${town.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
+            .setTitle(("Town Info | " + townName + `${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         
         const townResidentsLength = town.residents.length
@@ -263,7 +263,7 @@ export default {
         }
 
         if (!town.ruined) {
-            if (town.capital) {
+            if (town.flags.capital) {
                 const nationResidentsLength = townNation?.residents.length ?? 0
 
                 townEmbed.addFields(embedField("Mayor",

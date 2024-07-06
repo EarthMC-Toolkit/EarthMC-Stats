@@ -73,7 +73,7 @@ async function setNations(nations: any[]) {
 const getTowns = async (): Promise<DBTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
-async function setTowns(towns: any[]) {
+async function setTowns(towns: DBTown[]) {
     const dividedTownsArray = divideArray(towns, 6)
     let counter = 0
 
@@ -85,7 +85,7 @@ async function setTowns(towns: any[]) {
 }
 
 async function getAlliance(name: string) {
-    const alliances = await getAlliances() as any[]
+    const alliances = await getAlliances() as DBAlliance[]
     if (!alliances) return null
 
     const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase())

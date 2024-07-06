@@ -5,12 +5,12 @@ import {
     ButtonStyle, EmbedBuilder, Colors
 } from "discord.js"
 
-import { Aurora } from "earthmc"
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
 import * as database from "../../bot/utils/database.js"
 import type { AllianceType } from "../../bot/types.js"
 import { argsHelper, AURORA, botDevs, defaultSortAlliance, embedField, jsonReq, paginator } from "../../bot/utils/fn.js"
+import { Aurora } from "earthmc"
 
 const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
     .setTitle("That command is for developers only!")
@@ -1108,8 +1108,8 @@ async function sendSingleAlliance(
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") 
         allianceEmbed.setURL(foundAlliance.discordInvite)
     
-    const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail],
-          nationsString = foundAlliance.nations.join(", ")
+    const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
+    const nationsString = foundAlliance.nations.join(", ")
 
     const allianceNationsLen = foundAlliance.nations.length
     if (nationsString.length < 1024) {
