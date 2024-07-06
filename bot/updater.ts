@@ -64,8 +64,8 @@ async function initUpdates() {
         updateAPI(false, true)
     }, 2.5 * oneMinute)
 
-    // Update Aurora every 30s.
-    setInterval(() => updateData(false, true, false), 0.5 * oneMinute)
+    // Update Aurora every 60s.
+    setInterval(() => updateData(false, true, false), oneMinute)
 
     // Update Nova +
     // Send news to API (for both maps) every 10m.
