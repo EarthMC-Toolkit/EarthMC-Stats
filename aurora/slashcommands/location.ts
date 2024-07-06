@@ -1,57 +1,82 @@
 import {
     type Client, 
     type ChatInputCommandInteraction,
-    Colors, EmbedBuilder, SlashCommandBuilder
+    Colors, EmbedBuilder, SlashCommandBuilder,
+    type ColorResolvable
 } from 'discord.js'
 
-import * as fn from '../../bot/utils/fn.js'
+import { devsFooter, embedField, inWorldBorder } from '../../bot/utils/fn.js'
+import { Aurora } from 'earthmc'
+
+const embed = (
+    client, 
+    title = "Error while using /location:", 
+    colour: ColorResolvable = Colors.Red
+) => new EmbedBuilder()
+    .setTitle(title)
+    .setColor(colour)
+    .setFooter(devsFooter(client))
+    .setTimestamp()
 
 export default {
     name: "location",
     description: "Converts 2 coordinates into a clickable map link.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        const get = interaction.options.getInteger
-        const xcoord = get("x"), 
-              zcoord = get("z"), 
-              zoom = get("zoom")
+        const xCoord = interaction.options.getInteger("x")
+        const zCoord = interaction.options.getInteger("z")
+        const zoom = interaction.options.getInteger("zoom")
       
-        if (!xcoord || !zcoord || isNaN(xcoord) || isNaN(zcoord)) {
-            return interaction.reply({embeds: [new EmbedBuilder()
-                .setColor(Colors.Red)
-                .setTitle("Error while using /location:")
-                .setDescription("Invalid arguments!\n\nUsage: `/loc xcoord zcoord`")
-                .setFooter(fn.devsFooter(client)).setTimestamp()
+        if (!xCoord || !zCoord || isNaN(xCoord) || isNaN(zCoord)) {
+            return interaction.reply({embeds: [
+                embed(client, "Error while using /location:", Colors.Red)
+                .setDescription("Invalid arguments!\n\nUsage: `/loc <x> <z>` or `/loc <x> <z> <zoom>`")
             ], ephemeral: true})
-        } else if (Number(xcoord) >= 33081 || Number(xcoord) < -33280 || Number(zcoord) >= 16508 || Number(zcoord) < -16640) {
-            return interaction.reply({embeds: [new EmbedBuilder()
-                .setTitle("Error while using /location:")
-                .setColor(Colors.Red)
-                .setDescription("Please enter 2 values that are inside EarthMC's world border.")
-                .setFooter(fn.devsFooter(client)).setTimestamp()
-            ], ephemeral: true})
-        }
-        else {
-            const dynmapLink = `[Click here](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=${zoom ?? 4}&x=${xcoord}&y=64&z=${zcoord})`
-            const embed = new EmbedBuilder()
-                .setColor(Colors.Green)
-                .setTitle("Map location for X:" + xcoord + ", Z:" + zcoord)
-                .addFields(fn.embedField("Dynmap Link", dynmapLink))
-                .setFooter(fn.devsFooter(client))
-                .setTimestamp()
+        } 
+        
+        const numX = Number(xCoord)
+        const numZ = Number(zCoord)
 
-            if (zoom) embed.addFields(fn.embedField("Zoom", zoom.toString() + 'x'))
-            if (!isNaN(zoom) && Number(zoom) < 11) return interaction.reply({embeds: [embed]})
-            else interaction.reply({embeds: [new EmbedBuilder()
-                .setTitle("Error while using /location:")
-                .setColor(Colors.Red)
-                .setDescription("`" + zoom + "`" + " is not a valid zoom! Please use a number from 1-10.")
-                .setFooter(fn.devsFooter(client)).setTimestamp()
-            ], ephemeral: true })
+        if (inWorldBorder(numX, numZ)) return interaction.reply({embeds: [
+            embed(client).setDescription("Specified coordinates are not inside EarthMC's world border!")
+        ]}).then(m => setTimeout(() => m.delete(), 10000))
+        
+        if (!zoom) {
+            const mapUrl = Aurora.buildMapLink({ x: xCoord, z: zCoord })
+            return interaction.reply({embeds: [
+                embed(client, `(Aurora) Location Info`, Colors.Green)
+                .addFields(
+                    embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true),
+                    embedField("Map Link", `[Click to open](${mapUrl.toString()})`)
+                )
+            ]})
         }
+
+        const mapUrl = Aurora.buildMapLink({ x: numX, z: numZ }, zoom)
+        return interaction.reply({embeds: [
+            embed(client, `(Aurora) Location Info`, Colors.Green)
+            .addFields(
+                embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true),
+                embedField("Zoom", `\`${zoom}\`x`, true),
+                embedField("Map Link", `[Click to open](${mapUrl.toString()})`)
+            )
+        ]})
     }, data: new SlashCommandBuilder()
         .setName("location")
-        .setDescription("Converts 2 coordinates into a clickable map link.")
-        .addIntegerOption(option => option.setName("x").setDescription("The x coordinate.").setRequired(true))
-        .addIntegerOption(option => option.setName("z").setDescription("The z coordinate.").setRequired(true))
-        .addIntegerOption(option => option.setName("zoom").setDescription("The amount of zoom to use."))
+        .setDescription("Converts 2 coordinates (and optional zoom) into a clickable map link.")
+        .addIntegerOption(option => option
+            .setName("x")
+            .setDescription("The coordinate on the X axis (left/right).")
+            .setRequired(true)
+        )
+        .addIntegerOption(option => option
+            .setName("z")
+            .setDescription("The coordinate on the Z axis (up/down).")
+            .setRequired(true)
+        )
+        .addIntegerOption(option => option
+            .setName("zoom")
+            .setDescription("Map zoom scale/factor.")
+            .setMaxValue(6)
+            .setMinValue(0)
+        )
 }

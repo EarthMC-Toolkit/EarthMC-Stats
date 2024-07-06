@@ -30,13 +30,13 @@ export default {
             .setAuthor({name: interaction.user.username, iconURL: interaction.user.displayAvatarURL()})
             .setDescription("Unable to fetch Towny data, the server may be down for maintenance.\n\nPlease try again later.")
             .setFooter(fn.devsFooter(client))
-        ]}).then((m: any) => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const ops = opsData.players
-        const foundPlayer = ops.find(op => op.account.toLowerCase() == player.toLowerCase())
+        const foundPlayer = ops.find(op => op.name.toLowerCase() == player.toLowerCase())
           
         if (foundPlayer && !fn.botDevs.includes(player.toLowerCase())) {
-            const acc = foundPlayer.account
+            const acc = foundPlayer.name
 
             if (foundPlayer.world == "-some-other-bogus-world-") {
                 return interaction.reply({embeds: [new EmbedBuilder()
@@ -54,14 +54,14 @@ export default {
                 .setTimestamp()
                 .setFooter(fn.devsFooter(client))
                 
-            const foundPlayerNickname = striptags(foundPlayer.name)
+            const foundPlayerNickname = striptags(foundPlayer.display_name)
             if (acc !== foundPlayerNickname)
                 locationEmbed.addFields(fn.embedField("Nickname", foundPlayerNickname))
             
-            const { x, y, z } = foundPlayer
+            const { x, z } = foundPlayer
             locationEmbed.addFields(
-                fn.embedField("Coordinates", `X: ${x}\nY: ${Number(y) - 1}\nZ: ${z}`),
-                fn.embedField("Dynmap Link", `[${x}, ${z}](https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
+                fn.embedField("Coordinates", `X: ${x}\nZ: ${z}`),
+                fn.embedField("Dynmap Link", `[${x}, ${z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
             )
 
             return interaction.reply({ embeds: [locationEmbed] }).catch(() => {})

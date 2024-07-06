@@ -1,6 +1,7 @@
 import { ButtonStyle, Colors, EmbedBuilder } from "discord.js"
 import type { Message, Client, NewsChannel } from "discord.js"
 
+import type { Town } from "earthmc"
 import { NotFoundError, Nova, formatString } from "earthmc"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -318,8 +319,8 @@ export default {
                 return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
 
-            const capitalColours = await Nova.Towns.get(nation.capital.name).then((t: any) => {
-                return t instanceof NotFoundError ? null : t.colourCodes
+            const capitalColours = await Nova.Towns.get(nation.capital.name).then((t: Town) => {
+                return t instanceof NotFoundError ? null : t.colours
             })
             
             const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua

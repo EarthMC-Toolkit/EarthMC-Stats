@@ -12,6 +12,7 @@ import {
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
 
+import type { SquaremapTown } from 'earthmc'
 import { Aurora, NotFoundError } from 'earthmc'
 
 export default {
@@ -35,7 +36,7 @@ export default {
         const nationsWithoutDuplicates = []
 
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await Aurora.Nations.all().catch(err => console.log(err))
+        if (!nations) nations = await Aurora.Nations.all() // TODO: Should probably handle this error case
 
         if (subCmd == "list") {
             let comparator = interaction.options.getString("comparator")
@@ -211,8 +212,8 @@ export default {
                 return interaction.editReply({ embeds: [nationEmbed] })
             }
             
-            const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: any) => {
-                return t instanceof NotFoundError ? null : t.colourCodes
+            const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: SquaremapTown) => {
+                return t instanceof NotFoundError ? null : t.colours
             })
 
             const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
@@ -246,14 +247,14 @@ export default {
             const capitalZ = nation.capital.z
             
             nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
-                .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
+                .setThumbnail(nation.flag || 'attachment://aurora.png')
                 .setFooter(fn.devsFooter(client))
                 .addFields(
                     fn.embedField("King", kingPrefix + nation.king.replace(/_/g, "\\_"), true),
                     fn.embedField("Capital", nation.capital.name, true),
                     fn.embedField("Location", 
                         "[" + capitalX + ", " + capitalZ + "]" + 
-                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + capitalX + "&y=64&z=" + capitalZ + ")"),
+                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=" + capitalX + "&y=64&z=" + capitalZ + ")"),
                     fn.embedField("Chunks", nation.area.toString(), true),
                     fn.embedField("Residents", nationResLength.toString(), true),
                     fn.embedField("Nation Bonus", fn.auroraNationBonus(nationResLength).toString())

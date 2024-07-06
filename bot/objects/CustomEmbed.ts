@@ -106,8 +106,8 @@ class CustomEmbed extends EmbedBuilder {
     }
 
     paginate(data, prefix = "", postfix = "") {
-        const embeds = [], 
-              len = data.length
+        const embeds = []
+        const len = data.length
 
         for (let i = 0; i < len; i++) {
             embeds[i] = new EmbedBuilder()

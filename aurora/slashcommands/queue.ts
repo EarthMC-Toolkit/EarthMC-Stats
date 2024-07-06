@@ -24,7 +24,7 @@ export default {
         const queue = new Queue(server, aurora, nova)
         await queue.init()
 
-        const totalMax = (queue.nova.config?.maxcount ?? 200) + (queue.aurora.config?.maxcount ?? 200)
+        const totalMax = (queue.nova.config?.maxcount ?? 200) + (queue.aurora.config?.max ?? 200)
         const embed = new EmbedBuilder()
             .setTitle("Queue & Player Info")
             .setColor(Colors.Green)

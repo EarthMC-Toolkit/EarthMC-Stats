@@ -6,7 +6,7 @@ import {
     TextInputBuilder, TextInputStyle
 } from 'discord.js'
 
-import cache from 'memory-cache'
+import { cache } from '../constants.js'
 
 const ParagraphStyle = TextInputStyle.Paragraph
 const optionals = ['flag', 'discord', 'fill', 'outline', 'full_name']
@@ -20,8 +20,8 @@ type Alliance = {
     map: string
     name: string
     fullName: string
-    nations: any[]
-    leaders: any[]
+    nations: string[]
+    leaders: string[]
     imageURL: string
     discordInvite: string
     type: string
@@ -64,7 +64,7 @@ class AllianceModal extends ModalBuilder {
         console.log(`Showing creation wizard for ${this.alliance.name}`)
 
         const key = interaction.member.user.id
-        cache.put(`${key}_creating`, this)
+        cache.set(`${key}_creating`, this)
 
         this.addComponents(...[this.rows])
         return interaction.showModal(this)

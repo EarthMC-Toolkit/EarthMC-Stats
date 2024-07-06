@@ -7,8 +7,11 @@ import type {
     SharedNameAndDescription
 } from "discord.js"
 
-import type { Map } from "earthmc"
+import type { Dynmap, Nation, Squaremap, SquaremapTown } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
+
+export type ErrorWithCode = Error & { code: number }
+export type ReqMethod = 'GET' | 'PUT' | 'POST'
 
 export type BaseCommand = {
     name: string
@@ -33,7 +36,7 @@ export type Button = {
     permissions?: any[]
     description?: string
     disabled?: boolean
-    execute: (client: Client, interaction: BaseInteraction, args?: any[]) => any
+    execute: (client: Client, interaction: BaseInteraction, args?: string[]) => any
 }
 
 export type DJSEvent = {
@@ -43,7 +46,7 @@ export type DJSEvent = {
 }
 
 export type MapInstance = { 
-    emc: Map,
+    emc: Dynmap | Squaremap,
     db: MapDB
 }
 
@@ -62,38 +65,70 @@ export type MCSessionProfile = MCUserProfile & {
     profileActions: any[]
 }
 
-export type MapDB = {
+export interface MapDB {
     getAlliance(name: string): Promise<DBAlliance>
     getAlliances(skipCache: boolean): Promise<DBAlliance[]> 
     setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>
     setResidents(residents: DBResident[]): Promise<void>
-    getTowns(): Promise<any>
-    setTowns(towns: any[]): Promise<void>
-    getNations(): Promise<any>
-    setNations(nations: any[]): Promise<void>
+    getTowns(): Promise<DBTown[]>
+    setTowns(towns: DBTown[]): Promise<void>
+    getNations(): Promise<DBNation[]>
+    setNations(nations: DBNation[]): Promise<void>
 }
 
+export type AllianceType = 'sub' | 'mega' | 'normal'
 export type DBAlliance = {
     allianceName: string
-    leaderName: string,
-    discordInvite: string,
-    nations: string[],
-    type: 'sub' | 'mega' | 'normal'
-}
+    leaderName: string
+    discordInvite: string
+    type: AllianceType
+    nations: string[]
+} & Partial<{
+    fullName: string
+    imageURL: string
+    colours: {
+        fill: string
+        outline: string
+    }
+    towns: number
+    residents: number
+    area: number
+    online: string[]
+    rank: number
+}>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
-export type DBResident = {
+export interface DBResident {
     name: string
     townName: string
     townNation: string
     rank: ResidentRank
 }
 
-export type SkinOpts = {
-    view: SkinType2D | SkinType3D,
-    subject: string | number,
-    width?: number,
+export interface DBPlayer {
+    name: string
+    linkedID?: string | number
+    lastOnline: {
+        aurora?: Timestamp
+        nova?: Timestamp
+    }
+}
+
+export type DBTown = SquaremapTown & {
+    ruined?: boolean
+}
+
+export type DBNation = Nation & {
+    kingPrefix?: string
+    flag?: string
+    discord?: string
+}
+
+export interface SkinOpts {
+    view: SkinType2D | SkinType3D
+    subject: string | number
+    width?: number
     height?: number
 }
 
@@ -110,12 +145,3 @@ export const SkinType3D = {
     BUST: 'bust',
     FULL: 'full'
 } as const
-
-export type ResidentProfile = {
-    name: string
-    linkedID: string | number
-    lastOnline: {
-        nova: Date | Timestamp
-        aurora: Date | Timestamp
-    }
-}

@@ -5,7 +5,7 @@ dotenv.config()
 import { 
     Client, 
     IntentsBitField,
-    Collection,
+    Collection
 } from "discord.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
@@ -17,7 +17,7 @@ import {
     setDatabase 
 } from "./bot/constants.js"
 
-import { DJSEvent } from "./bot/types.js"
+import type { DJSEvent, ErrorWithCode } from "./bot/types.js"
 import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
@@ -87,14 +87,12 @@ for (const file of eventFiles) {
 //#endregion
 
 //#region Error Handling
-client.on('error', (err: Error & { code: number }) => {
+client.on('error', (err: ErrorWithCode) => {
     if (err.code != 50013) console.log(err)
 })
 
-process.on('unhandledRejection', (err: Error & { code: number }) => console.error('Unhandled promise rejection: ', err))
-
-process.on('uncaughtException', (err: Error & { code: number }) => {
-    if (err.code != 50013) 
-        console.error('Uncaught Exception!\n', err)
+process.on('unhandledRejection', (err: ErrorWithCode) => console.error('Unhandled promise rejection: ', err))
+process.on('uncaughtException', (err: ErrorWithCode) => {
+    if (err.code != 50013) console.error('Uncaught Exception!\n', err)
 })
 //#endregion

@@ -8,8 +8,8 @@ type Map = {
 }
 
 function format(map: Map) {
-    const max = map.config?.maxcount,
-          diff = max - map.count
+    const max = map.config?.maxcount
+    const diff = max - map.count
 
     const freeSpots = diff > 0 ? diff : 0
 
@@ -53,7 +53,7 @@ class Queue {
 
     async #fetchConfigs() {
         this.nova.config = await fn.jsonReq("https://earthmc.net/map/nova/standalone/MySQL_configuration.php")
-        this.aurora.config = await fn.jsonReq("https://earthmc.net/map/aurora/standalone/MySQL_configuration.php")
+        this.aurora.config = await fn.jsonReq("https://map.earthmc.net/tiles/players.json")
     }
 
     #formatMaps() {

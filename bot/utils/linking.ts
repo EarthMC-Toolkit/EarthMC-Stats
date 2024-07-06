@@ -1,19 +1,28 @@
 import { setPlayers, getPlayers } from "./database.js"
 import { Players } from "./minecraft.js"
-import type { ResidentProfile } from "../types.js"
+import type { DBPlayer } from "../types.js"
 
+const lower = (k: string | number) => k.toString().toLowerCase()
 const strEqual = (p: { name: string }, name: string) => 
     p.name.toLowerCase() == name.toLowerCase()
 
+async function getLinkedPlayer(identifier: string | number) {
+    const players = await getPlayers() as DBPlayer[]
+    if (!players) return null
+
+    const foundPlayer = players.find(p => lower(p.name) === lower(identifier) || p.linkedID === identifier)
+    return !foundPlayer?.linkedID ? null : foundPlayer
+}
+
 async function linkPlayer(id: string | number, username: string) {
-    getPlayers(true).then(async (players: ResidentProfile[]) => {
+    getPlayers(true).then(async (players: DBPlayer[]) => {
 
         const foundResident = players.find(p => strEqual(p, username))
         const residentIndex = players.findIndex(p => strEqual(p, username))
         
         if (!foundResident) {
             const player = await Players.get(username).catch(() => {})
-            const residentObj: ResidentProfile = {
+            const residentObj: DBPlayer = {
                 name: player ? player.name : username,
                 linkedID: id,
                 lastOnline: {
@@ -42,15 +51,6 @@ async function unlinkPlayer(username: string) {
 
         setPlayers(players)
     })
-}
-
-const lower = (k: string | number) => k.toString().toLowerCase()
-async function getLinkedPlayer(identifier: string | number) {
-    const players = await getPlayers() as ResidentProfile[]
-    if (!players) return null
-
-    const foundPlayer = players.find(player => lower(player.name) === lower(identifier) || player.linkedID === identifier)
-    return !foundPlayer?.linkedID ? null : foundPlayer
 }
 
 export {

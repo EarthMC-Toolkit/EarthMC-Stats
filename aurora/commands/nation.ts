@@ -7,12 +7,11 @@ import {
     EmbedBuilder
 } from "discord.js"
 
-import { Aurora } from "earthmc"
+import { Aurora, type SquaremapTown } from "earthmc"
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 import News from "../../bot/objects/News.js"
 
-import * as api from "../../bot/utils/api.js"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
@@ -39,7 +38,7 @@ export default {
             .setTimestamp()
         
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await Aurora.Nations.all().catch(err => console.log(err))
+        if (!nations) nations = await Aurora.Nations.all()
 
         if (args[0].toLowerCase() == "list") {
             if (args[1] != null) {
@@ -112,8 +111,9 @@ export default {
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
                     new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
-                        .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                        .setType(EntityType.Nation).setPage(page)
+                        .setType(EntityType.Nation)
+                        .setPage(page)
+                        .setDefaultAuthor(message)
                         .paginate(allData, "```", "```")
                         .editMessage(m)
                 }
@@ -318,8 +318,8 @@ export default {
                     .catch(() => {})
             }
 
-            const capitalColours = await api.get(`aurora/towns/${nation.capital.name}`)
-                .then((t: any) => t.colourCodes).catch(() => {})
+            const capitalColours = await Aurora.Towns.get(nation.capital.name)
+                .then((t: SquaremapTown) => t.colours).catch(() => {})
 
             const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
             nationEmbed.setColor(colour)
@@ -354,7 +354,7 @@ export default {
                     fn.embedField("Capital", nation.capital.name, true),
                     fn.embedField("Location", 
                         "[" + nation.capital.x + ", " + nation.capital.z + "]" + 
-                        "(https://earthmc.net/map/aurora/?worldname=earth&mapname=flat&zoom=6&x=" + 
+                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=" + 
                         nation.capital.x + "&y=64&z=" + nation.capital.z + ")"
                     ),
                     fn.embedField("Chunks", nation.area.toString(), true),

@@ -1,5 +1,5 @@
 import { divideArray, sortByOrder } from "./fn.js"
-import cache from 'memory-cache'
+import { cache } from '../constants.js'
 import { request } from "undici"
 
 import { db } from "../constants.js"
@@ -29,7 +29,7 @@ async function setResidents(residents: any[]) {
     const dividedResidentsArray = divideArray(residents, 7)
     let counter = 0
 
-    cache.put('residents', residents)
+    cache.set('residents', residents)
     for (const resident of dividedResidentsArray) {      
         counter++
         residentDataCollection.doc("residentArray" + counter).set({ residentArray: resident })
@@ -54,7 +54,7 @@ async function setNations(nations: any[]) {
     const dividedNationsArray = divideArray(nations, 4)
     let counter = 0
 
-    cache.put('nations', nations)
+    cache.set('nations', nations)
     for (const nation of dividedNationsArray) {      
         counter++
         nationDataCollection.doc("nationArray" + counter).set({ nationArray: nation })
@@ -75,7 +75,7 @@ async function setTowns(towns: any[]) {
     const dividedTownsArray = divideArray(towns, 6)
     let counter = 0
 
-    cache.put('towns', towns)
+    cache.set('towns', towns)
     for (const towns of dividedTownsArray) {
         counter++
         townDataCollection.doc("townArray" + counter).set({ townArray: towns })
@@ -157,7 +157,7 @@ async function getAlliances() {
 }
 
 async function setAlliances(alliances: any[]) {
-    cache.put('alliances', alliances)
+    cache.set('alliances', alliances)
 
     const allianceDoc = db.collection("alliances").doc("alliancesDoc")
     return allianceDoc.set({ allianceArray: alliances })
