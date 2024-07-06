@@ -22,6 +22,9 @@
     "exclude": [
         "node_modules",
         "dist",
-        "bot/archive"
+        "bot/archive",
+        "bot/archive/nova",
+        "bot/archive/nova/commands",
+        "bot/archive/nova/commands/**"
     ],
 }
