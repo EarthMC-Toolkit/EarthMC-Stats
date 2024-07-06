@@ -45,6 +45,8 @@ async function initUpdates() {
     // Pre-fill everything but news.
     await updateAPI(false, true)
 
+    await updateData(true, true, false)
+
     if (prod) {
         await sendEmptyAllianceNotif(AURORA)
         await sendEmptyAllianceNotif(NOVA)

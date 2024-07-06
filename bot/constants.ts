@@ -40,7 +40,8 @@ const AURORA: MapInstance = {
     db: AuroraDB 
 }
 
-const cache = new TTLCache<string, any>({ ttl: 60 * 1000 }) 
+// We update this every x seconds, so expiry isn't needed.
+const cache = new TTLCache<string, any>({ ttl: Infinity }) 
 
 export {
     prod, setProduction,

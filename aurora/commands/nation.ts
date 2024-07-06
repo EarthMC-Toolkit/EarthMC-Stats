@@ -273,8 +273,8 @@ export default {
                     return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
 
-                const alliancesWithNation = alliances.filter(a => a.nations.includes(nation.name)),
-                        allies = []
+                const alliancesWithNation = alliances.filter(a => a.nations.includes(nation.name))
+                const allies = []
 
                 // If the nation is in one or more alliances.
                 if (alliancesWithNation.length > 0) {
@@ -334,32 +334,33 @@ export default {
                 : nationResLength >= 0  ? "Leader " : ""
             
             // Includes prefix
-            const nationName = nationResLength >= 60 ? "The " + nation.name + " Realm" 
-                : nationResLength >= 40 ? "The " + nation.name + " Empire"
-                : nationResLength >= 30 ? "Kingdom of " + nation.name 
-                : nationResLength >= 20 ? "Dominion of " + nation.name 
-                : nationResLength >= 10 ? "Federation of " + nation.name : "Land of " + nation.name
+            const backtickedName = `\`${nation.name}\``
+            const nationName = nationResLength >= 60 ? `The ${backtickedName} Realm` 
+                : nationResLength >= 40 ? `The ${backtickedName} Empire`
+                : nationResLength >= 30 ? `Kingdom of ${backtickedName}` 
+                : nationResLength >= 20 ? `Dominion of ${backtickedName}`
+                : nationResLength >= 10 ? `Federation of ${backtickedName}` 
+                : `Land of ${backtickedName}`
             //#endregion
 
             nations = fn.defaultSort(nations)
 
-            const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1,
-                    kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
+            const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
+            const kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
+
+            const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
+            const mapUrl = Aurora.buildMapLink({ x: capitalX, z: capitalZ }, 5)
 
             //#region Embed Stuff
             nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
                 .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
                 .addFields(
-                    fn.embedField("King", kingPrefix + nation.king.replace(/_/g, "\\_"), true),
-                    fn.embedField("Capital", nation.capital.name, true),
-                    fn.embedField("Location", 
-                        "[" + nation.capital.x + ", " + nation.capital.z + "]" + 
-                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=" + 
-                        nation.capital.x + "&y=64&z=" + nation.capital.z + ")"
-                    ),
-                    fn.embedField("Chunks", nation.area.toString(), true),
-                    fn.embedField("Residents", nationResLength.toString(), true),
-                    fn.embedField("Nation Bonus", fn.auroraNationBonus(nationResLength).toString())
+                    fn.embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
+                    fn.embedField("Capital", `\`${nation.capital.name}\``, true),
+                    fn.embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
+                    fn.embedField("Chunks", `\`${nation.area.toString()}\``, true),
+                    fn.embedField("Residents", `\`${nationResLength.toString()}\``, true),
+                    fn.embedField("Nation Bonus", `\`${fn.auroraNationBonus(nationResLength).toString()}\``)
                 )
 
             if (nation.discord) 
