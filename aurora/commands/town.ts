@@ -15,7 +15,7 @@ import {
     defaultSort, sortByOrder, 
     devsFooter, embedField, 
     maxTownSize, auroraNationBonus,
-    removeDuplicates, unixFromDate,
+    unixFromDate,
     AURORA
 } from "../../bot/utils/fn.js"
 
@@ -51,7 +51,7 @@ export default {
 
         const townEmbed = new EmbedBuilder()
 
-        let onlineResidents = []
+        //let onlineResidents = []
         let claimBonus = 0
 
         const opt = args[0]
@@ -83,7 +83,7 @@ export default {
                 }
 
                 // Function to get rid of duplicates and add up residents and chunks.
-                onlineTownData.forEach(function (a) {                   
+                onlineTownData.forEach(function(a) {                   
                     // If town doesnt exist, add it.
                     if (!this[a.name]) {           
                         a.onlineResidents = a.residentNames.filter(resident => onlinePlayers.find(op => resident === op.name))
@@ -250,10 +250,10 @@ export default {
         const townRank = (towns.findIndex(t => t.name == townName)) + 1
         const mayor = town.mayor.replace(/_/g, "\\_")
         
-        const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => t instanceof NotFoundError ? null : t.colours)
+        // const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => t instanceof NotFoundError ? null : t.colours)
+        // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
 
-        const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-        townEmbed.setColor(town.ruined ? Colors.Orange : colour)
+        townEmbed.setColor(town.ruined ? Colors.Orange : Colors.Green)
             .setTitle(("Town Info | " + townName + `${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         
@@ -325,27 +325,39 @@ export default {
             } 
             else townEmbed.addFields(embedField("Residents", "There are no residents in this town?"))
 
-            // ONLINE RESIDENTS
-            const townyData = await database.Aurora.getOnlinePlayerData() as any
-
-            if (!townyData) {
-                townEmbed.addFields(embedField(
-                    "Online Residents", 
-                    "No residents are online in " + town.name
-                ))
-            }
-            else {
-                onlineResidents = removeDuplicates(town.residents.filter(resident => townyData.players.find(op => resident === op.account)))
-                const onlineResidentsString = onlineResidents.toString().replace(/,/g, ", ")
-
-                if (onlineResidents.length > 0) { 
+            const townCouncillorsLen = town.councillors.length
+            if (townCouncillorsLen > 0) {
+                if (townCouncillorsLen <= 50) {
                     townEmbed.addFields(embedField(
-                        `Online Residents [${onlineResidents.length}]`, 
-                        "```" + onlineResidentsString + "```"
+                        `Councillors [${townCouncillorsLen}]`, 
+                        "```" + town.councillors.join(", ") + "```"
                     ))
-                }
-                else townEmbed.addFields(embedField("Online Residents", `No residents are online in ${town.name}`))
-            }
+                }    
+                else townEmbed.addFields(embedField("Councillors", townCouncillorsLen.toString()))
+            } 
+            else townEmbed.addFields(embedField("Councillors", "None")) 
+
+            // // ONLINE RESIDENTS
+            // const townyData = await database.Aurora.getOnlinePlayerData() as any
+
+            // if (!townyData) {
+            //     townEmbed.addFields(embedField(
+            //         "Online Residents", 
+            //         "No residents are online in " + town.name
+            //     ))
+            // }
+            // else {
+            //     onlineResidents = removeDuplicates(town.residents.filter(resident => townyData.players.find(op => resident === op.account)))
+            //     const onlineResidentsString = onlineResidents.toString().replace(/,/g, ", ")
+
+            //     if (onlineResidents.length > 0) { 
+            //         townEmbed.addFields(embedField(
+            //             `Online Residents [${onlineResidents.length}]`, 
+            //             "```" + onlineResidentsString + "```"
+            //         ))
+            //     }
+            //     else townEmbed.addFields(embedField("Online Residents", `No residents are online in ${town.name}`))
+            // }
         }
 
         // const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
@@ -369,10 +381,18 @@ export default {
     }
 }
 
+type ExtractedTown = {
+    name: string
+    nation: string
+    residentNames: string[]
+    area: number
+    wealth: number
+}
+
 function extractTownData(towns: DBTown[]) {
     if (!towns) return []
 
-    const townData = []
+    const townData: ExtractedTown[] = []
     const len = towns.length
 
     for (let i = 0; i < len; i++) {     
@@ -382,20 +402,25 @@ function extractTownData(towns: DBTown[]) {
             name: cur.name,
             nation: cur.nation,
             residentNames: cur.residents,
-            area: cur.area
+            area: cur.area,
+            wealth: cur.wealth
         }) 
     }
 
     return townData
 }
 
+const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??`
+
 async function sendList(client: Client, msg: Message, comparator: string, towns: DBTown[]) {
     towns = defaultSort(towns)
     
     const townData = extractTownData(towns)
-    const allData = townData.map((town, index) => (index + 1) + ". **" + town.name + " (" + town.nation + ")**\n" + 
-        "```Residents: " + town.residentNames.length + 
-        "``````Chunks: " + town.area + "```").join('\n').match(/(?:^.*$\n?){1,8}/mg)
+    const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
+        `Residents: \`${town.residentNames.length}\`\n` +
+        `Chunks: \`${town.area}\`\n` + 
+        `${wealthStr(town.wealth)}`
+    ).join('\n\n').match(/(?:^.*$\n\n?){1,16}/mg)
 
     const embed = new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)

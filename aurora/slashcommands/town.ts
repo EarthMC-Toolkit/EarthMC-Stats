@@ -11,11 +11,10 @@ import {
     AURORA, auroraNationBonus, 
     databaseError, defaultSort, 
     devsFooter, embedField, fetchError, 
-    maxTownSize, removeDuplicates, 
+    maxTownSize, 
     sortByOrder, unixFromDate 
 } from '../../bot/utils/fn.js'
 
-import type { SquaremapTown } from 'earthmc'
 import { Aurora, formatString, NotFoundError } from 'earthmc'
 
 import type { DBNation, DBTown } from '../../bot/types.js'
@@ -193,13 +192,13 @@ export default {
             const townRank = (towns.findIndex(t => t.name == town.name)) + 1
             const mayor = town.mayor.replace(/_/g, "\\_")
             
-            const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => {
-                return t instanceof NotFoundError ? null : t.colours
-            })
+            // const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => {
+            //     return t instanceof NotFoundError ? null : t.colours
+            // })
 
-            const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+            // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
             
-            townEmbed.setColor(town.ruined ? Colors.Orange : colour)
+            townEmbed.setColor(town.ruined ? Colors.Orange : Colors.Green)
             townEmbed.setTitle(("Town Info | `" + town.name + `\`${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
             
             if (town.board) {
@@ -290,10 +289,10 @@ export default {
                             `Councillors [${townCouncillorsLen}]`, 
                             "```" + town.councillors.join(", ") + "```"
                         ))
-                    }    
+                    }
                     else townEmbed.addFields(embedField("Councillors", townCouncillorsLen.toString()))
                 } 
-                else townEmbed.addFields(embedField("Councillors", "There are no residents in this town?")) 
+                else townEmbed.addFields(embedField("Councillors", "None")) 
 
                 // //#region "Online Residents" field
                 // const townyData = await database.Aurora.getOnlinePlayerData()
@@ -319,7 +318,6 @@ export default {
                 //     ))
                 // }
                 // //#endregion
-                
             }
 
             // const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
@@ -374,12 +372,16 @@ function extractTownData(towns: DBTown[]) {
             name: cur.name,
             nation: cur.nation,
             residentNames: cur.residents,
-            area: cur.area
+            area: cur.area,
+            wealth: cur.wealth
         }) 
     }
 
     return townData
 }
+
+
+const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??` 
 
 function sendList(
     client: Client, 
@@ -390,8 +392,12 @@ function sendList(
     towns = defaultSort(towns)
   
     const townData = extractTownData(towns)
-    const allData = townData.map((town, index) => (index + 1) + ". **" + town.name + " (" + town.nation + ")**" + 
-        "\n```Residents: " + town.residentNames.length + "``````Chunks: " + town.area + "```").join('\n').match(/(?:^.*$\n?){1,8}/mg)
+
+    const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
+        `Residents: \`${town.residentNames.length}\`\n` +
+        `Chunks: \`${town.area}\`\n` + 
+        `${wealthStr(town.wealth)}`
+    ).join('\n\n').match(/(?:^.*$\n\n?){1,16}/mg)
 
     new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)
