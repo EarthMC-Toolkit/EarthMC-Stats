@@ -52,7 +52,6 @@ export default {
         const townEmbed = new EmbedBuilder()
 
         //let onlineResidents = []
-        let claimBonus = 0
 
         const opt = args[0]
         const arg1 = args[1]?.toLowerCase()
@@ -254,9 +253,13 @@ export default {
         // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
 
         townEmbed.setColor(town.ruined ? Colors.Orange : Colors.Green)
-            .setTitle(("Town Info | " + townName + `${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
+            .setTitle((`Town Info | ${townName}${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         
+        if (town.board) {
+            townEmbed.setDescription(`**${town.board}**`)
+        }
+
         const townResidentsLength = town.residents.length
 
         let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBNation
@@ -274,7 +277,7 @@ export default {
                     : nationResidentsLength >= 30 ? "King "
                     : nationResidentsLength >= 20 ? "Duke "
                     : nationResidentsLength >= 10 ? "Count "
-                    : nationResidentsLength >= 0 ? "Leader " : ""}` + mayor, true))
+                    : nationResidentsLength >= 0  ? "Leader " : "" }\`${mayor}\``, true))
             } else {
                 townEmbed.addFields(embedField("Mayor", 
                     `${townResidentsLength >= 28 ? "Lord "
@@ -284,7 +287,7 @@ export default {
                     : townResidentsLength >= 10 ? "Viscount "
                     : townResidentsLength >= 6 ? "Baron "
                     : townResidentsLength >= 2 ? "Chief "
-                    : townResidentsLength == 1 ? "Hermit " : "" }` +  mayor, true)  ) 
+                    : townResidentsLength == 1 ? "Hermit " : "" }\`${mayor}\``, true)) 
             }
 
             const discord = townNation?.discord
@@ -293,16 +296,20 @@ export default {
             townEmbed.addFields(embedField("Nation", nationString, true))
         }
 
+        const townAreaStr = `\`${town.area}\` / `
         const multiplier = town.residents.length * 12
+
         if (town.nation != "No Nation") {
-            const nationBonus = auroraNationBonus(townNation?.residents.length ?? 0)
-            claimBonus = nationBonus + multiplier
-            townEmbed.addFields(embedField(
-                "Town Size", 
-                `${town.area} / ${Math.min(claimBonus, maxTownSize)} [NationBonus: ${nationBonus}]`
-            ))
+            const nationBonus = auroraNationBonus(townNation.residents.length)
+            const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
+
+            townEmbed.addFields(
+                embedField("Town Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
+            )
+        } else {
+            const claimBonus = Math.min(multiplier, maxTownSize)
+            townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}`, true))
         }
-        else townEmbed.addFields(embedField("Town Size", `${town.area} / ${Math.min(multiplier, maxTownSize)}`))
 
         townEmbed.setTimestamp()
             .setFooter(devsFooter(client))
@@ -369,10 +376,6 @@ export default {
         // ${town.public? green : red } Public
         // ${town.explosion ? green : red } Explosions 
         // ${town.fire ? green : red } Fire Spread
-
-        if (town.board) {
-            townEmbed.setDescription(town.board)
-        }
 
         m.edit({
             embeds: [townEmbed],
