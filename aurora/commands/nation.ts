@@ -7,12 +7,11 @@ import {
     EmbedBuilder
 } from "discord.js"
 
-import { Aurora } from "earthmc"
+import { Aurora, type SquaremapTown } from "earthmc"
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 import News from "../../bot/objects/News.js"
 
-import * as api from "../../bot/utils/api.js"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
@@ -319,8 +318,8 @@ export default {
                     .catch(() => {})
             }
 
-            const capitalColours = await api.get(`aurora/towns/${nation.capital.name}`)
-                .then((t: any) => t.colourCodes).catch(() => {})
+            const capitalColours = await Aurora.Towns.get(nation.capital.name)
+                .then((t: SquaremapTown) => t.colours).catch(() => {})
 
             const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
             nationEmbed.setColor(colour)

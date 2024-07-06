@@ -36,7 +36,7 @@ export type Button = {
     permissions?: any[]
     description?: string
     disabled?: boolean
-    execute: (client: Client, interaction: BaseInteraction, args?: any[]) => any
+    execute: (client: Client, interaction: BaseInteraction, args?: string[]) => any
 }
 
 export type DJSEvent = {
@@ -71,10 +71,10 @@ export interface MapDB {
     setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>
     setResidents(residents: DBResident[]): Promise<void>
-    getTowns(): Promise<any>
-    setTowns(towns: any[]): Promise<void>
-    getNations(): Promise<any>
-    setNations(nations: any[]): Promise<void>
+    getTowns(): Promise<DBTown[]>
+    setTowns(towns: DBTown[]): Promise<void>
+    getNations(): Promise<DBNation[]>
+    setNations(nations: DBNation[]): Promise<void>
 }
 
 export type AllianceType = 'sub' | 'mega' | 'normal'

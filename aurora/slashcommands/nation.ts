@@ -12,6 +12,7 @@ import {
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
 
+import type { SquaremapTown } from 'earthmc'
 import { Aurora, NotFoundError } from 'earthmc'
 
 export default {
@@ -211,8 +212,8 @@ export default {
                 return interaction.editReply({ embeds: [nationEmbed] })
             }
             
-            const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: any) => {
-                return t instanceof NotFoundError ? null : t.colourCodes
+            const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: SquaremapTown) => {
+                return t instanceof NotFoundError ? null : t.colours
             })
 
             const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua

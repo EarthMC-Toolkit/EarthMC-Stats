@@ -8,7 +8,7 @@ import {
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
 import * as database from "../../bot/utils/database.js"
-import type { AllianceType } from "../../bot/types.js"
+import type { AllianceType, DBAlliance } from "../../bot/types.js"
 import { argsHelper, AURORA, botDevs, defaultSortAlliance, embedField, jsonReq, paginator } from "../../bot/utils/fn.js"
 import { Aurora } from "earthmc"
 
@@ -951,7 +951,7 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
         defaultSortAlliance(alliances)
 
         const arg1 = args[0]?.toLowerCase()
-        const filterAlliances = (arr: any[], key: string) => 
+        const filterAlliances = (arr: DBAlliance[], key: string) => 
             arr.filter(a => a.allianceName.toLowerCase().includes(key))
 
         if (arg1 && arg1 == "search") {

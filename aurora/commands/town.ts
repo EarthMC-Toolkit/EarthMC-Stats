@@ -1,6 +1,8 @@
 import * as database from "../../bot/utils/database.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
+
+import type { SquaremapTown } from "earthmc"
 import { Aurora, NotFoundError, formatString } from "earthmc"
 
 import { 
@@ -17,7 +19,7 @@ import {
     AURORA
 } from "../../bot/utils/fn.js"
 
-import type { DBNation } from "../../bot/types.js"
+import type { DBNation, DBTown } from "../../bot/types.js"
 
 export default {
     name: "town",
@@ -214,7 +216,7 @@ export default {
                 return "" + resident + " | Unknown"
             }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-            const townColours = await Aurora.Towns.get(town.name).then((t: any) => t instanceof NotFoundError ? null : t.colourCodes)
+            const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => t instanceof NotFoundError ? null : t.colours)
             const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
 
             return new CustomEmbed(client, "Town Info | Activity in " + town.name)
@@ -248,7 +250,7 @@ export default {
         const townRank = (towns.findIndex(t => t.name == townName)) + 1
         const mayor = town.mayor.replace(/_/g, "\\_")
         
-        const townColours = await Aurora.Towns.get(town.name).then((t: any) => t instanceof NotFoundError ? null : t.colourCodes)
+        const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => t instanceof NotFoundError ? null : t.colours)
 
         const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
         townEmbed.setColor(town.ruined ? Colors.Orange : colour)
@@ -367,7 +369,7 @@ export default {
     }
 }
 
-function extractTownData(towns: any[]) {
+function extractTownData(towns: DBTown[]) {
     if (!towns) return []
 
     const townData = []
@@ -387,7 +389,7 @@ function extractTownData(towns: any[]) {
     return townData
 }
 
-async function sendList(client: Client, msg: Message, comparator: string, towns: any[]) {
+async function sendList(client: Client, msg: Message, comparator: string, towns: DBTown[]) {
     towns = defaultSort(towns)
     
     const townData = extractTownData(towns)

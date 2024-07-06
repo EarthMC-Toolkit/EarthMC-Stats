@@ -1,7 +1,9 @@
 import { Colors, EmbedBuilder } from "discord.js"
 import type { Message, Client } from "discord.js"
 
+import type { Town } from "earthmc"
 import { Nova, formatString, NotFoundError } from "earthmc"
+
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 import * as fn from '../../bot/utils/fn.js'
@@ -251,8 +253,8 @@ export default {
                             return "" + resident + " | Unknown"
                         }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                        const townColours = await Nova.Towns.get(town.name).then((t: any) => {
-                            return t instanceof NotFoundError ? null : t.colourCodes
+                        const townColours = await Nova.Towns.get(town.name).then((t: Town) => {
+                            return t instanceof NotFoundError ? null : t.colours
                         })
 
                         const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
@@ -289,8 +291,8 @@ export default {
                 const townRank = (towns.findIndex(t => t.name == town.name)) + 1
                 const mayor = town.mayor.replace(/_/g, "\\_")
                 
-                const townColours = await Nova.Towns.get(town.name).then((t: any) => {
-                    return t instanceof NotFoundError ? null : t.colourCodes
+                const townColours = await Nova.Towns.get(town.name).then((t: Town) => {
+                    return t instanceof NotFoundError ? null : t.colours
                 })
 
                 const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))

@@ -20,8 +20,8 @@ type Alliance = {
     map: string
     name: string
     fullName: string
-    nations: any[]
-    leaders: any[]
+    nations: string[]
+    leaders: string[]
     imageURL: string
     discordInvite: string
     type: string

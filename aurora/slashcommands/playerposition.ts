@@ -30,7 +30,7 @@ export default {
             .setAuthor({name: interaction.user.username, iconURL: interaction.user.displayAvatarURL()})
             .setDescription("Unable to fetch Towny data, the server may be down for maintenance.\n\nPlease try again later.")
             .setFooter(fn.devsFooter(client))
-        ]}).then((m: any) => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const ops = opsData.players
         const foundPlayer = ops.find(op => op.name.toLowerCase() == player.toLowerCase())
