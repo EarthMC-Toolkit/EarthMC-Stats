@@ -52,7 +52,7 @@ async function setResidents(residents: any[]) {
 
 const getNations = async (): Promise<DBNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
     return snapshot.docs.flatMap(doc => doc.data().nationArray)
-}) 
+})
 
 const getNation = (nationName: string): Promise<DBNation> => getNations().then(arr => { 
     const nation = arr.find(n => n.name.toLowerCase() == nationName.toLowerCase())

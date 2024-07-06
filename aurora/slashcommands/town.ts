@@ -235,7 +235,7 @@ export default {
                 }
 
                 const disc = townNation?.discord
-                const nationString = !disc ? town.nation : `[${townNation.name}](${disc})`
+                const nationString = !disc ? `\`${town.nation}\`` : `[${townNation.name}](${disc})`
                      
                 townEmbed.addFields(embedField("Nation", nationString, true))
             }
