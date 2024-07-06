@@ -74,7 +74,7 @@ const rdyEvent: DJSEvent = {
 async function registerCommands(client: Client) {
     const slashCommands = fn.readTsFiles(`aurora/slashcommands`)
     const auroraCmds = fn.readTsFiles(`aurora/commands`)
-    const novaCmds = fn.readTsFiles(`nova/commands`)
+    //const novaCmds = fn.readTsFiles(`nova/commands`)
 
     const data = []
 
@@ -86,13 +86,13 @@ async function registerCommands(client: Client) {
             client['auroraCommands'].set(command.name, command)
     }
 
-    for (const file of novaCmds) {
-        const commandFile = await import(`../../nova/commands/${file}`)
-        const command = commandFile.default
+    // for (const file of novaCmds) {
+    //     const commandFile = await import(`../../nova/commands/${file}`)
+    //     const command = commandFile.default
 
-        if (!command.disabled) 
-            client['novaCommands'].set(command.name, command)
-    }
+    //     if (!command.disabled) 
+    //         client['novaCommands'].set(command.name, command)
+    // }
 
     for (const file of slashCommands) {
         const commandFile = await import(`../../aurora/slashcommands/${file}`)
@@ -118,7 +118,7 @@ async function registerCommands(client: Client) {
     else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
 
     console.log(`Commands registered.
-        \nRegular: ${auroraCmds.length + novaCmds.length}
+        \nRegular: ${auroraCmds.length}
         \nSlash: ${slashCommands.length}`
     )
 }
