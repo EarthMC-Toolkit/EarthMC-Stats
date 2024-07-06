@@ -29,10 +29,10 @@ const checkEditor = async (interaction: ChatInputCommandInteraction) => {
 }
 
 const getAlliance = async (options: CommandInteractionOptionResolver, skipCache = true) => {
-    const map = options.getString('map').toLowerCase() == 'nova' ? database.Nova : database.Aurora
+    //const map = options.getString('map').toLowerCase() == 'nova' ? database.Nova : database.Aurora
     const input = options.getString('name').toLowerCase()
 
-    const alliances = await map.getAlliances(skipCache).catch(console.error)
+    const alliances = await database.Aurora.getAlliances(skipCache)
     return alliances?.find(a => a.allianceName.toLowerCase() == input) ?? null
 }
 
