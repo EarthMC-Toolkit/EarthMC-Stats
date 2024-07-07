@@ -15,6 +15,8 @@ import News from "../../bot/objects/News.js"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
+import type { DBSquaremapNation } from "../../bot/types.js"
+
 export default {
     name: "nation",
     description: "Displays info for a nation.",
@@ -38,7 +40,7 @@ export default {
             .setTimestamp()
         
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await Aurora.Nations.all()
+        if (!nations) nations = await Aurora.Nations.all() as DBSquaremapNation[]
 
         if (args[0].toLowerCase() == "list") {
             if (args[1] != null) {

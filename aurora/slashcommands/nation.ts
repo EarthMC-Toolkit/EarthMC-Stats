@@ -15,6 +15,8 @@ import News from "../../bot/objects/News.js"
 import type { SquaremapTown } from 'earthmc'
 import { Aurora, NotFoundError } from 'earthmc'
 
+import type { DBSquaremapNation } from '../../bot/types.js'
+
 export default {
     name: "nation",
     description: "Displays info for a nation.",
@@ -36,7 +38,9 @@ export default {
         const nationsWithoutDuplicates = []
 
         let nations = await database.Aurora.getNations()
-        if (!nations) nations = await Aurora.Nations.all() // TODO: Should probably handle this error case
+
+        // TODO: Should probably handle this error case
+        if (!nations) nations = await Aurora.Nations.all() as DBSquaremapNation[]
 
         if (subCmd == "list") {
             let comparator = interaction.options.getString("comparator")

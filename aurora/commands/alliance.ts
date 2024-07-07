@@ -1089,13 +1089,6 @@ async function sendSingleAlliance(
     const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
 
     const allianceEmbed = new CustomEmbed(client, `(Aurora) Alliance Info | ${getName(foundAlliance)}${rank}`)
-        .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
-        .setColor(foundAlliance.colours 
-            ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
-            : Colors.DarkBlue
-        )
-        .setDefaultAuthor(message)
-        .setTimestamp()
         .addFields(
             embedField("Leader(s)", leadersStr, false),
             embedField("Type", allianceType, true),
@@ -1105,6 +1098,13 @@ async function sendSingleAlliance(
             embedField("Residents", foundAlliance.residents.toString(), true),
             embedField("Online", foundAlliance.online.length.toString(), true)
         )
+        .setColor(foundAlliance.colours 
+            ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
+            : Colors.DarkBlue
+        )
+        .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
+        .setDefaultAuthor(message)
+        .setTimestamp()
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") 
         allianceEmbed.setURL(foundAlliance.discordInvite)

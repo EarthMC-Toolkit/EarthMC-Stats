@@ -13,7 +13,7 @@ import type {
 
 import { divideArray, sortByOrder } from "./fn.js"
 import { db } from "../constants.js"
-import type { DBAlliance, DBNation, DBTown } from '../types.js'
+import type { DBAlliance, DBSquaremapNation, DBSquaremapTown } from '../types.js'
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -50,11 +50,11 @@ async function setResidents(residents: any[]) {
     }
 }
 
-const getNations = async (): Promise<DBNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
+const getNations = async (): Promise<DBSquaremapNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
     return snapshot.docs.flatMap(doc => doc.data().nationArray)
 })
 
-const getNation = (nationName: string): Promise<DBNation> => getNations().then(arr => { 
+const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations().then(arr => { 
     const nation = arr.find(n => n.name.toLowerCase() == nationName.toLowerCase())
     return nation ?? null
 })
@@ -70,10 +70,10 @@ async function setNations(nations: any[]) {
     }
 }
 
-const getTowns = async (): Promise<DBTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
+const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
-async function setTowns(towns: DBTown[]) {
+async function setTowns(towns: DBSquaremapTown[]) {
     const dividedTownsArray = divideArray(towns, 6)
     let counter = 0
 
@@ -98,12 +98,16 @@ async function getAlliance(name: string) {
     const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
     let onlineInAlliance = []
     
+    let totalWealth = 0
+
     const data = await getOnlinePlayerData()
     if (!data) return null
     
     allianceNations.forEach(n => {
         const onlineInNation = n.residents.filter(res => data.players.find(op => op.name == res))
         onlineInAlliance = onlineInAlliance.concat(onlineInNation)
+
+        totalWealth += n.wealth
     })
 
     // Only get rank if 2 or more alliances exist.
@@ -143,8 +147,9 @@ async function getAlliance(name: string) {
         //#endregion
 
         const index = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName) as number
-        foundAlliance["rank"] = index + 1
-        foundAlliance["online"] = onlineInAlliance
+        foundAlliance.rank = index + 1
+        foundAlliance.online = onlineInAlliance
+        foundAlliance.wealth = totalWealth
     }
 
     return foundAlliance

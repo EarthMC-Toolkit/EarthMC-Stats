@@ -19,7 +19,7 @@ import {
     AURORA
 } from "../../bot/utils/fn.js"
 
-import type { DBNation, DBTown } from "../../bot/types.js"
+import type { DBNation, DBSquaremapTown } from "../../bot/types.js"
 
 export default {
     name: "town",
@@ -257,7 +257,7 @@ export default {
             .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         
         if (town.board) {
-            townEmbed.setDescription(`**${town.board}**`)
+            townEmbed.setDescription(`*${town.board}*`)
         }
 
         const townResidentsLength = town.residents.length
@@ -311,13 +311,19 @@ export default {
             townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}`, true))
         }
 
-        townEmbed.setTimestamp()
-            .setFooter(devsFooter(client))
+        if (town.wealth) {
+            townEmbed.addFields(embedField("Wealth", `\`${town.wealth}\`G`, true))
+        }
+
+        townEmbed.addFields(embedField(
+            "Location",
+            `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
+            true
+        ))
+
+        townEmbed.setFooter(devsFooter(client))
             .setThumbnail('attachment://aurora.png')
-            .addFields(embedField("Location", 
-                `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
-                true
-            ))
+            .setTimestamp()
 
         if (!town.ruined) {
             // RESIDENTS
@@ -392,7 +398,7 @@ type ExtractedTown = {
     wealth: number
 }
 
-function extractTownData(towns: DBTown[]) {
+function extractTownData(towns: DBSquaremapTown[]) {
     if (!towns) return []
 
     const townData: ExtractedTown[] = []
@@ -415,7 +421,7 @@ function extractTownData(towns: DBTown[]) {
 
 const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??`
 
-async function sendList(client: Client, msg: Message, comparator: string, towns: DBTown[]) {
+async function sendList(client: Client, msg: Message, comparator: string, towns: DBSquaremapTown[]) {
     towns = defaultSort(towns)
     
     const townData = extractTownData(towns)

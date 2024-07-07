@@ -7,7 +7,7 @@ import type {
     SharedNameAndDescription
 } from "discord.js"
 
-import type { Dynmap, Nation, Squaremap, SquaremapTown } from "earthmc"
+import type { Dynmap, Nation, Squaremap, SquaremapNation, SquaremapTown, Town } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type ErrorWithCode = Error & { code: number }
@@ -71,10 +71,10 @@ export interface MapDB {
     setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>
     setResidents(residents: DBResident[]): Promise<void>
-    getTowns(): Promise<DBTown[]>
-    setTowns(towns: DBTown[]): Promise<void>
-    getNations(): Promise<DBNation[]>
-    setNations(nations: DBNation[]): Promise<void>
+    getTowns(): Promise<(DBTown | DBSquaremapTown)[]>
+    setTowns(towns: (DBTown | DBSquaremapTown)[]): Promise<void>
+    getNations(): Promise<(DBNation | DBSquaremapNation)[]>
+    setNations(nations: (DBNation | DBSquaremapNation)[]): Promise<void>
 }
 
 export type AllianceType = 'sub' | 'mega' | 'normal'
@@ -116,15 +116,21 @@ export interface DBPlayer {
     }
 }
 
-export type DBTown = SquaremapTown & {
-    ruined?: boolean
+export type TownInfo = { 
+    ruined?: boolean 
 }
 
-export type DBNation = Nation & {
-    kingPrefix?: string
-    flag?: string
-    discord?: string
-}
+export type NationInfo = Partial<{
+    kingPrefix: string
+    flag: string
+    discord: string
+}>
+
+export type DBTown = Town & TownInfo
+export type DBSquaremapTown = SquaremapTown & TownInfo
+
+export type DBNation = Nation & NationInfo
+export type DBSquaremapNation = SquaremapNation & NationInfo
 
 export interface SkinOpts {
     view: SkinType2D | SkinType3D

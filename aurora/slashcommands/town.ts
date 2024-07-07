@@ -17,7 +17,7 @@ import {
 
 import { Aurora, formatString, NotFoundError } from 'earthmc'
 
-import type { DBNation, DBTown } from '../../bot/types.js'
+import type { DBNation, DBSquaremapTown } from '../../bot/types.js'
 
 export default {
     name: "town",
@@ -358,7 +358,7 @@ export default {
             .addStringOption(option => option.setName("comparator").setDescription("The comparator to use which the list will be filtered by.")))
 }
 
-function extractTownData(towns: DBTown[]) {
+function extractTownData(towns: DBSquaremapTown[]) {
     if (!towns) return []
 
     const townData = []
@@ -386,7 +386,7 @@ function sendList(
     client: Client, 
     interaction: ChatInputCommandInteraction, 
     comparator: string, 
-    towns: DBTown[]
+    towns: DBSquaremapTown[]
 ) {
     towns = defaultSort(towns)
   
