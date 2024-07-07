@@ -96,6 +96,7 @@ export type DBAlliance = {
     area: number
     online: string[]
     rank: number
+    wealth: number
 }>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'

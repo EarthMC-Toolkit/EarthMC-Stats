@@ -1097,11 +1097,12 @@ async function sendSingleAlliance(
         .setDefaultAuthor(message)
         .setTimestamp()
         .addFields(
-            embedField("Leader(s)", leadersStr, true),
+            embedField("Leader(s)", leadersStr, false),
+            embedField("Type", allianceType, true),
+            embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
+            embedField("Size", `\`${foundAlliance.area}\` Chunks`, true),
             embedField("Towns", foundAlliance.towns.toString(), true),
             embedField("Residents", foundAlliance.residents.toString(), true),
-            embedField("Type", allianceType, true),
-            embedField("Size", foundAlliance.area + " Chunks", true),
             embedField("Online", foundAlliance.online.length.toString(), true)
         )
 

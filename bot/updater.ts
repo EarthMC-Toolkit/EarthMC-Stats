@@ -45,7 +45,7 @@ async function initUpdates() {
     // Pre-fill everything but news.
     await updateAPI(false, true)
 
-    await updateData(true, true, false)
+    await updateAurora(true)
 
     if (prod) {
         await sendEmptyAllianceNotif(AURORA)
@@ -57,15 +57,14 @@ async function initUpdates() {
         liveTownless()
     }, oneMinute)
 
+    // Update Aurora DB info every 60s.
+    setInterval(() => updateAurora(false), oneMinute)
+
     // Update alliances and send to API.
     setInterval(async () => {
         await updateAlliances(AURORA)
-        await updateAlliances(NOVA)
         updateAPI(false, true)
-    }, 2.5 * oneMinute)
-
-    // Update Aurora every 60s.
-    setInterval(() => updateData(false, true, false), oneMinute)
+    }, 2 * oneMinute)
 
     // Send news to API (for both maps) every 10m.
     setInterval(async () => {
@@ -87,12 +86,11 @@ async function updateNews() {
     api.sendNews(client, 'nova')
 }
 
-async function updateData(botStarting = false, updateAurora = true, _updateNova = false) {
+async function updateAurora(botStarting = false) {
     const dbPlayers = await database.getPlayers(botStarting) as DBPlayer[]
     const players = dbPlayers ? await purgeInactive(dbPlayers) : []
 
-    if (updateAurora) await updateMap(players, AURORA)
-    //if (updateNova) await updateMap(players, NOVA)
+    await updateMap(players, AURORA)
 }
 
 async function updateMap(players: DBPlayer[], map: MapInstance) {
