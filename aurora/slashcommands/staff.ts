@@ -28,7 +28,7 @@ export default {
             case "online": {
                 const ops = await Aurora.Players.online().catch(() => {})
                 if (!ops) return await interaction.reply({ 
-                    embeds: [fn.fetchError],
+                    embeds: [fn.fetchError]
                     //ephemeral: true
                 })
 
