@@ -1092,7 +1092,7 @@ async function sendSingleAlliance(
         .addFields(
             embedField("Leader(s)", leadersStr, false),
             embedField("Type", allianceType, true),
-            embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
+            //embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
             embedField("Size", `\`${foundAlliance.area}\` Chunks`, true),
             embedField("Towns", foundAlliance.towns.toString(), true),
             embedField("Residents", foundAlliance.residents.toString(), true),
