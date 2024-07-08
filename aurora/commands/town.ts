@@ -240,7 +240,8 @@ export default {
         if (!town) return m.edit({embeds: [new EmbedBuilder()
             .setTitle("Invalid town name!")
             .setDescription(opt + " doesn't seem to be a valid town name, please try again.")
-            .setTimestamp().setColor(Colors.Red)
+            .setColor(Colors.Red)
+            .setTimestamp()
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         towns = defaultSort(towns)
@@ -335,7 +336,7 @@ export default {
                     ))    
                 }  
                 else townEmbed.addFields(embedField("Residents", townResidentsLength.toString()))
-            } 
+            }
             else townEmbed.addFields(embedField("Residents", "There are no residents in this town?"))
 
             const townCouncillorsLen = town.councillors.length
@@ -373,13 +374,14 @@ export default {
             // }
         }
 
-        // const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-        // townEmbed.addFields(embedField("Flags", `
-        //     ${town.flags.pvp ? green : red } PVP
-        // `))
+        const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
+        townEmbed.addFields(embedField("Flags", `
+            ${town.flags.pvp ? green : red } PVP
+            ${town.flags.public ? green : red } Public
+        `))
 
         // ${town.mobs ? green : red } Mobs 
-        // ${town.public? green : red } Public
+        // ${town.public ? green : red } Public
         // ${town.explosion ? green : red } Explosions 
         // ${town.fire ? green : red } Fire Spread
 
