@@ -239,7 +239,7 @@ export default {
                 
                 townEmbed.addFields(
                     embedField("Nation", nationString, true),
-                    embedField("Founded", `<t:${town.foundedTimestamp}:R>`)
+                    embedField("Founded", `<t:${town.foundedTimestamp}:R>`, true)
                 )
             }
 
