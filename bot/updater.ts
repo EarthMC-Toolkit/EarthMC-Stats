@@ -1,33 +1,24 @@
 //#region Imports
-import Queue from "./objects/Queue.js"
+//import Queue from "./objects/Queue.js"
 
 import * as api from "../bot/utils/api.js"
 import * as database from "../bot/utils/database.js"
 import * as fn from "../bot/utils/fn.js"
 
 import { 
-    type Player,
-    Aurora, 
-    MojangLib, 
-    Nova, 
     formatString
 } from "earthmc"
 
 import { 
     prod, client, 
-    AURORA, NOVA, 
-    townlessSubbedChannels, 
-    queueSubbedChannels
+    AURORA, NOVA
 } from "./constants.js"
 
 import { 
-    FieldValue,
     Timestamp
 } from "firebase-admin/firestore"
 
 import { 
-    type Collection,
-    type Message, 
     type TextChannel,
     Colors, EmbedBuilder 
 } from "discord.js"
@@ -52,10 +43,10 @@ async function initUpdates() {
         await sendEmptyAllianceNotif(AURORA)
     }
     
-    setInterval(async () => { 
-        await liveQueue() 
-        liveTownless()
-    }, oneMinute)
+    // setInterval(async () => { 
+    //     await liveQueue() 
+    //     liveTownless()
+    // }, oneMinute)
 
     // Update Aurora DB info every 60s.
     setInterval(() => updateAurora(), oneMinute)
@@ -66,10 +57,8 @@ async function initUpdates() {
         api.sendAuroraAlliances()
     }, 2 * oneMinute)
 
-    // Send news to API (for both maps) every 10m.
-    setInterval(async () => {
-        await updateNews()
-    }, 15 * oneMinute)
+    // Send news to API (for both maps).
+    setInterval(() => updateNews(), 10 * oneMinute)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
@@ -280,135 +269,128 @@ async function updateMapData(map: MapInstance) {
 //#endregion
 
 //#region Live Stuff
-const filterLiveEmbeds = (arr: Collection<string, Message>, mapName: string) => {
-    return arr.filter(msg => msg.embeds.length >= 1 
-        && msg.embeds[0]?.title?.includes(`Townless Players (${mapName})`) 
-        && msg.author.id == "656231016385478657"
-    )
-}
+// const filterLiveEmbeds = (arr: Collection<string, Message>, mapName: string) => {
+//     return arr.filter(msg => msg.embeds.length >= 1 
+//         && msg.embeds[0]?.title?.includes(`Townless Players (${mapName})`) 
+//         && msg.author.id == "656231016385478657"
+//     )
+// }
 
-const editEmbed = (msg: Message, players: Player[], mapName: string) => {
-    const names = players.map(p => p.name).join('\n')
-    const newEmbed = new EmbedBuilder()
-        .setTitle(`Live Townless Players (${mapName})`)
-        .setColor(Colors.DarkPurple)
-        .setFooter(fn.devsFooter(client))
-        .setTimestamp()
+// const editEmbed = (msg: Message, players: Player[], mapName: string) => {
+//     const names = players.map(p => p.name).join('\n')
+//     const newEmbed = new EmbedBuilder()
+//         .setTitle(`Live Townless Players (${mapName})`)
+//         .setColor(Colors.DarkPurple)
+//         .setFooter(fn.devsFooter(client))
+//         .setTimestamp()
 
-    let desc = ""
-    const arrLen = players.toString().length
+//     let desc = ""
+//     const arrLen = players.toString().length
 
-    if (arrLen < 1) desc = "There are currently no townless players!"
-    else {
-        desc = arrLen >= 2048
-            ? "```" + (names.match(/(?:^.*$\n?){1,30}/mg))[0] + "```"
-            : desc = "```" + players[0].name + "\n" + names + "```"
-    }
+//     if (arrLen < 1) desc = "There are currently no townless players!"
+//     else {
+//         desc = arrLen >= 2048
+//             ? "```" + (names.match(/(?:^.*$\n?){1,30}/mg))[0] + "```"
+//             : desc = "```" + players[0].name + "\n" + names + "```"
+//     }
 
-    newEmbed.setDescription(desc)
-    msg.edit({ embeds: [newEmbed] }).catch(err => console.log(err))
-}
+//     newEmbed.setDescription(desc)
+//     msg.edit({ embeds: [newEmbed] }).catch(err => console.log(err))
+// }
 
-async function liveTownless() {
-    const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray
-    const len = townlessSubbedChannelIDs.length
+// async function liveTownless() {
+//     const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray
+//     const len = townlessSubbedChannelIDs.length
 
-    const promiseArr = await Promise.all([
-        Aurora.Players.townless(), 
-        Nova.Players.townless()
-    ])
-    
-    const [auroraTownless, novaTownless] = promiseArr
-    if (!novaTownless && !auroraTownless) return
+//     const auroraTownless = await Aurora.Players.townless()
+//     if (!auroraTownless) return
 
-    // For every townless subbed channel
-    for (let i = 0; i < len; i++) {
-        const cur = townlessSubbedChannelIDs[i]
-        if (!cur || cur == '') continue
+//     // For every townless subbed channel
+//     for (let i = 0; i < len; i++) {
+//         const cur = townlessSubbedChannelIDs[i]
+//         if (!cur || cur == '') continue
  
-        const curChannel = await client.channels.fetch(cur).catch(() => {}) as TextChannel
-        if (!curChannel) {
-            if (!prod) continue
+//         const curChannel = await client.channels.fetch(cur).catch(() => {}) as TextChannel
+//         if (!curChannel) {
+//             if (!prod) continue
 
-            console.log(`${fn.time()} | Deleting unavailable channel '${cur}' in townless subs array!`)
+//             console.log(`${fn.time()} | Deleting unavailable channel '${cur}' in townless subs array!`)
 
-            townlessSubbedChannels.update({ channelIDs: FieldValue.arrayRemove(cur) })
-            townlessSubbedChannelIDs.splice(i, 1)
+//             townlessSubbedChannels.update({ channelIDs: FieldValue.arrayRemove(cur) })
+//             townlessSubbedChannelIDs.splice(i, 1)
 
-            fn.setTownlessSubbedChannels(townlessSubbedChannelIDs)
-        } else {
-            if (!fn.canViewAndSend(curChannel)) continue
+//             fn.setTownlessSubbedChannels(townlessSubbedChannelIDs)
+//         } else {
+//             if (!fn.canViewAndSend(curChannel)) continue
             
-            // Fetch the channel's messages.
-            const msgs = await curChannel.messages.fetch().catch(e => { console.error(e); return null })
-            if (!msgs) return
+//             // Fetch the channel's messages.
+//             const msgs = await curChannel.messages.fetch().catch(e => { console.error(e); return null })
+//             if (!msgs) return
 
-            if (auroraTownless) {
-                const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora')
-                if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
-            }
+//             const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora')
+//             if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
 
-            if (novaTownless) {
-                const novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
-                if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
-            }
-        }
-    }
-}
+//             // if (novaTownless) {
+//             //     const novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
+//             //     if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
+//             // }
+//         }
+//     }
+// }
 
-async function liveQueue() {              
-    const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
-    const aurora = server ? await database.Aurora.getOnlinePlayerData() : null
-    const nova   = server ? await database.Nova.getOnlinePlayerData() : null
+// async function liveQueue() {              
+//     const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
+//     const aurora = server ? await database.Aurora.getOnlinePlayerData() : null
+//     //const nova   = server ? await database.Nova.getOnlinePlayerData() : null
 
-    const queue = new Queue(server, aurora, nova)
-    await queue.init()
+//     const queue = new Queue(server, aurora)
+//     await queue.init()
 
-    const embed = new EmbedBuilder()
-        .setTitle("Queue & Player Info | Live")
-        .setThumbnail(client.user.avatarURL())
-        .setColor(Colors.Green)
+//     const embed = new EmbedBuilder()
+//         .setTitle("Queue & Player Info | Live")
+//         .setThumbnail(client.user.avatarURL())
+//         .setColor(Colors.Green)
 
-    const totalMax = (queue.nova.config?.maxcount ?? 100) + (queue.aurora.config?.maxcount ?? 250)
-    embed.addFields(
-        fn.embedField("Total Queue Count", queue.get(), true),
-        fn.embedField("Total Server Count", `${queue.totalPlayers}/${totalMax}`, true),
-        fn.embedField("Aurora", queue.aurora.formatted),
-        fn.embedField("Nova", queue.nova.formatted)
-    )
+//     const totalMax = queue.aurora.config?.maxcount ?? 250
+//     embed.addFields(
+//         fn.embedField("Total Queue Count", queue.get(), true),
+//         fn.embedField("Total Server Count", `${queue.totalPlayers}/${totalMax}`, true),
+//         fn.embedField("Aurora", queue.aurora.formatted)
+//         //fn.embedField("Nova", queue.nova.formatted)
+//     )
     
-    const queueSubbedChannelIDs = fn.queueSubbedChannelArray
-    const len = queueSubbedChannelIDs.length
+//     const queueSubbedChannelIDs = fn.queueSubbedChannelArray
+//     const len = queueSubbedChannelIDs.length
 
-    for (let i = 0; i < len; i++) {
-        const cur = queueSubbedChannelIDs[i]
+//     for (let i = 0; i < len; i++) {
+//         const cur = queueSubbedChannelIDs[i]
 
-        if (!cur || cur == '') continue
-        const currentQueueSubbedChannel = client.channels.cache.get(cur) as TextChannel
+//         if (!cur || cur == '') continue
+//         const currentQueueSubbedChannel = client.channels.cache.get(cur) as TextChannel
 
-        if (!currentQueueSubbedChannel) {
-            if (!prod) continue
+//         if (!currentQueueSubbedChannel) {
+//             if (!prod) continue
 
-            // Delete unavailable channel
-            await queueSubbedChannels.update({ channelIDs: FieldValue.arrayRemove(cur) })
-            queueSubbedChannelIDs.splice(i, 1)
+//             // Delete unavailable channel
+//             await queueSubbedChannels.update({ channelIDs: FieldValue.arrayRemove(cur) })
+//             queueSubbedChannelIDs.splice(i, 1)
 
-            fn.setQueueSubbedChannels(queueSubbedChannelIDs)
-        } else {
-            if (!fn.canViewAndSend(currentQueueSubbedChannel)) continue
+//             fn.setQueueSubbedChannels(queueSubbedChannelIDs)
+//         } else {
+//             if (!fn.canViewAndSend(currentQueueSubbedChannel)) continue
 
-            currentQueueSubbedChannel.messages.fetch().then(async msgs => {
-                const queueEmbedArray = msgs.filter(msg =>
-                    msg.embeds.length >= 1 && 
-                    msg.embeds[0].title.includes('Queue') && 
-                    msg.author.id == "656231016385478657"
-                )
+//             currentQueueSubbedChannel.messages.fetch().then(async msgs => {
+//                 const queueEmbedArray = msgs.filter(msg =>
+//                     msg.embeds.length >= 1 && 
+//                     msg.embeds[0].title.includes('Queue') && 
+//                     msg.author.id == "656231016385478657"
+//                 )
 
-                queueEmbedArray.forEach(m => m.edit({ embeds: [embed] }).catch(() => {}))
-            }).catch(() => {})
-        }
-    }
-}
+//                 queueEmbedArray.forEach(m => m.edit({ embeds: [embed] }).catch(() => {}))
+//             }).catch(() => {})
+//         }
+//     }
+// }
 
 // let townsCache = []
 // function updateTownCache(data: any[]) { 
@@ -582,7 +564,7 @@ async function purgeInactive(players: DBPlayer[]) {
     const now = new Date()
     const len = players.length
 
-    let i = 0, counter = 0
+    let i = 0, purgedAmt = 0
 
     //#region Purge loop
     for (i; i < len; i++) {
@@ -591,7 +573,7 @@ async function purgeInactive(players: DBPlayer[]) {
 
         if (!lo) {
             players.splice(i, 1)
-            counter++
+            purgedAmt++
 
             continue
         }
@@ -606,13 +588,15 @@ async function purgeInactive(players: DBPlayer[]) {
         if (lo.nova && !purged(lo.nova, now)) continue
 
         players.splice(i, 1)
-        counter++
+        purgedAmt++
         //#endregion
     }
     //#endregion
 
-    console.log(`Purged ${counter} inactive/corrupted players.`)
-    await database.setPlayers(players)
+    if (purgedAmt > 0) {
+        console.log(`Purged ${purgedAmt} inactive/corrupted players.`)
+        await database.setPlayers(players)
+    }
 
     return players
 }

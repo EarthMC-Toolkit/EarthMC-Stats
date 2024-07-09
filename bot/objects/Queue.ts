@@ -1,3 +1,4 @@
+import type { SquaremapPlayersResponse } from 'earthmc'
 import * as fn from '../utils/fn.js'
     
 type Map = {
@@ -34,15 +35,15 @@ class Queue {
     totalPlayers = 0
 
     aurora = initMap()
-    nova   = initMap()
+    //nova   = initMap()
 
-    constructor(server, aurora, nova) {
+    constructor(server, aurora: SquaremapPlayersResponse) {
         this.#setServerInfo(server)
-        this.#setMapInfo([aurora, nova])
+        this.#setMapInfo([aurora])
     }
     
     get = () => {
-        const q = this.totalPlayers - (this.aurora.count - this.nova.count)
+        const q = this.totalPlayers - this.aurora.count
         return (q < 0 ? 0 : q).toString()
     }
     
@@ -52,12 +53,12 @@ class Queue {
     }
 
     async #fetchConfigs() {
-        this.nova.config = await fn.jsonReq("https://earthmc.net/map/nova/standalone/MySQL_configuration.php")
+        //this.nova.config = await fn.jsonReq("https://earthmc.net/map/nova/standalone/MySQL_configuration.php")
         this.aurora.config = await fn.jsonReq("https://map.earthmc.net/tiles/players.json")
     }
 
     #formatMaps() {
-        this.nova.formatted = format(this.nova)
+        //this.nova.formatted = format(this.nova)
         this.aurora.formatted = format(this.aurora)
     }
 
@@ -67,7 +68,7 @@ class Queue {
     }
 
     #setMapInfo(arr: any[]) {
-        const maps = [this.aurora, this.nova]
+        const maps = [this.aurora]
         arr.forEach((map, i) => {
             maps[i].online = !!map
             maps[i].count = map?.currentcount ?? 0
