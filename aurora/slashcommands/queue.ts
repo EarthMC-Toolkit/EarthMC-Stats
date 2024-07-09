@@ -4,7 +4,7 @@ import {
     Colors, EmbedBuilder
 } from "discord.js"
 
-import { MojangLib } from 'earthmc'
+import { MojangLib, OfficialAPI } from 'earthmc'
 
 import * as database from "../../bot/utils/database.js"
 
@@ -19,11 +19,11 @@ export default {
 
         const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
 
-        const aurora = await database.Aurora.getOnlinePlayerData()
+        const mapRes = await database.Aurora.getOnlinePlayerData()
         //const nova = await database.Nova.getOnlinePlayerData().catch(() => {})
 
-        const queue = new Queue(server, aurora)
-        await queue.init()
+        const apiRes = await OfficialAPI.V3.serverInfo()
+        const queue = new Queue(server, { mapRes, apiRes })
 
         const totalMax = queue.aurora.max
         const embed = new EmbedBuilder()

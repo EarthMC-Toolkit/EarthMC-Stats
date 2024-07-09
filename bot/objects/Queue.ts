@@ -1,4 +1,4 @@
-import type { SquaremapPlayersResponse } from 'earthmc'
+import type { RawServerInfoV3, SquaremapPlayersResponse } from 'earthmc'
 
 interface Map {
     online: boolean
@@ -35,19 +35,16 @@ class Queue {
     aurora = initMap()
     //nova   = initMap()
 
-    constructor(server, aurora: SquaremapPlayersResponse) {
+    constructor(server, aurora: { mapRes: SquaremapPlayersResponse, apiRes: RawServerInfoV3 }) {
         this.#setServerInfo(server)
-        this.#setAuroraInfo(aurora)
+        this.#setAuroraInfo(aurora.mapRes, aurora.apiRes)
+
+        this.#formatMaps()
     }
     
     get = () => {
         const q = this.totalPlayers - this.aurora.count
         return (q < 0 ? 0 : q).toString()
-    }
-    
-    async init() {
-        this.aurora.max
-        this.#formatMaps()
     }
 
     #formatMaps() {
@@ -60,10 +57,11 @@ class Queue {
         this.totalPlayers = server?.players?.online
     }
 
-    #setAuroraInfo(res: SquaremapPlayersResponse) {
-        this.aurora.online = !!res
-        this.aurora.count = res?.players.length ?? 0
-        this.aurora.max = res.max
+    #setAuroraInfo(mapRes: SquaremapPlayersResponse, apiRes: RawServerInfoV3) {
+        this.aurora.online = !!mapRes
+
+        this.aurora.max = mapRes.max
+        this.aurora.count = apiRes.stats.numOnlinePlayers
     }
 }
 
