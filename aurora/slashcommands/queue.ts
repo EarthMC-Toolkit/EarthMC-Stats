@@ -17,22 +17,22 @@ export default {
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const aurora = await database.Aurora.getOnlinePlayerData().catch(() => {})
-        const nova = await database.Nova.getOnlinePlayerData().catch(() => {})
         const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
 
-        const queue = new Queue(server, aurora, nova)
+        const aurora = await database.Aurora.getOnlinePlayerData()
+        //const nova = await database.Nova.getOnlinePlayerData().catch(() => {})
+
+        const queue = new Queue(server, aurora)
         await queue.init()
 
-        const totalMax = (queue.nova.config?.maxcount ?? 200) + (queue.aurora.config?.max ?? 200)
+        const totalMax = queue.aurora.max
         const embed = new EmbedBuilder()
             .setTitle("Queue & Player Info")
             .setColor(Colors.Green)
             .addFields(
                 embedField("Players In Queue", queue.get()),
                 embedField("Total", `${queue.totalPlayers}/${totalMax}`),
-                embedField("Aurora", queue.aurora.formatted, true),
-                embedField("Nova", queue.nova.formatted, true)
+                embedField("Aurora", queue.aurora.formatted, true)
             )
 
         await interaction.editReply({ embeds: [embed] })

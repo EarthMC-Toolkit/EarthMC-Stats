@@ -1,21 +1,18 @@
 import type { SquaremapPlayersResponse } from 'earthmc'
-import * as fn from '../utils/fn.js'
-    
-type Map = {
-    online: boolean,
-    count: number,
-    config: any,
+
+interface Map {
+    online: boolean
+    max: number
+    count: number
     formatted: string
 }
 
 function format(map: Map) {
-    const max = map.config?.maxcount
-    const diff = max - map.count
-
+    const diff = map.max - map.count
     const freeSpots = diff > 0 ? diff : 0
 
     const count = `${ 
-        map.online ? `${freeSpots < 1 ? `**FULL** ${map.count}` : map.count}/${max}`
+        map.online ? `${freeSpots < 1 ? `**FULL** ${map.count}` : map.count}/${map.max}`
         : ":red_circle: **OFFLINE**" 
     }`
                    
@@ -26,6 +23,7 @@ function format(map: Map) {
 const initMap = () => ({
     online: true,
     count: 0,
+    max: 400,
     config: null,
     formatted: ""
 }) as Map
@@ -39,7 +37,7 @@ class Queue {
 
     constructor(server, aurora: SquaremapPlayersResponse) {
         this.#setServerInfo(server)
-        this.#setMapInfo([aurora])
+        this.#setAuroraInfo(aurora)
     }
     
     get = () => {
@@ -48,13 +46,8 @@ class Queue {
     }
     
     async init() {
-        await this.#fetchConfigs()
+        this.aurora.max
         this.#formatMaps()
-    }
-
-    async #fetchConfigs() {
-        //this.nova.config = await fn.jsonReq("https://earthmc.net/map/nova/standalone/MySQL_configuration.php")
-        this.aurora.config = await fn.jsonReq("https://map.earthmc.net/tiles/players.json")
     }
 
     #formatMaps() {
@@ -67,12 +60,10 @@ class Queue {
         this.totalPlayers = server?.players?.online
     }
 
-    #setMapInfo(arr: any[]) {
-        const maps = [this.aurora]
-        arr.forEach((map, i) => {
-            maps[i].online = !!map
-            maps[i].count = map?.currentcount ?? 0
-        })
+    #setAuroraInfo(res: SquaremapPlayersResponse) {
+        this.aurora.online = !!res
+        this.aurora.count = res?.players.length ?? 0
+        this.aurora.max = res.max
     }
 }
 

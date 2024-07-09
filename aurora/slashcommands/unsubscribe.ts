@@ -64,6 +64,7 @@ const invalidUsage = new EmbedBuilder()
 
 export default {
   name: "unsubscribe",
+  disabled: true,
   run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         if (!interaction.guild) return interaction.reply({embeds: [
             new EmbedBuilder()

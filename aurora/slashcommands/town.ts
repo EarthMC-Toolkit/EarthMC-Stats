@@ -236,8 +236,11 @@ export default {
 
                 const disc = townNation?.discord
                 const nationString = !disc ? `\`${town.nation}\`` : `[${townNation.name}](${disc})`
-                     
-                townEmbed.addFields(embedField("Nation", nationString, true))
+                
+                townEmbed.addFields(
+                    embedField("Nation", nationString, true),
+                    embedField("Founded", `<t:${town.foundedTimestamp}:R>`)
+                )
             }
 
             const townAreaStr = `\`${town.area}\` / `
@@ -248,7 +251,7 @@ export default {
                 const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
 
                 townEmbed.addFields(
-                    embedField("Town Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
+                    embedField("Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
                 )
             } else {
                 const claimBonus = Math.min(multiplier, maxTownSize)

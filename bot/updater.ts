@@ -37,10 +37,12 @@ async function initUpdates() {
         await updateAurora(true)
         await updateAlliances(AURORA)
 
+        await sendEmptyAllianceNotif(AURORA)
+
         await api.sendAuroraAlliances()
         await api.sendNovaAlliances()
 
-        await sendEmptyAllianceNotif(AURORA)
+        await updateNews()
     }
     
     // setInterval(async () => { 
@@ -75,9 +77,7 @@ async function updateNews() {
 
 async function updateAurora(botStarting = false) {
     const dbPlayers = await database.getPlayers(botStarting) as DBPlayer[]
-    const players = dbPlayers ? await purgeInactive(dbPlayers) : []
-
-    await updateMap(players, AURORA)
+    await updateMap(dbPlayers || [], AURORA)
 }
 
 async function updateMap(players: DBPlayer[], map: MapInstance) {
@@ -156,7 +156,6 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
     }
 }
 
-// Updates: Player info or remove if purged
 async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
     const mapName = map == AURORA ? 'aurora' : 'nova'
 
@@ -351,7 +350,7 @@ async function updateMapData(map: MapInstance) {
 //         .setThumbnail(client.user.avatarURL())
 //         .setColor(Colors.Green)
 
-//     const totalMax = queue.aurora.config?.maxcount ?? 250
+//     const totalMax = queue.aurora.config?.maxcount ?? 200
 //     embed.addFields(
 //         fn.embedField("Total Queue Count", queue.get(), true),
 //         fn.embedField("Total Server Count", `${queue.totalPlayers}/${totalMax}`, true),
@@ -548,7 +547,7 @@ async function updateMapData(map: MapInstance) {
 //     updateTownCache(towns)
 //     //#endregion
 // }
-// //#endregion
+//#endregion
 
 //#region Helper Methods
 const purged = (timestamp: { seconds }, now: Date) => {
