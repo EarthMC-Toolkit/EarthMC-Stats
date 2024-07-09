@@ -42,14 +42,14 @@ import type {
 const oneMinute = 60 * 1000
 
 async function initUpdates() {
-    // Pre-fill everything but news.
-    await updateAPI(false, true)
-
-    await updateAurora(true)
-
     if (prod) {
+        await updateAurora(true)
+        await updateAlliances(AURORA)
+
+        await api.sendAuroraAlliances()
+        await api.sendNovaAlliances()
+
         await sendEmptyAllianceNotif(AURORA)
-        await sendEmptyAllianceNotif(NOVA)
     }
     
     setInterval(async () => { 
@@ -58,27 +58,25 @@ async function initUpdates() {
     }, oneMinute)
 
     // Update Aurora DB info every 60s.
-    setInterval(() => updateAurora(false), oneMinute)
+    setInterval(() => updateAurora(), oneMinute)
 
     // Update alliances and send to API.
     setInterval(async () => {
         await updateAlliances(AURORA)
-        updateAPI(false, true)
+        api.sendAuroraAlliances()
     }, 2 * oneMinute)
 
     // Send news to API (for both maps) every 10m.
     setInterval(async () => {
-        await updateAPI(true, false)
+        await updateNews()
     }, 15 * oneMinute)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
     // }, 2 * oneMinute)
 
-    setInterval(async () => {
-        await sendEmptyAllianceNotif(AURORA)
-        await sendEmptyAllianceNotif(NOVA)
-    }, 720 * oneMinute)
+    // Every 12hr, send empty alliances to #editor-chat
+    setInterval(() => sendEmptyAllianceNotif(AURORA), 720 * oneMinute)
 }
 
 async function updateNews() {
@@ -102,11 +100,6 @@ async function updateMap(players: DBPlayer[], map: MapInstance) {
 //#endregion
 
 //#region Database Update Methods
-async function updateAPI(news: boolean, alliances: boolean) {
-    if (alliances) await api.sendAlliances()
-    if (news) await updateNews()
-}
-
 const mapToString = (map: MapInstance) => map == AURORA ? "Aurora" : "Nova"
 
 // TODO: Set alliances for both maps with a batch update to save on writes

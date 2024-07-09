@@ -3,7 +3,12 @@ import {
     type ChatInputCommandInteraction,
     Colors, EmbedBuilder
 } from "discord.js" 
-import * as fn from'../../bot/utils/fn.js'
+
+import {
+    embedField, 
+    getUserCount,
+    devsFooter
+} from '../../bot/utils/fn.js'
 
 export default {
     name: "stats",
@@ -14,11 +19,11 @@ export default {
             .setTitle("Bot Statistics")
             .setThumbnail(client.user.avatarURL())
             .addFields(
-                fn.embedField("Total Servers: ", client.guilds.cache.size.toString(), true),
-                fn.embedField("Total Users: ", fn.getUserCount(client).toString(), true)
+                embedField("Total Servers: ", client.guilds.cache.size.toString(), true),
+                embedField("Total Users: ", getUserCount(client).toString(), true)
             )
             .setTimestamp()
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
         ]})
     }
 }

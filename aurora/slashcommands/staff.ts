@@ -5,12 +5,17 @@ import {
 } from "discord.js"
 
 import { Aurora } from "earthmc"
-import * as fn from '../../bot/utils/fn.js'
+
+import { 
+    devsFooter, fetchError, 
+    staff, staffListEmbed 
+} from '../../bot/utils/fn.js'
+
 import * as database from "../../bot/utils/database.js"
 
 const getStaff = async(activeOnly: boolean) => {
     const players = await database.getPlayers()
-    const staffList = activeOnly ? fn.staff.active : fn.staff.all()
+    const staffList = activeOnly ? staff.active : staff.all()
 
     return players.filter(p => staffList.find(sm => sm.toLowerCase() == p.name.toLowerCase())).map(player => { 
         const id = player?.linkedID
@@ -28,32 +33,32 @@ export default {
             case "online": {
                 const ops = await Aurora.Players.online().catch(() => {})
                 if (!ops) return await interaction.reply({ 
-                    embeds: [fn.fetchError]
+                    embeds: [fetchError]
                     //ephemeral: true
                 })
 
-                const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+                const onlineStaff = staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
                 const list = "```" + onlineStaff.join(", ").toString() + "```"
 
                 return await interaction.reply({embeds: [new EmbedBuilder()
                     .setTitle("Online Activity | Staff")
                     .setDescription(onlineStaff.length < 1 ? "No staff are online right now! Try again later." : list)
                     .setThumbnail(client.user.avatarURL())
-                    .setFooter(fn.devsFooter(client))
+                    .setFooter(devsFooter(client))
                     .setColor("Random")
                     .setTimestamp()
                 ]})
             }
             case "list": {
                 const staff = await getStaff(true)
-                return await interaction.reply({ embeds: [fn.staffListEmbed(client, staff)] })
+                return await interaction.reply({ embeds: [staffListEmbed(client, staff)] })
             }
             default: return await interaction.reply({ embeds: [new EmbedBuilder()
                 .setTitle("Invalid Arguments!")
                 .setDescription("Usage: `/staff list` or `/staff online`")
                 .setColor(Colors.Red)
                 .setThumbnail(client.user.avatarURL())
-                .setFooter(fn.devsFooter(client))
+                .setFooter(devsFooter(client))
                 .setTimestamp()
             ]})
         }

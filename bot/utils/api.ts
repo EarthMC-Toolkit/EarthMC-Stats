@@ -47,14 +47,18 @@ async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora' 
     console.log(`Sent POST request to ${route}`)
 }
 
-async function sendAlliances() {
+export async function sendNovaAlliances() {
     const novaAlliances = await Nova.getAlliances()
-    const auroraAlliances = await Aurora.getAlliances()
- 
-    if (auroraAlliances) await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
     if (novaAlliances) await sendRequest('nova/alliances', 'PUT', novaAlliances)
 
-    console.log('Sent PUT requests to alliances')
+    console.log('[Nova] Sent PUT requests to alliances')
+}
+
+export async function sendAuroraAlliances() {
+    const auroraAlliances = await Aurora.getAlliances()
+    if (auroraAlliances) await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
+
+    console.log('[Aurora] Sent PUT requests to alliances')
 }
 
 // const getDBPlayers = async () => database.getPlayers().then(players => {
@@ -74,6 +78,6 @@ async function sendAlliances() {
 const get = endpoint => jsonReq(`https://emctoolkit.vercel.app/api/${endpoint}`)
 export {
     replaceWithUnix,
-    sendNews, sendAlliances,
+    sendNews,
     get
 }
