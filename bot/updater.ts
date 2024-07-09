@@ -50,8 +50,8 @@ async function initUpdates() {
     //     liveTownless()
     // }, oneMinute)
 
-    // Update Aurora DB info every 60s.
-    setInterval(() => updateAurora(), oneMinute)
+    // Update Aurora DB info every 90s.
+    setInterval(() => updateAurora(), 1.5 * oneMinute)
 
     // Update alliances and send to API.
     setInterval(async () => {

@@ -13,7 +13,7 @@ import type {
 
 import { divideArray, sortByOrder } from "./fn.js"
 import { db } from "../constants.js"
-import type { DBAlliance, DBSquaremapNation, DBSquaremapTown } from '../types.js'
+import type { DBAlliance, DBResident, DBSquaremapNation, DBSquaremapTown } from '../types.js'
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -39,14 +39,16 @@ async function getResidents() {
     }).catch(() => {})
 }
 
-async function setResidents(residents: any[]) {
-    const dividedResidentsArray = divideArray(residents, 8)
+async function setResidents(residents: DBResident[]) {
+    const dividedResidentsArray = divideArray(residents, 5)
     let counter = 0
 
     cache.set('aurora_residents', residents)
     for (const resident of dividedResidentsArray) {      
         counter++
-        residentDataCollection().doc("residentArray" + counter).set({ residentArray: resident })
+        residentDataCollection()
+            .doc("residentArray" + counter)
+            .set({ residentArray: resident })
     }
 }
 
@@ -59,14 +61,15 @@ const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations
     return nation ?? null
 })
 
-async function setNations(nations: any[]) {
-    const dividedNationsArray = divideArray(nations, 3)
-    let counter = 0
+async function setNations(nations: DBSquaremapNation[]) {
+    //const dividedNationsArray = divideArray(nations, 2)
+    //let counter = 0
 
     cache.set('aurora_nations', nations)
-    for (const nation of dividedNationsArray) {      
-        counter++
-        nationDataCollection().doc("nationArray" + counter).set({ nationArray: nation })
+    for (const nation of nations) {      
+        nationDataCollection()
+            .doc("nationArray1")
+            .set({ nationArray: nation })
     }
 }
 
@@ -74,13 +77,15 @@ const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
 async function setTowns(towns: DBSquaremapTown[]) {
-    const dividedTownsArray = divideArray(towns, 4)
+    const dividedTownsArray = divideArray(towns, 6)
     let counter = 0
 
     cache.set('aurora_towns', towns)
     for (const towns of dividedTownsArray) {
         counter++
-        townDataCollection().doc("townArray" + counter).set({ townArray: towns })
+        townDataCollection()
+            .doc("townArray" + counter)
+            .set({ townArray: towns })
     }
 }
 
