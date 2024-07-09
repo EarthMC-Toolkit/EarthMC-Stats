@@ -40,7 +40,7 @@ async function getResidents() {
 }
 
 async function setResidents(residents: any[]) {
-    const dividedResidentsArray = divideArray(residents, 12)
+    const dividedResidentsArray = divideArray(residents, 8)
     let counter = 0
 
     cache.set('aurora_residents', residents)
@@ -60,7 +60,7 @@ const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations
 })
 
 async function setNations(nations: any[]) {
-    const dividedNationsArray = divideArray(nations, 4)
+    const dividedNationsArray = divideArray(nations, 3)
     let counter = 0
 
     cache.set('aurora_nations', nations)
@@ -74,7 +74,7 @@ const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
 async function setTowns(towns: DBSquaremapTown[]) {
-    const dividedTownsArray = divideArray(towns, 6)
+    const dividedTownsArray = divideArray(towns, 4)
     let counter = 0
 
     cache.set('aurora_towns', towns)
