@@ -45,9 +45,9 @@ async function initUpdates() {
         await updateNews()
     }
 
-    setInterval(async () => {
-        await updateAurora()
+    setInterval(() => updateAurora(), 1.5 * oneMinute)
 
+    setInterval(async () => {
         await updateAlliances(AURORA)
         await api.sendAuroraAlliances()
     }, 2 * oneMinute)
@@ -195,12 +195,12 @@ async function updateMapData(map: MapInstance) {
     const nations = await map.emc.Nations.all(towns as any).catch(console.error)
     if (!nations) return console.log("Could not update map data! 'nations' is null or undefined.")
 
-    console.log('Updating ' + (map == NOVA ? "nova" : "aurora") + ' data..')
+    console.log(`[${map == NOVA ? "NOVA" : "AURORA"}] Updating data..`)
 
     //#region Town Logic 
     const townsArray = towns.map(t => {
         const isNPC = /^NPC[0-9]{1,5}$/.test(t.mayor)
-        t["ruined"] = !isNPC && t.residents ? false : true
+        t.ruined = !isNPC && t.residents ? false : true
 
         return t
     })
@@ -552,7 +552,7 @@ const purged = (timestamp: { seconds }, now: Date) => {
 
 const latinize = (str: string) => formatString(str, true)
 
-async function purgeInactive(players: DBPlayer[]) {
+async function _purgeInactive(players: DBPlayer[]) {
     const now = new Date()
     const len = players.length
 
