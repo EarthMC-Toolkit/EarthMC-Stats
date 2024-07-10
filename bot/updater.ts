@@ -44,19 +44,12 @@ async function initUpdates() {
 
         await updateNews()
     }
-    
-    // setInterval(async () => { 
-    //     await liveQueue() 
-    //     liveTownless()
-    // }, oneMinute)
 
-    // Update Aurora DB info every 90s.
-    setInterval(() => updateAurora(), 1.5 * oneMinute)
-
-    // Update alliances and send to API.
     setInterval(async () => {
+        await updateAurora()
+
         await updateAlliances(AURORA)
-        api.sendAuroraAlliances()
+        await api.sendAuroraAlliances()
     }, 2 * oneMinute)
 
     // Send news to API (for both maps).

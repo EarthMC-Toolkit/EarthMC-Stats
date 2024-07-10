@@ -40,16 +40,21 @@ async function getResidents() {
 }
 
 async function setResidents(residents: DBResident[]) {
-    const dividedResidentsArray = divideArray(residents, 5)
+    cache.set('aurora_residents', residents)
+
+    const dividedResidentsArray = divideArray(residents, 3)
     let counter = 0
 
-    cache.set('aurora_residents', residents)
+    const batch = db.batch()
+
     for (const resident of dividedResidentsArray) {      
         counter++
-        residentDataCollection()
-            .doc("residentArray" + counter)
-            .set({ residentArray: resident })
+
+        const residentRef = residentDataCollection().doc(`residentArray${counter}`)
+        batch.set(residentRef, { residentArray: resident })
     }
+
+    await batch.commit()
 }
 
 const getNations = async (): Promise<DBSquaremapNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
@@ -62,31 +67,35 @@ const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations
 })
 
 async function setNations(nations: DBSquaremapNation[]) {
+    cache.set('aurora_nations', nations)
+
     //const dividedNationsArray = divideArray(nations, 2)
     //let counter = 0
 
-    cache.set('aurora_nations', nations)
-    for (const nation of nations) {      
-        nationDataCollection()
-            .doc("nationArray1")
-            .set({ nationArray: nation })
-    }
+    nationDataCollection()
+        .doc("nationArray1")
+        .set({ nationArray: nations })
 }
 
 const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
 async function setTowns(towns: DBSquaremapTown[]) {
+    cache.set('aurora_towns', towns)
+
     const dividedTownsArray = divideArray(towns, 6)
     let counter = 0
 
-    cache.set('aurora_towns', towns)
+    const batch = db.batch()
+
     for (const towns of dividedTownsArray) {
         counter++
-        townDataCollection()
-            .doc("townArray" + counter)
-            .set({ townArray: towns })
+
+        const townRef = townDataCollection().doc("townArray" + counter)
+        batch.set(townRef, { townArray: towns })
     }
+
+    await batch.commit()
 }
 
 async function getAlliance(name: string) {
