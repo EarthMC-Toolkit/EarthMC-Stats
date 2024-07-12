@@ -16,7 +16,7 @@ dotenv.config()
 
 export default {
     name: "dev",
-    disabled: false,
+    disabled: true,
     description: "Developer restricted commands for bot management.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         //const service = new Service(serviceID, process.env.AUTH_TOKEN)

@@ -200,14 +200,10 @@ export default {
                         iconURL: message.author.displayAvatarURL() 
                     })
 
-                if (leaderName == "No leader set.") return m.edit({embeds: [embed
-                    .setTitle("Alliance Created")
-                    .setDescription("The alliance `" + allianceName + "` has been created.\n\nNo leader has been set.")
-                ]})
-
+                const postfix = leaderName == "No leader set." ? `No leader has been set.` : `Leader(s): \`${leaderName}\``
                 return m.edit({embeds: [embed
                     .setTitle("Alliance Created")
-                    .setDescription("The alliance `" + allianceName + "` has been created.\n\nLeader(s): `" + leaderName + "`")
+                    .setDescription(`The alliance \`${allianceName}\` has been created.\n\n${postfix}`)
                 ]})
             } 
             

@@ -195,7 +195,7 @@ async function updateMapData(map: MapInstance) {
     const nations = await map.emc.Nations.all(towns as any).catch(console.error)
     if (!nations) return console.log("Could not update map data! 'nations' is null or undefined.")
 
-    console.log(`[${map == NOVA ? "NOVA" : "AURORA"}] Updating data..`)
+    console.log(`[${map == NOVA ? "Nova" : "Aurora"}] Updating data..`)
 
     //#region Town Logic 
     const townsArray = towns.map(t => {

@@ -85,7 +85,7 @@ class AllianceModal extends ModalBuilder {
         return this
     }
 
-    asObject = (interaction: ModalSubmitInteraction ) => { 
+    asObject = (interaction: ModalSubmitInteraction) => { 
         const obj: any = {
             mapName: this.alliance.map,
             allianceName: this.alliance.name,

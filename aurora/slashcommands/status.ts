@@ -4,12 +4,12 @@ import {
     Colors, EmbedBuilder
 } from "discord.js"
 
-import { MojangLib, type MapResponse } from 'earthmc'
+import { MojangLib } from 'earthmc'
 
-import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
+import { devsFooter, embedField } from "../../bot/utils/fn.js"
 
-const status = (data: MapResponse) => !data ? "Offline :red_circle:" : "Online :green_circle:"
+const status = (data: any) => !data ? "Offline :red_circle:" : "Online :green_circle:"
 
 export default {
     name: "status",
@@ -20,23 +20,20 @@ export default {
         const embed = new EmbedBuilder()
             .setTitle("EarthMC Status Overview")
             .setColor(Colors.Green)
-            .setThumbnail("https://cdn.discordapp.com/attachments/586135349978333194/672542598354698273/emclogo.png")
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
             .setTimestamp()
 
-        const serverData = await MojangLib.servers.get("play.earthmc.net").catch(() => null)
-        const auroraData = await database.Aurora.getTownyData().catch(() => null)
-        const novaData = await database.Nova.getTownyData().catch(() => null)
+        const serverData = await MojangLib.servers.get("play.earthmc.net")
+        const auroraData = await database.Aurora.getTownyData()
 
-        if (serverData && (!auroraData && !novaData))
-            embed.setDescription("The server seems to be up, but dynmap is unavailable!")
+        if (serverData && !auroraData)
+            embed.setDescription("The server seems to be up, but the map is unavailable!")
         
         embed.addFields(
-            fn.embedField("Server", `${status(serverData)}`),
-            fn.embedField("Aurora", `${status(auroraData)}`),
-            fn.embedField("Nova", `${status(novaData)}`)
+            embedField("Server", `${status(serverData)}`, true),
+            embedField("Aurora Map", `${status(auroraData)}`, true)
         )
 
-        await interaction.editReply({embeds: [embed]})
+        await interaction.editReply({ embeds: [embed] })
     }
 }

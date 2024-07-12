@@ -23,8 +23,13 @@ const townDataCollection = () => auroraDoc().collection("townData")
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
 
 const auroraUrl = 'https://map.earthmc.net'
+
 const getTownyData = async () => {
     const res = await request(`${auroraUrl}/tiles/minecraft_overworld/markers.json`)
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+        return null
+    }
+
     return await res.body.json() as SquaremapMapResponse
 }
 
@@ -91,7 +96,7 @@ async function setTowns(towns: DBSquaremapTown[]) {
     for (const towns of dividedTownsArray) {
         counter++
 
-        const townRef = townDataCollection().doc("townArray" + counter)
+        const townRef = townDataCollection().doc(`townArray${counter}`)
         batch.set(townRef, { townArray: towns })
     }
 
