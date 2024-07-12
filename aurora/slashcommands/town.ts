@@ -24,8 +24,7 @@ export default {
     description: "Displays info for a town.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         if (!interaction.options.getSubcommand()) {
-            return await interaction.reply({embeds: [
-                new EmbedBuilder()
+            return await interaction.reply({embeds: [new EmbedBuilder()
                 .setColor(Colors.Red)
                 .setTitle("Command Usage")
                 .setDescription("`/town <name>`, `/town list` or `/town activity <name>`")
@@ -116,7 +115,6 @@ export default {
             }
             else { // /t list <nation>
                 const nation = towns.some(town => town.nation.toLowerCase() == comparator)
-                
                 if (!nation) return interaction.editReply({embeds: [
                     new EmbedBuilder()
                         .setTitle("Invalid town name!")
@@ -132,49 +130,48 @@ export default {
         }
         else if (subCmdName == "activity" && nameArg != null) {  
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
-
             if (!town) return interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid town name!")
-                .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
-                .setTimestamp().setColor(Colors.Red)
+                .setDescription(`${nameArg} doesn't seem to be a valid town name, please try again.`)
+                .setColor(Colors.Red)
+                .setTimestamp()
             ] /* ephemeral: true */})
 
-            database.getPlayers().then(async players => {
-                if (!players) return await interaction.editReply({embeds: [databaseError]})
+            const players = await database.getPlayers()
+            if (!players) return await interaction.editReply({ embeds: [databaseError] })
 
-                // Sort by highest offline duration
-                town.residents.sort((a, b) => {
-                    const foundPlayerA = players.find(p => p.name == a)
-                    const foundPlayerB = players.find(p => p.name == b)
+            // Sort by highest offline duration
+            town.residents.sort((a, b) => {
+                const foundPlayerA = players.find(p => p.name == a)
+                const foundPlayerB = players.find(p => p.name == b)
 
-                    if (foundPlayerA && !foundPlayerB) return -1
-                    if (!foundPlayerA && foundPlayerB) return 1
+                if (foundPlayerA && !foundPlayerB) return -1
+                if (!foundPlayerA && foundPlayerB) return 1
 
-                    if (foundPlayerA && foundPlayerB) {
-                        if (foundPlayerA.lastOnline === foundPlayerB.lastOnline.aurora) return 0 // identical? return 0 
-                        else if (foundPlayerA.lastOnline === null) return 1 // a is null? last 
-                        else if (foundPlayerB.lastOnline === null) return -1 // b is null? last
+                if (foundPlayerA && foundPlayerB) {
+                    if (foundPlayerA.lastOnline === foundPlayerB.lastOnline.aurora) return 0 // identical? return 0 
+                    else if (foundPlayerA.lastOnline === null) return 1 // a is null? last 
+                    else if (foundPlayerB.lastOnline === null) return -1 // b is null? last
 
-                        const dateB = unixFromDate(foundPlayerB.lastOnline.aurora)
-                        const dateA = unixFromDate(foundPlayerA.lastOnline.aurora)
+                    const dateB = unixFromDate(foundPlayerB.lastOnline.aurora)
+                    const dateA = unixFromDate(foundPlayerA.lastOnline.aurora)
 
-                        return dateB - dateA
-                    }
-                })
-
-                const allData = town.residents.map(resident => {
-                    const residentInPlayers = players.find(p => p.name == resident)
-
-                    if (residentInPlayers && residentInPlayers.lastOnline != null) 
-                        return "``" + resident + "`` - " + `<t:${unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
-
-                    return "" + resident + " | Unknown"
-                }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
-
-                new CustomEmbed(client, "Town Information | Activity in " + town.name)
-                    .paginate(allData)
-                    .editInteraction(interaction)
+                    return dateB - dateA
+                }
             })
+
+            const allData = town.residents.map(resident => {
+                const residentInPlayers = players.find(p => p.name == resident)
+
+                if (residentInPlayers && residentInPlayers.lastOnline != null) 
+                    return "``" + resident + "`` - " + `<t:${unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
+
+                return "" + resident + " | Unknown"
+            }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+
+            new CustomEmbed(client, "Town Information | Activity in " + town.name)
+                .paginate(allData)
+                .editInteraction(interaction)
         }
         else if (subCmdName == "lookup") { // /t <town>
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
@@ -182,7 +179,8 @@ export default {
             if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid town name!")
                 .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
-                .setTimestamp().setColor(Colors.Red)
+                .setColor(Colors.Red)
+                .setTimestamp()
             ] /*ephemeral: true */})
 
             towns = defaultSort(towns)
@@ -279,7 +277,7 @@ export default {
                             `Residents [${townResidentsLength}]`, 
                             "```" + town.residents.join(", ") + "```"
                         ))
-                    }    
+                    }
                     else townEmbed.addFields(embedField("Residents", townResidentsLength.toString()))
                 } 
                 else townEmbed.addFields(embedField("Residents", "There are no residents in this town?")) 

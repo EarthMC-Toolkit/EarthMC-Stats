@@ -36,6 +36,7 @@ export class VPHelper extends BaseHelper {
 
     async setupEmbed() {
         this.embed.setTitle("Current VoteParty Status")
+        this.embed.setThumbnail('attachment://aurora.png')
 
         this.addField("Target", `\`${this.target.toString()}\``, true)
         this.addField("Current", `\`${this.#current.toString()}\``, true)
