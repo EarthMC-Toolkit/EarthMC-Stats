@@ -2,7 +2,6 @@ import { OfficialAPI } from "earthmc"
 import { BaseHelper } from "./base.js"
 
 import type { Client } from "discord.js"
-import { devsFooter } from "../bot/utils/fn.js"
 
 export class VPHelper extends BaseHelper {
     #target: number
@@ -28,15 +27,15 @@ export class VPHelper extends BaseHelper {
         
             this.#target = info.voteParty.target
             this.#current = info.voteParty.numRemaining // Why tf is it named 'remaining' ??
+
+            return true
         } catch(_) {
-            return null
+            return false
         }
     }
 
     async setupEmbed() {
         this.embed.setTitle("Current VoteParty Status")
-        this.embed.setFooter(devsFooter(this.client))
-        this.embed.setTimestamp()
 
         this.addField("Target", `\`${this.target.toString()}\``, true)
         this.addField("Current", `\`${this.#current.toString()}\``, true)

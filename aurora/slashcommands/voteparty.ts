@@ -4,7 +4,7 @@ import {
     Colors, EmbedBuilder
 } from "discord.js"
 
-import { devsFooter } from "../../bot/utils/fn.js"
+import { AURORA, devsFooter } from "../../bot/utils/fn.js"
 import { VPHelper } from "../../common/voteparty.js"
 
 export default {
@@ -27,6 +27,9 @@ export default {
         }
             
         await vpHelper.setupEmbed()
-        await interaction.editReply({ embeds: [vpHelper.embed] })
+        await interaction.editReply({
+            embeds: [vpHelper.embed], 
+            files: [AURORA.thumbnail]
+        })
     }
 }

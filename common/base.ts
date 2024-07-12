@@ -4,7 +4,7 @@ import { EmbedBuilder } from 'discord.js'
 import type { Client } from 'discord.js'
 
 class BaseHelper {
-    client = null
+    client: Client = null
     isNova = false
 
     embed = new EmbedBuilder()
