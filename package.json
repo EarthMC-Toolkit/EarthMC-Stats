@@ -19,7 +19,7 @@
     "@isaacs/ttlcache": "^1.4.1",
     "discord.js": "14.13.0",
     "dotenv": "^16.4.5",
-    "earthmc": "9.7.0",
+    "earthmc": "latest",
     "firebase": "10.12.3",
     "firebase-admin": "12.2.0",
     "moment": "^2.29.4",

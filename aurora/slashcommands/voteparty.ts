@@ -25,7 +25,7 @@ export default {
                 .setTimestamp()
             ], ephemeral: true })
         }
-            
+        
         await vpHelper.setupEmbed()
         await interaction.editReply({
             embeds: [vpHelper.embed], 
