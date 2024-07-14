@@ -14,7 +14,7 @@ import { Aurora } from "earthmc"
 
 const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
     .setTitle("That command is for developers only!")
-    .setTitle("Goofy ah :skull:")
+    .setDescription("Goofy ah :skull:")
     .setColor(Colors.Red)
     .setTimestamp()
     .setAuthor({
