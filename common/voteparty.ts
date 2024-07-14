@@ -34,12 +34,14 @@ export class VPHelper extends BaseHelper {
         }
     }
 
-    async setupEmbed() {
+    createEmbed() {
         this.embed.setTitle("Current VoteParty Status")
         this.embed.setThumbnail('attachment://aurora.png')
 
         this.addField("Target", `\`${this.target.toString()}\``, true)
         this.addField("Current", `\`${this.#current.toString()}\``, true)
         this.addField("Remaining", `\`${(this.target - this.current).toString()}\``)
+
+        return this.embed
     }
 }
