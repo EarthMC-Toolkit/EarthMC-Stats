@@ -7,8 +7,7 @@ import * as database from '../bot/utils/database.js'
 import {
     OfficialAPI, 
     Nova, Aurora,
-    type OAPIResident, 
-    type OnlinePlayer
+    type OAPIResident
 } from 'earthmc'
 
 import  { 
@@ -36,7 +35,7 @@ class ResidentHelper extends BaseHelper {
         this.#apiResident = val
     }
 
-    onlinePlayer: OnlinePlayer = null
+    onlinePlayer: { name: string } = null
 
     pInfo = null
 
