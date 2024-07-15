@@ -34,7 +34,7 @@ const getType = (a: { type: string }) => a.type == 'mega'
     ? 'Meganation' : a.type == 'sub' 
     ? 'Sub-Meganation' : 'Normal'
 
-const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], allianceEmbed: EmbedBuilder) => {
+const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], allianceEmbed: EmbedBuilder, name: string) => {
     const amtSkipped = nationsSkipped.length
     const amtAdded = nationsAdded.length
 
@@ -56,7 +56,7 @@ const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], a
         allianceEmbed.setColor(Colors.DarkBlue)
             .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
     }
-} 
+}
 
 export default {
     name: "alliance",
@@ -368,7 +368,7 @@ export default {
                         iconURL: message.author.displayAvatarURL()
                     })
 
-                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed)
+                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name)
 
                 return m.edit({ embeds: [allianceEmbed] })
             } 
@@ -502,15 +502,16 @@ export default {
 
                 database.Aurora.setAlliances(alliances)
 
+                const name = getName(foundAlliance)
                 const allianceEmbed = new EmbedBuilder()
-                    .setTitle(`Alliance Updated | ${getName(foundAlliance)}`)
+                    .setTitle(`Alliance Updated | ${name}`)
                     .setTimestamp()
                     .setAuthor({
                         name: message.author.username,
                         iconURL: message.author.displayAvatarURL()
                     })
                 
-                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed)
+                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name)
                 
                 return m.edit({ embeds: [allianceEmbed] })
             } 
