@@ -208,15 +208,20 @@ export default {
             } 
             
             if (arg1 == "wizard") {
-                const info = arg2.split(';')
-                const allianceName = info[0]
+                const argsArray = []
+                for (const index in message.content.split(" ")) {
+                    if (index < 2) continue
+                    argsArray.push(message.content.split(" ")[index])
+                }
+                const wizardArg = argsArray.join(" ")
+                const info = wizardArg.split(';')
                 
-                if (!allianceName) return m.edit({embeds: [new EmbedBuilder()
+                if (info.length < 9) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription(
-                        "Provide name when creating alliance:\n" +
+                        "Provide a command with all arguments even if they are empty, when creating alliance in following way:\n" +
                         "/a wizard <name>;<full name>;<leaders>;<nations after comma>;<type>;<discord invite>;<image link>;<fill color>;<outline color>\n" +
-                        "* Values can be none, just type nothing there e.g. /a wizard UN;;;Britain,Germany (...)"
+                        "Values except <name> can be empty, just type nothing there f.e. /a wizard UN;;;Britain,Germany;;;;;"
                     )
                     .setAuthor({
                         name: message.author.username,
@@ -226,9 +231,33 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-                if (typeof(allianceName) == "number") return m.edit({embeds: [new EmbedBuilder()
+                const allianceName = info[0]
+
+                if (allianceName) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
-                    .setDescription("Alliance names cannot be numbers! Please try again.")
+                    .setDescription("Alliance name is not provided! It is a required argument.")
+                    .setAuthor({
+                        name: message.author.username,
+                        iconURL: message.author.displayAvatarURL()
+                    })
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+
+                if (!isNaN(Number(allianceName))) return m.edit({embeds: [new EmbedBuilder()
+                    .setTitle("Error creating alliance")
+                    .setDescription("Wrong alliance name! Alliance names must be alphanumeric.")
+                    .setAuthor({
+                        name: message.author.username,
+                        iconURL: message.author.displayAvatarURL()
+                    })
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+
+                if (!info[4] || (info[4].toLowerCase() != 'normal' && info[4].toLowerCase() != 'sub' && info[4].toLowerCase() != 'mega')) return m.edit({embeds: [new EmbedBuilder()
+                    .setTitle("Error creating alliance")
+                    .setDescription("Wrong alliance type! Correct values: normal, type, sub.")
                     .setAuthor({
                         name: message.author.username,
                         iconURL: message.author.displayAvatarURL()
@@ -242,7 +271,7 @@ export default {
                 
                 if (foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
-                    .setDescription("The alliance you're trying to create already exists! Please use /alliance add.")
+                    .setDescription("The alliance you're trying to create already exists! This wizard can only create alliances.")
                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setColor(Colors.Red)
                     .setTimestamp()
