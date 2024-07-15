@@ -491,8 +491,9 @@ export default {
 
                     nationsAdded.push(nation.name)
 
+                    // TODO: Evalute if `.includes()` would be faster here.
                     // If the current nation doesn't already exist in the alliance, add it.
-                    const foundNation = foundAlliance.nations.some(nation => nation.toLowerCase() == cur.toLowerCase())
+                    const foundNation = foundAlliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
                     if (!foundNation) foundAlliance.nations.push(nation.name)
                 }
 
