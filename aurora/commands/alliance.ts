@@ -29,7 +29,7 @@ const allowedChannels = ["971408026516979813", "966369739679080578"]
 
 const devArgs = ["backup", "new", "create", "delete", "disband", "add", "remove", "set", "merge", "rename", "wizard"]
 
-const getName = (a: { fullName?: string, allianceName: string }) => a.fullName ?? a.allianceName
+const getName = (a: { fullName?: string, allianceName: string }) => a.fullName || a.allianceName
 const getType = (a: { type: string }) => a.type == 'mega' 
     ? 'Meganation' : a.type == 'sub' 
     ? 'Sub-Meganation' : 'Normal'
@@ -279,20 +279,20 @@ export default {
 
                 const alliance: DBAlliance = {
                     allianceName,
-                    leaderName: info[2] ?? "No leader set.",
-                    nations: info[3]?.split(",") ?? [],
-                    type: (type ?? 'normal') as AllianceType,
-                    discordInvite: info[5] ?? "No discord invite has been set for this alliance",
+                    leaderName: info[2] || "No leader set.",
+                    nations: info[3]?.split(",") || [],
+                    type: (type || 'normal') as AllianceType,
+                    discordInvite: info[5] || "No discord invite has been set for this alliance",
                     ...{
-                        fullName: info[1],
-                        imageURL: info[6]
+                        fullName: info[1] || null,
+                        imageURL: info[6] || null
                     }
                 }
 
                 const fill = info[7]
                 if (fill) {
                     alliance.colours = { 
-                        fill, outline: info[8] ?? fill
+                        fill, outline: info[8] || fill
                     }
                 }
 
@@ -600,12 +600,12 @@ export default {
                     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error updating alliance")
                         .setDescription("Unable to update that alliance as it does not exist!")
+                        .setColor(Colors.Red)
+                        .setTimestamp()
                         .setAuthor({
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL()
                         })
-                        .setColor(Colors.Red)
-                        .setTimestamp()
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                     
                     const inviteInput = args[3]
@@ -695,14 +695,15 @@ export default {
                     }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                     
                     const type = args[3].toLowerCase()
-                    if (type != 'sub' && type != 'normal' && type != 'mega') return m.edit({embeds: [
-                        new EmbedBuilder()
-                        .setTitle("Invalid Arguments!")
-                        .setDescription("Unable to set alliance type. Choose one of the following: `sub`, `mega`, `normal`")
-                        .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
-                        .setColor(Colors.Red)
-                        .setTimestamp()
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+                    if (type != 'sub' && type != 'normal' && type != 'mega') {
+                        return m.edit({embeds: [new EmbedBuilder()
+                            .setTitle("Invalid Arguments!")
+                            .setDescription("Unable to set alliance type. Choose one of the following: `sub`, `mega`, `normal`")
+                            .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
+                            .setColor(Colors.Red)
+                            .setTimestamp()
+                        ]}).then(m => setTimeout(() => m.delete(), 10000))
+                    }
 
                     foundAlliance["type"] = type
                     const desc = type == 'sub'
