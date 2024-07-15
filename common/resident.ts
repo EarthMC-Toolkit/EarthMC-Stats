@@ -100,21 +100,23 @@ class ResidentHelper extends BaseHelper {
         return true
     }
 
-    async setupEmbed() {
-        if (this.apiResident.town) await this.setupResidentEmbed()
-        else await this.setupTownlessEmbed()
+    createEmbed() {
+        if (this.apiResident.town) this.#setupResidentEmbed()
+        else this.#setupTownlessEmbed()
+
+        return this.embed
     }
 
-    async setupTownlessEmbed() {
+    #setupTownlessEmbed() {
         const formattedPlayerName = this.player.name.replace(/_/g, "\\_")
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | ${formattedPlayerName}`)
         this.addField("Affiliation", "No Town", true)
 
-        await this.addCommonFields()
+        this.addCommonFields()
     }
 
-    async setupResidentEmbed() {
+    #setupResidentEmbed() {
         const res = this.apiResident || this.dbResident
         const formattedPlayerName = res.name.replace(/_/g, "\\_")
         const affiliation = `${res.town ?? res.townName} (${res.nation ?? res.townNation})`
@@ -124,17 +126,17 @@ class ResidentHelper extends BaseHelper {
         if (res.rank) this.addField("Rank", res.rank, true)
 
         this.tryAddNickname()
-        await this.addCommonFields()
+        this.addCommonFields()
     }
 
-    async addCommonFields() {
+    addCommonFields() {
         if (!this.apiResident) this.addDatesFromDB()
         else {
             this.addBalance(this.apiResident?.balance)
             this.addDatesFromAPI()
         }
 
-        await this.addLinkedAcc()
+        this.addLinkedAcc()
     }
 
     addDatesFromAPI = () => {
@@ -182,7 +184,7 @@ class ResidentHelper extends BaseHelper {
 
     addBalance = (bal: string | number) => this.addField("Balance", `${bal ?? 0}G`)
 
-    addLinkedAcc = async () => {
+    addLinkedAcc = () => {
         if (!this.player?.name) return
 
         const disc = this.pInfo?.discord

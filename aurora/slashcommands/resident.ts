@@ -38,8 +38,9 @@ export default {
             ], ephemeral: true })
         }
             
-        await resHelper.setupEmbed()
-        await interaction.editReply({ embeds: [resHelper.embed] })
+        await interaction.editReply({
+            embeds: [resHelper.createEmbed()]
+        })
     }, data: new SlashCommandBuilder()
         .setName("resident")
         .setDescription("Displays info for a specific resident.")

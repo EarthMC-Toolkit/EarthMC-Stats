@@ -13,7 +13,7 @@ class TownHelper extends BaseHelper {
         return false
     }
 
-    async setupEmbed() {
+    setupEmbed() {
         
     }
 }

@@ -38,11 +38,13 @@ export default {
             .then(m => setTimeout(() => m.delete(), 10000))
             .catch(() => {})
 
-        // TODO: Handle this error case
         if (!towns) towns = await Aurora.Towns.all().then(arr => arr.map(t => {
             t.name = formatString(t.name, false)
             return t
-        }))
+        })).catch(() => null)
+
+        if (!towns) return await interaction.reply({ embeds: [fetchError] })
+            .then(m => setTimeout(() => m.delete(), 10000))
 
         const townEmbed = new EmbedBuilder()
         const nameArg = interaction.options.getString("name")
@@ -381,8 +383,7 @@ function extractTownData(towns: DBSquaremapTown[]) {
     return townData
 }
 
-
-const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??` 
+//const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??` 
 
 function sendList(
     client: Client, 
@@ -396,8 +397,8 @@ function sendList(
 
     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
         `Residents: \`${town.residentNames.length}\`\n` +
-        `Chunks: \`${town.area}\`\n` + 
-        `${wealthStr(town.wealth)}`
+        `Chunks: \`${town.area}\`\n`
+        //`${wealthStr(town.wealth)}`
     ).join('\n\n').match(/(?:^.*$\n\n?){1,16}/mg)
 
     new CustomEmbed(client, "Town Info | Town List")

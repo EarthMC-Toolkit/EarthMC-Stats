@@ -13,7 +13,7 @@ class AllianceHelper extends BaseHelper {
         return false
     }
 
-    async setupEmbed() {
+    setupEmbed() {
         
     }
 }

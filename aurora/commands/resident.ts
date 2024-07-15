@@ -54,8 +54,9 @@ const resCmd: MessageCommand = {
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
 
-        await resHelper.setupEmbed()
-        return await m.edit({ embeds: [resHelper.embed] })
+        return await m.edit({
+            embeds: [resHelper.createEmbed()] 
+        })
     }
 }
 

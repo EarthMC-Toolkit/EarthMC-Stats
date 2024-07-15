@@ -424,7 +424,7 @@ function extractTownData(towns: DBSquaremapTown[]) {
     return townData
 }
 
-const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??`
+//const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??`
 
 async function sendList(client: Client, msg: Message, comparator: string, towns: DBSquaremapTown[]) {
     towns = defaultSort(towns)
@@ -432,8 +432,8 @@ async function sendList(client: Client, msg: Message, comparator: string, towns:
     const townData = extractTownData(towns)
     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
         `Residents: \`${town.residentNames.length}\`\n` +
-        `Chunks: \`${town.area}\`\n` + 
-        `${wealthStr(town.wealth)}`
+        `Chunks: \`${town.area}\`\n`
+        //`${wealthStr(town.wealth)}`
     ).join('\n\n').match(/(?:^.*$\n\n?){1,16}/mg)
 
     const embed = new CustomEmbed(client, "Town Info | Town List")

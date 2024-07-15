@@ -13,7 +13,7 @@ class NationHelper extends BaseHelper {
         return false
     }
 
-    async setupEmbed() {
+    setupEmbed() {
         
     }
 }
