@@ -34,6 +34,30 @@ const getType = (a: { type: string }) => a.type == 'mega'
     ? 'Meganation' : a.type == 'sub' 
     ? 'Sub-Meganation' : 'Normal'
 
+const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], allianceEmbed: EmbedBuilder) => {
+    const amtSkipped = nationsSkipped.length
+    const amtAdded = nationsAdded.length
+
+    if (amtSkipped >= 1) {
+        const skippedStr = nationsSkipped.join(", ")
+
+        // Some skipped, some added.
+        if (amtAdded >= 1) {
+            allianceEmbed.setColor(Colors.Orange).setDescription(
+                "The following nations have been added:\n\n```" + nationsAdded.join(", ") + 
+                "```\n\nThe following nations do not exist:\n\n```" + skippedStr + "```"
+            )
+        } else { // All skipped, none added.
+            allianceEmbed.setColor(Colors.Red)
+                .setTitle(`Error updating alliance | ${name}`)
+                .setDescription("The following nations do not exist:\n\n```" + skippedStr + "```")
+        }
+    } else if (amtAdded >= 1) { // All added, none skipped.
+        allianceEmbed.setColor(Colors.DarkBlue)
+            .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
+    }
+} 
+
 export default {
     name: "alliance",
     aliases: ["pacts", "submeganations", "meganations", "alliances", "a"],
@@ -212,6 +236,7 @@ export default {
                 const content = message.content.split(" ")
                 const info = content.slice(2).join(" ").split(';')
 
+                //#region Pre-checks
                 if (info.length < 9) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription(
@@ -266,6 +291,19 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000))
                 }
 
+                const nationsToAdd = info[3]?.split(",") || []
+                if (nationsToAdd.length == 0) return m.edit({embeds: [new EmbedBuilder()
+                    .setTitle("Error updating alliance")
+                    .setDescription("No nations were specified!")
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                    .setAuthor({
+                        name: message.author.username,
+                        iconURL: message.author.displayAvatarURL()
+                    })
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                //#endregion
+
                 const alliances = await database.Aurora.getAlliances()
                 const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 
@@ -280,13 +318,35 @@ export default {
                 const alliance: DBAlliance = {
                     allianceName,
                     leaderName: info[2] || "No leader set.",
-                    nations: info[3]?.split(",") || [],
+                    nations: [],
                     type: type as AllianceType,
                     discordInvite: info[5] || "No discord invite has been set for this alliance",
                     ...{
                         fullName: info[1] || null,
                         imageURL: info[6] || null
                     }
+                }
+
+                const nations = await database.Aurora.getNations()
+
+                const nationsSkipped = []
+                const nationsAdded = []
+                const len = nationsToAdd.length
+
+                for (let i = 0; i < len; i++) {   
+                    const cur = nationsToAdd[i]                                              
+                    const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
+
+                    if (!nation) {
+                        nationsSkipped.push(cur)
+                        continue
+                    }
+
+                    nationsAdded.push(nation.name)
+
+                    // If the current nation doesn't already exist in the alliance, add it.
+                    const foundNation = alliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
+                    if (!foundNation) alliance.nations.push(nation.name)
                 }
 
                 const fill = info[7]
@@ -299,16 +359,18 @@ export default {
                 alliances.push(alliance)
                 database.Aurora.setAlliances(alliances)
             
-                return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle("Alliance Created")
-                    .setDescription(`The alliance \`${allianceName}\` has been created.`)
-                    .setColor(Colors.DarkBlue)
+                const name = getName(alliance)
+                const allianceEmbed = new EmbedBuilder()
+                    .setTitle(`Alliance Created | ${name}`)
                     .setTimestamp()
-                    .setAuthor({ 
-                        name: message.author.username, 
-                        iconURL: message.author.displayAvatarURL() 
+                    .setAuthor({
+                        name: message.author.username,
+                        iconURL: message.author.displayAvatarURL()
                     })
-                ]})
+
+                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed)
+
+                return m.edit({ embeds: [allianceEmbed] })
             } 
             
             if (arg1 == "rename") {
@@ -395,12 +457,7 @@ export default {
                 const formattedArgs = argsHelper(args, 2)
                 let nationsToAdd = formattedArgs.asArray()
 
-                if (nationsToAdd.includes("$override")) {
-                    nationsToAdd = nationsToAdd.filter(nation => nation !== "$override")
-                    foundAlliance.nations = []
-                }
-
-                if (!nationsToAdd) return
+                if (!nationsToAdd) return // TODO: Evaluate if this is even necessary.
                 if (nationsToAdd.length == 0) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error updating alliance")
                     .setDescription("No nations were specified!")
@@ -411,6 +468,11 @@ export default {
                         iconURL: message.author.displayAvatarURL()
                     })
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+                if (nationsToAdd.includes("$override")) {
+                    nationsToAdd = nationsToAdd.filter(n => n !== "$override")
+                    foundAlliance.nations = []
+                }
 
                 const nations = await database.Aurora.getNations()
 
@@ -430,7 +492,7 @@ export default {
                     nationsAdded.push(nation.name)
 
                     // If the current nation doesn't already exist in the alliance, add it.
-                    const foundNation = foundAlliance.nations.find(nation => nation.toLowerCase() == cur.toLowerCase())
+                    const foundNation = foundAlliance.nations.some(nation => nation.toLowerCase() == cur.toLowerCase())
                     if (!foundNation) foundAlliance.nations.push(nation.name)
                 }
 
@@ -447,22 +509,7 @@ export default {
                         iconURL: message.author.displayAvatarURL()
                     })
                 
-                // Some nations skipped, some added.
-                if (nationsSkipped.length >= 1 && nationsAdded.length >= 1) {
-                    allianceEmbed.setColor(Colors.Orange).setDescription(
-                        "The following nations have been added:\n\n```" + nationsAdded.join(", ") + 
-                        "```\n\nThe following nations do not exist:\n\n```" + nationsSkipped.join(", ") + "```"
-                    )
-                }
-                else if (nationsSkipped.length >= 1 && nationsAdded.length < 1) { // No nations added, all skipped.          
-                    allianceEmbed.setColor(Colors.Red)
-                        .setTitle(`Error updating alliance | ${getName(foundAlliance)}`)
-                        .setDescription("The following nations do not exist:\n\n```" + nationsSkipped.join(", ") + "```")
-                }
-                else if (nationsSkipped.length < 1 && nationsAdded.length >= 1) { // Nations added, none skipped.
-                    allianceEmbed.setColor(Colors.DarkBlue)
-                        .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
-                }
+                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed)
                 
                 return m.edit({ embeds: [allianceEmbed] })
             } 

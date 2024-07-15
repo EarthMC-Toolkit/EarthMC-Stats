@@ -385,7 +385,7 @@ const readTsFiles = (str: string) => {
 function argsHelper(args: string[], spliceAmt: number) {
     return {
         original: args,
-        spliced: [],
+        spliced: [] as string[],
         format: function() { 
             this.spliced = this.original.splice(spliceAmt).map(e => e.replace(/,/g, ''))
             return this.spliced
