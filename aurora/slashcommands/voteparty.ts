@@ -26,9 +26,8 @@ export default {
             ], ephemeral: true })
         }
         
-        await vpHelper.setupEmbed()
         await interaction.editReply({
-            embeds: [vpHelper.embed], 
+            embeds: [vpHelper.createEmbed()], 
             files: [AURORA.thumbnail]
         })
     }
