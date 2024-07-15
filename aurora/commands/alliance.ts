@@ -211,7 +211,7 @@ export default {
                 // TODO: Use args we already have instead of splitting and slicing content again.
                 const content = message.content.split(" ")
                 const info = content.slice(2).join(" ").split(';')
-                
+
                 if (info.length < 9) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription(
@@ -228,8 +228,7 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
                 const allianceName = info[0]
-
-                if (allianceName) return m.edit({embeds: [new EmbedBuilder()
+                if (!allianceName) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription("Alliance name is not provided! It is a required argument.")
                     .setAuthor({
