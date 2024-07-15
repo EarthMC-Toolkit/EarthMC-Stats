@@ -34,7 +34,7 @@ const getType = (a: { type: string }) => a.type == 'mega'
     ? 'Meganation' : a.type == 'sub' 
     ? 'Sub-Meganation' : 'Normal'
 
-const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], allianceEmbed: EmbedBuilder, name: string) => {
+const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], allianceEmbed: EmbedBuilder, name: string, type: 'creating' | 'updating') => {
     const amtSkipped = nationsSkipped.length
     const amtAdded = nationsAdded.length
 
@@ -49,7 +49,7 @@ const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], a
             )
         } else { // All skipped, none added.
             allianceEmbed.setColor(Colors.Red)
-                .setTitle(`Error updating alliance | ${name}`)
+                .setTitle(`Error ${type} alliance | ${name}`)
                 .setDescription("The following nations do not exist:\n\n```" + skippedStr + "```")
         }
     } else if (amtAdded >= 1) { // All added, none skipped.
@@ -291,9 +291,9 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000))
                 }
 
-                const nationsToAdd = info[3]?.split(",") || []
+                const nationsToAdd = (info[3] || null)?.split(",") || []
                 if (nationsToAdd.length == 0) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle("Error updating alliance")
+                    .setTitle("Error creating alliance")
                     .setDescription("No nations were specified!")
                     .setColor(Colors.Red)
                     .setTimestamp()
@@ -342,11 +342,11 @@ export default {
                         continue
                     }
 
-                    nationsAdded.push(nation.name)
-
-                    // If the current nation doesn't already exist in the alliance, add it.
                     const foundNation = alliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
-                    if (!foundNation) alliance.nations.push(nation.name)
+                    if (!foundNation) {
+                        alliance.nations.push(nation.name)
+                        nationsAdded.push(nation.name)
+                    }
                 }
 
                 const fill = info[7]
@@ -368,7 +368,7 @@ export default {
                         iconURL: message.author.displayAvatarURL()
                     })
 
-                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name)
+                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name, 'creating')
 
                 return m.edit({ embeds: [allianceEmbed] })
             } 
@@ -489,12 +489,14 @@ export default {
                         continue
                     }
 
-                    nationsAdded.push(nation.name)
-
                     // TODO: Evalute if `.includes()` would be faster here.
-                    // If the current nation doesn't already exist in the alliance, add it.
                     const foundNation = foundAlliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
-                    if (!foundNation) foundAlliance.nations.push(nation.name)
+
+                    // If the current nation doesn't already exist in the alliance, add it.
+                    if (!foundNation) {
+                        foundAlliance.nations.push(nation.name)
+                        nationsAdded.push(nation.name)
+                    }
                 }
 
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -511,7 +513,7 @@ export default {
                         iconURL: message.author.displayAvatarURL()
                     })
                 
-                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name)
+                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name, 'updating')
                 
                 return m.edit({ embeds: [allianceEmbed] })
             } 
