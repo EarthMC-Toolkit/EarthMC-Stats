@@ -48,7 +48,7 @@ export default {
         const cmdArray = [
             "alliances", "meganations", "submeganations", "pacts",
             "/alliances", "/meganations", "/submeganations", "/pacts"
-        ]
+        ] // TODO: Maybe add `/a` to this?
  
         if (!req && !cmdArray.includes(commandName)) {
             return m.edit({embeds: [new EmbedBuilder()
@@ -208,13 +208,9 @@ export default {
             } 
             
             if (arg1 == "wizard") {
-                const argsArray = []
-                for (const index in message.content.split(" ")) {
-                    if (index < 2) continue
-                    argsArray.push(message.content.split(" ")[index])
-                }
-                const wizardArg = argsArray.join(" ")
-                const info = wizardArg.split(';')
+                // TODO: Use args we already have instead of splitting and slicing content again.
+                const content = message.content.split(" ")
+                const info = content.slice(2).join(" ").split(';')
                 
                 if (info.length < 9) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
@@ -255,16 +251,21 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-                if (!info[4] || (info[4].toLowerCase() != 'normal' && info[4].toLowerCase() != 'sub' && info[4].toLowerCase() != 'mega')) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle("Error creating alliance")
-                    .setDescription("Wrong alliance type! Correct values: normal, type, sub.")
-                    .setAuthor({
-                        name: message.author.username,
-                        iconURL: message.author.displayAvatarURL()
-                    })
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+                const type = info[4]
+                const typeLower = type.toLowerCase()
+
+                if (!type || (type != 'normal' && typeLower != 'sub' && typeLower != 'mega')) {
+                    return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle("Error creating alliance")
+                        .setDescription("Wrong alliance type! Correct values: normal, type, sub.")
+                        .setAuthor({
+                            name: message.author.username,
+                            iconURL: message.author.displayAvatarURL()
+                        })
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                    ]}).then(m => setTimeout(() => m.delete(), 10000))
+                }
 
                 const alliances = await database.Aurora.getAlliances()
                 const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -277,11 +278,11 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const alliance = {
+                const alliance: DBAlliance = {
                     allianceName,
                     leaderName: info[2] ?? "No leader set.",
                     nations: info[3]?.split(",") ?? [],
-                    type: (info[4] ?? 'normal') as AllianceType,
+                    type: (type ?? 'normal') as AllianceType,
                     discordInvite: info[5] ?? "No discord invite has been set for this alliance",
                     ...{
                         fullName: info[1],
@@ -291,7 +292,7 @@ export default {
 
                 const fill = info[7]
                 if (fill) {
-                    alliance['colours'] = { 
+                    alliance.colours = { 
                         fill, outline: info[8] ?? fill
                     }
                 }
@@ -301,7 +302,7 @@ export default {
             
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Alliance Created")
-                    .setDescription(`The alliance \`${allianceName}\` has been created`)
+                    .setDescription(`The alliance \`${allianceName}\` has been created.`)
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()
                     .setAuthor({ 
