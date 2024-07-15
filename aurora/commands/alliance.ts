@@ -250,10 +250,10 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-                const type = info[4]
+                const type = info[4] || 'normal'
                 const typeLower = type.toLowerCase()
 
-                if (!type || (type != 'normal' && typeLower != 'sub' && typeLower != 'mega')) {
+                if (type != 'normal' && typeLower != 'sub' && typeLower != 'mega') {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error creating alliance")
                         .setDescription("Wrong alliance type! Correct values: normal, type, sub.")
@@ -281,7 +281,7 @@ export default {
                     allianceName,
                     leaderName: info[2] || "No leader set.",
                     nations: info[3]?.split(",") || [],
-                    type: (type || 'normal') as AllianceType,
+                    type: type as AllianceType,
                     discordInvite: info[5] || "No discord invite has been set for this alliance",
                     ...{
                         fullName: info[1] || null,
