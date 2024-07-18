@@ -121,6 +121,7 @@ export default {
                     })
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
+                // TODO: Do this in getAlliance() so we dont req ops twice. 
                 const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
                 if (!ops) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Error fetching online players`)
