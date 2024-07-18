@@ -40,17 +40,16 @@ async function linkPlayer(id: string | number, username: string) {
 }
 
 async function unlinkPlayer(username: string) {
-    getPlayers(true).then(async players => {
-        const filter = p => p.name.toLowerCase() == username.toLowerCase()
+    const players = await getPlayers(true)
+    if (!players) return // TODO: Throw proper err
 
-        const foundPlayer = players.find(player => filter(player))
-        const playerIndex = players.findIndex(player => filter(player))
-        
-        if (!foundPlayer) return
-        delete players[playerIndex].linkedID
+    const foundPlayer = players.find(p => p.name.toLowerCase() == username.toLowerCase())
+    const playerIndex = players.findIndex(p => p.name.toLowerCase() == username.toLowerCase())
+    
+    if (!foundPlayer) return
+    delete players[playerIndex].linkedID
 
-        setPlayers(players)
-    })
+    setPlayers(players)
 }
 
 export {

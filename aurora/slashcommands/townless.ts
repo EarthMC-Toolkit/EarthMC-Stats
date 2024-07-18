@@ -22,15 +22,15 @@ export default {
     name: "townless",
     description: "Lists all online players without a town.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        const townlessPlayers = await Aurora.Players.townless().catch(() => null) 
+        const townlessPlayers = await Aurora.Players.townless()
         if (!townlessPlayers) return await interaction.reply({embeds: [fn.fetchError], ephemeral: true})
 
         const townlessLen = townlessPlayers.length
-        const allData = townlessPlayers.map(player => player.name).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+        const allData = townlessPlayers.map(p => p.name).join('\n').match(/(?:^.*$\n?){1,10}/mg)
         const len = allData.length
 
         const page = 0
-        const botembed = []
+        const botEmbed: EmbedBuilder[] = []
 
         if (townlessLen < 1) {
             return interaction.reply({
@@ -46,15 +46,15 @@ export default {
         }
         
         for (let i = 0; i < len; i++) {
-            botembed[i] = embed(
+            botEmbed[i] = embed(
                 townlessLen, 
                 "```" + townlessPlayers[0].name + "\n" + allData[i] + "```",
                 { text: `Page ${++i}/${len}`, iconURL: client.user.avatarURL() }
             )
         }
 
-        await interaction.reply({ embeds: [botembed[page]] })
-            .then(() => fn.paginatorInteraction(interaction, botembed, page))
+        await interaction.reply({ embeds: [botEmbed[page]] })
+            .then(() => fn.paginatorInteraction(interaction, botEmbed, page))
             .catch(console.log)
     }, data: new SlashCommandBuilder()
         .setName("townless")

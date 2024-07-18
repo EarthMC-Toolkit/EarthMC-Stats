@@ -9,7 +9,7 @@ import { devsFooter, embedField, inWorldBorder } from '../../bot/utils/fn.js'
 import { Aurora } from 'earthmc'
 
 const embed = (
-    client, 
+    client: Client, 
     title = "Error while using /location:", 
     colour: ColorResolvable = Colors.Red
 ) => new EmbedBuilder()

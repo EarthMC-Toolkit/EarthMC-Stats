@@ -43,8 +43,8 @@ async function getNations() {
     }).catch(() => {})
 }
 
-const getNation = nationName => getNations().then(arr => { 
-    const nation = arr.find(n => n.name.toLowerCase() == nationName.toLowerCase())
+const getNation = (name: string) => getNations().then(arr => { 
+    const nation = arr.find(n => n.name.toLowerCase() == name.toLowerCase())
     return nation ?? null
 }).catch(() => {})
 

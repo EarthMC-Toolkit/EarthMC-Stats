@@ -4,7 +4,8 @@ import type {
     Message,
     BaseInteraction,
     ChatInputCommandInteraction,
-    SharedNameAndDescription
+    SharedNameAndDescription,
+    Collection
 } from "discord.js"
 
 import type { Dynmap, Nation, Squaremap, SquaremapNation, SquaremapTown, Town } from "earthmc"
@@ -12,6 +13,12 @@ import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type ErrorWithCode = Error & { code: number }
 export type ReqMethod = 'GET' | 'PUT' | 'POST'
+
+export type ExtendedClient = Client & {
+    auroraCommands?: Map<string, BaseCommand>
+    slashCommands?: Map<string, SlashCommand<any>>
+    buttons?: Collection<string, Button>
+}
 
 export type BaseCommand = {
     name: string

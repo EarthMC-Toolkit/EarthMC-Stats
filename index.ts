@@ -17,7 +17,7 @@ import {
     setDatabase 
 } from "./bot/constants.js"
 
-import type { DJSEvent, ErrorWithCode } from "./bot/types.js"
+import type { DJSEvent, ErrorWithCode, ExtendedClient } from "./bot/types.js"
 import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
@@ -30,7 +30,7 @@ console.log(prod ? "Running in production." : "Running in maintenance, live func
 
 //#region Initialize Discord
 const Intents = IntentsBitField.Flags
-const client = new Client({ 
+const client: ExtendedClient = new Client({ 
     allowedMentions: { repliedUser: false },
     intents: [
         Intents.Guilds, 
@@ -43,9 +43,9 @@ const client = new Client({
 })
 
 client.login(process.env.DISCORD_BOT_TOKEN).then(token => {
-    client['slashCommands'] = new Collection()
-    client['auroraCommands'] = new Collection()
-    client['novaCommands'] = new Collection()
+    client.slashCommands = new Collection()
+    client.auroraCommands = new Collection()
+    //client['novaCommands'] = new Collection()
 
     console.log(`Logged into Discord.\nToken: ${token}`)
 }).catch(console.error)

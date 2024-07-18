@@ -3,27 +3,26 @@ import { request } from "undici"
 import { Aurora, Nova } from "./database.js"
 import { 
     AURORA, NOVA, 
-    unixFromDate, 
-    jsonReq 
+    unixFromDate
 }  from "./fn.js"
 
 import News from "../objects/News.js"
 
 import type { Client, Collection, Message, TextChannel } from "discord.js"
-import type { ReqMethod } from "../types.js"
+import type { DBPlayer, ReqMethod } from "../types.js"
 
 const reqHeaders = {
     'Content-Type': 'application/json',
     'authorization': process.env.API_AUTH_KEY
 }
 
-const sendRequest = async (route: string, method: ReqMethod, content) => request(`https://emctoolkit.vercel.app/api/${route}`, {
+const sendRequest = async (route: string, method: ReqMethod, content: any) => request(`https://emctoolkit.vercel.app/api/${route}`, {
     method: method,
     body: JSON.stringify(content),
     headers: reqHeaders
 }).catch(console.warn)
 
-const replaceWithUnix = (arr, map) => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
+const replaceWithUnix = (arr: DBPlayer[], map: 'nova' | 'aurora') => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
     .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
 
 const sendNews = async (client: Client, map: 'aurora' | 'nova') => {
@@ -75,9 +74,7 @@ export async function sendAuroraAlliances() {
 //     })
 // })//.catch(console.log)
 
-const get = endpoint => jsonReq(`https://emctoolkit.vercel.app/api/${endpoint}`)
 export {
     replaceWithUnix,
-    sendNews,
-    get
+    sendNews
 }

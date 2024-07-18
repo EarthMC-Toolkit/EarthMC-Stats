@@ -32,11 +32,11 @@ type Alliance = {
 }
 
 class AllianceModal extends ModalBuilder {
-    rows = []
+    rows: ActionRowBuilder<any>[] = []
     required = false
     alliance: Alliance = null
 
-    constructor(id: string, title: string, alliance = null) {
+    constructor(id: string, title: string, alliance: Alliance = null) {
         super({ customId: id, title, components: [] })
 
         this.alliance = alliance

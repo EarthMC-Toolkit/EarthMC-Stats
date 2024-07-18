@@ -15,12 +15,11 @@ const requiredPerms = [SendMessages, EmbedLinks]
 
 async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {	
     const args = msg.content.slice(sliceAmt).split(/\s+/u)
-
-    const commands = msg.client[cmdsKey] as Collection<string, MessageCommand>
-
+    
     const commandName = args.shift().toLowerCase()
-    const command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
+    const commands = (msg.client as any)[cmdsKey] as Collection<string, MessageCommand>
 
+    const command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
     if (!command) return console.log(`Could not find command '${commandName}'`)
     
     const channel = msg.channel

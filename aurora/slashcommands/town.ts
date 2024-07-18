@@ -77,22 +77,22 @@ export default {
                 }
 
                 // Function to get rid of duplicates and add up residents and chunks.
-                const temp: Record<string, any> = {}
+                const ctx: Record<string, any> = {}
                 onlineTownData.forEach(a => {                   
                     // If town doesnt exist, add it.
-                    if (!temp[a.name]) {           
+                    if (!ctx[a.name]) {           
                         a.onlineResidents = a.residentNames.filter(resident => onlinePlayers.find(op => resident === op.name))
 
-                        temp[a.name] = { 
+                        ctx[a.name] = { 
                             name: a.name, 
                             nation: a.nation,
                             onlineResidents: a.onlineResidents,
                             onlineResidentAmount: a.onlineResidents.length
                         }
 
-                        onlineTownDataFinal.push(temp[a.name])
+                        onlineTownDataFinal.push(ctx[a.name])
                     }     
-                }, Object.create(null))
+                })
 
                 onlineTownDataFinal.sort((a, b) => b.onlineResidentAmount - a.onlineResidentAmount)
 
@@ -110,8 +110,8 @@ export default {
                 towns.sort((a, b) => b.area - a.area) 
             else if (comparator == "name" || comparator == "alphabetical") {
                 sortByOrder(towns, [
-                    { key: "name", callback: k => k.toLowerCase() },
-                    { key: "residents", callback: arr => arr.length },
+                    { key: "name", callback: (k: string) => k.toLowerCase() },
+                    { key: "residents", callback: (arr: string[]) => arr.length },
                     { key: "area" }
                 ])
             }

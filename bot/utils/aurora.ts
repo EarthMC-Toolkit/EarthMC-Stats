@@ -186,7 +186,7 @@ async function setAlliances(alliances: DBAlliance[]) {
     return allianceCollection().set({ allianceArray: alliances })
 }
 
-const length = x => x.length
+const length = (x: unknown[]) => x.length
 
 export {
     getResidents, setResidents,

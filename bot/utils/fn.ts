@@ -49,8 +49,11 @@ const databaseError = errorEmbed("Database Error", "An error occurred requesting
 const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
 const embedField = (name, value, inline = false) => ({ name, value, inline })
+
+// TODO: Use this list instead for future-proofing -> https://github.com/jwkerr/staff/blob/master/staff.json
+// Since it uses UUIDs, the OAPI will need to be used to grab the names.
 const staff = {
-    all: () => staff.active.concat(staff.inactive),
+    all: () => fastMerge(staff.active, staff.inactive),
     active: [
         "Fix", "KarlOfDuty", "CorruptedGreed", "1212ra", "PolkadotBlueBear", "RlZ58", "Ebola_chan",
         "Fruitloopins", "Shia_Chan", "Professor__Pro", "Barbay1", "WTDpuddles", "Coblobster",
@@ -402,16 +405,23 @@ const inWorldBorder = (x: number, z: number) => {
 }
 
 // Thoroughly tested, faster than both spread and concat w/ high No. of items.
-export const fastMerge = <T>(original: T[], args: T[]) => {
+export const fastMerge = <T>(original: T[], args: any[]) => {
     // eslint-disable-next-line prefer-spread
     original.push.apply(original, args)
     return original
 }
 
 // Fast merge, but convert to set and back to ensure duplicates are removed.
-export const fastMergeUnique = <T>(original: T[], args: T[]) => {
-    fastMerge(original, args)
-    return [...new Set(original)]
+export const fastMergeUnique = <T>(original: T[], args: any[]) => [...new Set(fastMerge(original, args))]
+
+export const fastMergeByKey = <T>(original: T[], arr: any[], key: string) => {
+    const len = arr.length
+    for (let i = 0; i < len; i++) {
+        const cur = arr[i]
+        fastMerge(original, cur[key])
+    }
+
+    return original
 }
 
 export {

@@ -6,8 +6,8 @@ import {
 
 import * as fn from '../../bot/utils/fn.js'
 
-const formatCoord = coord => coord.toString().replace(/[, ]/g, " ")
-const convertToOverworld = coord => Math.floor(coord / 8).toString()
+const formatCoord = (coord: number) => coord.toString().replace(/[, ]/g, " ")
+const convertToOverworld = (coord: number) => Math.floor(coord / 8).toString()
 
 export default {
     name: "nether",

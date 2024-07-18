@@ -17,7 +17,7 @@ import type { DBPlayer } from '../types.js'
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
-const getPlayers = async (skipCache = false) => {
+const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
     const skip = !skipCache ? cache.get('players') : null
     if (skip) return skip
 
@@ -29,13 +29,13 @@ const getPlayers = async (skipCache = false) => {
 const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
     if (!players) return null
 
-    const player = players.find(p => p.name.toLowerCase() == name.toLowerCase())
+    const player: any = players.find(p => p.name.toLowerCase() == name.toLowerCase())
     if (!player) return null
 
     player["discord"] = player.linkedID
 
     if (includeTimestamps) {
-        player["lastOnline"] = {
+        player.lastOnline = {
             nova: unixFromDate(player.lastOnline.nova),
             aurora: unixFromDate(player.lastOnline.aurora)
         }

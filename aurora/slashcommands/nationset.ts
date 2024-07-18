@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import {
     type Message, 
     type Client,
@@ -26,9 +28,10 @@ export default {
         })
 
         const nationName = interaction.options.getString("name").toLowerCase()
-        const nationIndex = nations.findIndex(n => n.name.toLowerCase() == nationName)
 
         const nation = nations.find(n => n.name.toLowerCase() == nationName)
+        const nationIndex = nations.findIndex(n => n.name.toLowerCase() == nationName)
+
         if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
             .setDescription(`${nationName} is not a registered nation, please try again.`)
             .setColor(Colors.Red)

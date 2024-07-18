@@ -18,7 +18,7 @@ import {
     Collection
 } from "discord.js"
 
-import type { Button, DJSEvent } from "../types.js"
+import type { Button, DJSEvent, ExtendedClient } from "../types.js"
 //#endregion
 
 let lastActivity = -1
@@ -71,7 +71,7 @@ const rdyEvent: DJSEvent = {
     }
 }
 
-async function registerCommands(client: Client) {
+async function registerCommands(client: ExtendedClient) {
     const slashCommands = fn.readTsFiles(`aurora/slashcommands`)
     const auroraCmds = fn.readTsFiles(`aurora/commands`)
     //const novaCmds = fn.readTsFiles(`nova/commands`)
@@ -83,7 +83,7 @@ async function registerCommands(client: Client) {
         const command = commandFile.default
 
         if (!command.disabled) 
-            client['auroraCommands'].set(command.name, command)
+            client.auroraCommands.set(command.name, command)
     }
 
     // for (const file of novaCmds) {
@@ -100,7 +100,7 @@ async function registerCommands(client: Client) {
 
         if (command.disabled) continue
     
-        client['slashCommands'].set(command.name, command)
+        client.slashCommands.set(command.name, command)
 
         if (command.data) data.push(command.data.toJSON())
         else {
@@ -123,8 +123,8 @@ async function registerCommands(client: Client) {
     )
 }
 
-async function registerButtons(client: Client) {
-    client['buttons'] = new Collection()
+async function registerButtons(client: ExtendedClient) {
+    client.buttons = new Collection()
 
     const buttonsPath = `aurora/buttons`
     const buttons = fn.readTsFiles(buttonsPath)

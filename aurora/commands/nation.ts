@@ -17,6 +17,26 @@ import * as database from "../../bot/utils/database.js"
 
 import type { DBSquaremapNation } from "../../bot/types.js"
 
+interface TownItem {
+    name: string
+    nation: string
+    chunks: number
+    residents: string[]
+    residentsAmt: number
+    onlineResidents?: string[]
+}
+
+interface NationItemMap {
+    [key: string]: NationItem
+}
+
+interface NationItem {
+    name: string
+    residents: string[]
+    onlineResidents: string[]
+    chunks: number
+}
+
 export default {
     name: "nation",
     description: "Displays info for a nation.",
@@ -44,11 +64,11 @@ export default {
 
         if (args[0].toLowerCase() == "list") {
             if (args[1] != null) {
-                const townsWithDuplicates = []
-                const nationsWithoutDuplicates = []
+                const townsWithDuplicates: TownItem[] = []
+                const nationsWithoutDuplicates: NationItem[] = []
 
                 if (args[1].toLowerCase() == "online") {         
-                    const onlinePlayers = await Aurora.Players.online().catch(() => null)
+                    const onlinePlayers = await Aurora.Players.online()
                     if (!onlinePlayers) return await m.edit({ embeds: [fn.fetchError] })
                         .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
@@ -64,38 +84,42 @@ export default {
                         else townsWithDuplicates.push({
                             name: cur.name,
                             nation: nationName,
-                            residents: cur.residents.length,
-                            residentNames: cur.residents,
+                            residents: cur.residents,
+                            residentsAmt: cur.residents.length,
                             onlineResidents: [],
                             chunks: cur.area
                         })
                     }
-                    
+                
+                    const ctx: NationItemMap = Object.create(null)
+
                     // Function to get rid of duplicates and add up residents and chunks.
                     townsWithDuplicates.forEach(function(town) {                             
-                        if (!this[town.nation]) {        
-                            const onlineResidents = town.residentNames.filter(resident => 
-                                onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
+                        if (!ctx[town.nation]) {
+
+                            // TODO: Use set, with O(n) `has` lookup.
+                            const onlineResidents = town.residents.filter(res => 
+                                onlinePlayers.some(op => res === op.name || res.includes(op.name)
                             ))
                             
-                            this[town.nation] = { 
-                                nation: town.nation,
-                                residentNames: town.residentNames,
-                                onlineResidents: onlineResidents,
-                                chunks: 0
-                            }  
+                            ctx[town.nation] = { 
+                                name: town.nation,
+                                chunks: 0,
+                                residents: town.residents,
+                                onlineResidents
+                            }
 
-                            nationsWithoutDuplicates.push(this[town.nation])
+                            nationsWithoutDuplicates.push(ctx[town.nation])
                         }
 
                         // If it already exists, add up stuff.
-                        this[town.nation].residentNames = fn.removeDuplicates(this[town.nation].residentNames.concat(town.residentNames))
-                        this[town.nation].onlineResidents = this[town.nation].residentNames.filter(resident => 
-                            onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
+                        ctx[town.nation].residents = fn.removeDuplicates(fn.fastMerge(ctx[town.nation].residents, town.residents))
+                        ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
+                            onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                         ))
                             
-                        this[town.nation].chunks += town.chunks                            
-                    }, Object.create(null))
+                        ctx[town.nation].chunks += town.chunks                            
+                    })
 
                     let page = 1
                     const split = req.split(" ")
@@ -109,7 +133,7 @@ export default {
                     nationsWithoutDuplicates.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
 
                     const allData = nationsWithoutDuplicates
-                        .map(nation => nation.nation + " - " + nation.onlineResidents.length)
+                        .map(nation => nation.name + " - " + nation.onlineResidents.length)
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
                     new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
@@ -387,7 +411,7 @@ export default {
             const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as TextChannel
             const newsChannelMessages = await newsChannel?.messages.fetch()
 
-            const filterNews = msg => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
+            const filterNews = (msg: Message) => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
 
             // Get news descriptions that include the nation name, then sort by most recent.
             const filteredMessages = newsChannelMessages?.filter(msg => filterNews(msg))

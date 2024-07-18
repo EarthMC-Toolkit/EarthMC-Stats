@@ -21,6 +21,17 @@ import {
 
 import type { DBNation, DBSquaremapTown } from "../../bot/types.js"
 
+interface TownDataItem {
+    name: string
+    nation: string
+    residents?: string[]
+    onlineResidents: string[]
+}
+
+interface TownDataItemMap {
+    [key: string]: TownDataItem
+}
+
 export default {
     name: "town",
     description: "Displays info for a town.",
@@ -60,13 +71,13 @@ export default {
             if (!arg1) return
 
             if (arg1 == "online") {
-                const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                if (!onlinePlayers) return await m.edit({ embeds: [fetchError] })
+                const ops = await Aurora.Players.online().catch(() => {})
+                if (!ops) return await m.edit({ embeds: [fetchError] })
                     .then(m => setTimeout(() => m.delete(), 10000))
                     .catch(() => {})
 
-                const onlineTownData = []
-                const onlineTownDataFinal = []
+                const onlineTownData: TownDataItem[] = []
+                const onlineTownDataFinal: TownDataItem[] = []
 
                 const len = towns.length
                 for (let i = 0; i < len; i++) {        
@@ -75,42 +86,44 @@ export default {
                     onlineTownData.push({
                         name: cur.name,
                         nation: cur.nation,
-                        residentNames: cur.residents,
-                        onlineResidents: [],
-                        onlineResidentAmount: 0
+                        residents: cur.residents,
+                        onlineResidents: []
                     }) 
                 }
 
                 // Function to get rid of duplicates and add up residents and chunks.
-                onlineTownData.forEach(function(a) {                   
+                const ctx: TownDataItemMap = Object.create(null)
+                onlineTownData.forEach(function(town) {                   
                     // If town doesnt exist, add it.
-                    if (!this[a.name]) {           
-                        a.onlineResidents = a.residentNames.filter(resident => onlinePlayers.find(op => resident === op.name))
+                    if (!ctx[town.name]) {           
+                        town.onlineResidents = town.residents.filter(r => ops.some(op => r === op.name))
 
-                        this[a.name] = { 
-                            name: a.name, 
-                            nation: a.nation,
-                            onlineResidents: a.onlineResidents,
-                            onlineResidentAmount: a.onlineResidents.length
-                        }    
+                        ctx[town.name] = { 
+                            name: town.name, 
+                            nation: town.nation,
+                            onlineResidents: town.onlineResidents
+                        }
 
-                        onlineTownDataFinal.push(this[a.name])
-                    }     
-                }, Object.create(null))
+                        onlineTownDataFinal.push(ctx[town.name])
+                    }
+                }, ctx)
 
+                onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+
+                const allData = onlineTownDataFinal
+                    .map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
+                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                
+                //#region Determine page
                 let page = 1
+                const split = req.split(" ")
 
-                if (args[2] != null) if (req.split(" ")[2]) page = parseInt(req.split(" ")[2])
-                else if (req.split(" ")[1]) page = parseInt(req.split(" ")[1])
+                if (args[2] != null) if (split[2]) page = parseInt(split[2])
+                else if (split[1]) page = parseInt(split[1])
 
                 if (isNaN(page)) page = 0
                 else page--
-
-                onlineTownDataFinal.sort((a, b) => b.onlineResidentAmount - a.onlineResidentAmount)
-
-                const allData = onlineTownDataFinal
-                    .map(town => `${town.name} (${town.nation}) - ${town.onlineResidentAmount}`)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                //#endregion
 
                 new CustomEmbed(client, "Town Info | Online Resident List")
                     .setType(EntityType.Town)

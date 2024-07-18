@@ -6,7 +6,8 @@ import {
     type TextChannel,
     type ChatInputCommandInteraction, 
     EmbedBuilder, SlashCommandBuilder, 
-    Colors, ButtonStyle
+    Colors, ButtonStyle,
+    type Message
 } from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -75,30 +76,30 @@ export default {
                     }
                     
                     // Gets rid of duplicates and add up residents and chunks.
-                    const temp: Record<string, any> = {}
+                    const ctx: Record<string, any> = {}
                     townsWithDuplicates.forEach(town => {
-                        if (!temp[town.nation]) {        
+                        if (!ctx[town.nation]) {        
                             const onlineResidents = town.residentNames.filter(resident =>
-                                onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
+                                onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                             ))
                             
-                            temp[town.nation] = { 
+                            ctx[town.nation] = { 
                                 nation: town.nation,
                                 residentNames: town.residentNames,
                                 onlineResidents: onlineResidents,
                                 chunks: 0
                             }
 
-                            nationsWithoutDuplicates.push(temp[town.nation])
+                            nationsWithoutDuplicates.push(ctx[town.nation])
                         }
 
                         // If it already exists, add up stuff.
-                        temp[town.nation].chunks += town.chunks
-                        temp[town.nation].residentNames = fn.removeDuplicates(temp[town.nation].residentNames.concat(town.residentNames))
-                        temp[town.nation].onlineResidents = temp[town.nation].residentNames.filter(resident => 
-                            onlinePlayers.find(op => resident === op.name || resident.includes(op.name)
-                        ))                        
-                    }, Object.create(null))
+                        ctx[town.nation].chunks += town.chunks
+                        ctx[town.nation].residentNames = fn.removeDuplicates(ctx[town.nation].residentNames.concat(town.residentNames))
+                        ctx[town.nation].onlineResidents = ctx[town.nation].residentNames.filter(resident => 
+                            onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
+                        ))
+                    })
 
                     const allData = nationsWithoutDuplicates
                         .sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
@@ -115,10 +116,10 @@ export default {
                 else if (comparator == "alphabetical" || comparator == "name") {
                     fn.sortByOrder(nations, [{
                         key: 'name',
-                        callback: k => k.toLowerCase()
+                        callback: (k: string) => k.toLowerCase()
                     }, {
                         key: 'residents',
-                        callback: k => k.length
+                        callback: (k: string[]) => k.length
                     }, {
                         key: 'area'
                     }])
@@ -284,7 +285,7 @@ export default {
             const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as TextChannel
             const newsChannelMessages = await newsChannel?.messages.fetch()
 
-            const filterNews = msg => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
+            const filterNews = (msg: Message) => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
 
             // Get news descriptions that include the nation name
             // Then sort/get most recent description

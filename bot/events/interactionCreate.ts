@@ -1,12 +1,15 @@
 import { 
     type GuildMemberRoleManager,
-    type Collection,
     type BaseInteraction,
     type ModalSubmitInteraction, 
     type UserContextMenuCommandInteraction, 
+    type User
+} from 'discord.js'
+
+import { 
     ButtonStyle, Colors, 
     EmbedBuilder, ModalBuilder, ActionRowBuilder,
-    TextInputBuilder, TextInputStyle
+    TextInputBuilder, TextInputStyle 
 } from 'discord.js'
 
 import { cache } from '../constants.js'
@@ -17,22 +20,23 @@ import * as fn from '../utils/fn.js'
 import { getLinkedPlayer, linkPlayer } from '../utils/linking.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
 
-import type { Button } from '../types.js'
 import type AllianceModal from '../objects/AllianceModal.js'
+import type { ExtendedClient } from '../types.js'
 
-let target = null
+let target: User = null
 
 export default {
     name: 'interactionCreate',
     async execute(interaction: BaseInteraction) {
-        const [client, username] = [interaction.client, interaction.user.username]
+        const client: ExtendedClient = interaction.client
+        const username = interaction.user.username
 
         let cmdName: string = null
         if (interaction.isCommand())
             cmdName = interaction.commandName
 
         if (interaction.isChatInputCommand()) {
-            const cmd = client['slashCommands'].get(cmdName)
+            const cmd = client.slashCommands.get(cmdName)
             if (!cmd) return
         
             console.log(`${username} used command: '${cmdName}'`)
@@ -101,8 +105,7 @@ export default {
         }
 
         if (interaction.isButton()) {
-            const btns = client['buttons'] as Collection<string, Button>
-            const button = btns.get(interaction.customId)
+            const button = client.buttons.get(interaction.customId)
             if (!button) return
             
             return button.execute(client, interaction).catch(console.error)

@@ -5,7 +5,7 @@ import type { Client, Message, ColorResolvable } from 'discord.js'
 import { Aurora } from 'earthmc'
 
 const embed = (
-    client, 
+    client: Client, 
     title = "Error while using /location:", 
     colour: ColorResolvable = Colors.Red
 ) => new EmbedBuilder()
