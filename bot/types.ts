@@ -49,7 +49,7 @@ export type Button = {
 export type DJSEvent = {
     name: string
     once?: boolean
-    execute: (...args) => any
+    execute: (...args: any[]) => any
 }
 
 export type MapInstance = { 
@@ -159,3 +159,25 @@ export const SkinType3D = {
     BUST: 'bust',
     FULL: 'full'
 } as const
+
+export interface TownDataItem {
+    name: string
+    nation: string
+    residents?: string[]
+    onlineResidents: string[]
+}
+
+export interface TownItem {
+    name: string
+    nation: string
+    chunks: number
+    residents: string[]
+    onlineResidents?: string[]
+}
+
+export interface NationItem {
+    name: string
+    residents: string[]
+    onlineResidents: string[]
+    chunks: number
+}

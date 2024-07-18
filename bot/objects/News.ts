@@ -3,7 +3,7 @@ import type { Message } from 'discord.js'
 export default class News {
     id: string
     message = ""
-    images = []
+    images: RegExpMatchArray = null
     
     timestamp: number
 

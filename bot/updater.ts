@@ -543,7 +543,7 @@ async function updateMapData(map: MapInstance) {
 //#endregion
 
 //#region Helper Methods
-const purged = (timestamp: { seconds }, now: Date) => {
+const purged = (timestamp: { seconds: number }, now: Date) => {
     const loDate = new Date(timestamp.seconds * 1000)
     const days = fn.daysBetween(loDate, now)
 

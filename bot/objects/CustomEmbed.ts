@@ -27,9 +27,9 @@ type ObjectValues<T> = T[keyof T]
 type EntityType = ObjectValues<typeof EntityType>
 
 class CustomEmbed extends EmbedBuilder {
-    embeds = []
-    components = []
-    files = []
+    embeds: EmbedBuilder[] = []
+    components: any[] = []
+    files: any[] = []
 
     paginated = false
     page = 0
@@ -116,7 +116,7 @@ class CustomEmbed extends EmbedBuilder {
                 .setDescription(prefix + data[i] + postfix)
                 .setTimestamp()
                 .setFooter({ 
-                    text: `Page ${++i}/${len}`, 
+                    text: `Page ${i+1}/${len}`, 
                     iconURL: this.client?.user.avatarURL() ?? "" 
                 })
         }

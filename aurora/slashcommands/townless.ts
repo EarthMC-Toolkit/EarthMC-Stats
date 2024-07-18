@@ -49,7 +49,7 @@ export default {
             botEmbed[i] = embed(
                 townlessLen, 
                 "```" + townlessPlayers[0].name + "\n" + allData[i] + "```",
-                { text: `Page ${++i}/${len}`, iconURL: client.user.avatarURL() }
+                { text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL() }
             )
         }
 

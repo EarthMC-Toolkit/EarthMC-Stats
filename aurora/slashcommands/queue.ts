@@ -17,7 +17,7 @@ export default {
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
+        const server = await MojangLib.servers.get("play.earthmc.net")
 
         const mapRes = await database.Aurora.getOnlinePlayerData()
         //const nova = await database.Nova.getOnlinePlayerData().catch(() => {})

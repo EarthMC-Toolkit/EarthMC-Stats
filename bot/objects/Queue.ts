@@ -35,7 +35,7 @@ class Queue {
     aurora = initMap()
     //nova   = initMap()
 
-    constructor(server, aurora: { mapRes: SquaremapPlayersResponse, apiRes: RawServerInfoV3 }) {
+    constructor(server: any, aurora: { mapRes: SquaremapPlayersResponse, apiRes: RawServerInfoV3 }) {
         this.#setServerInfo(server)
         this.#setAuroraInfo(aurora.mapRes, aurora.apiRes)
 
@@ -52,7 +52,7 @@ class Queue {
         this.aurora.formatted = format(this.aurora)
     }
 
-    #setServerInfo(server) {
+    #setServerInfo(server: any) {
         this.serverOnline = !!server
         this.totalPlayers = server?.players?.online
     }

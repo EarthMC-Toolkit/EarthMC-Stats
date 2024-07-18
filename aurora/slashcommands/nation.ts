@@ -16,7 +16,7 @@ import News from "../../bot/objects/News.js"
 import type { SquaremapTown } from 'earthmc'
 import { Aurora, NotFoundError } from 'earthmc'
 
-import type { DBSquaremapNation } from '../../bot/types.js'
+import type { DBSquaremapNation, NationItem, TownItem } from '../../bot/types.js'
 
 export default {
     name: "nation",
@@ -35,9 +35,6 @@ export default {
 
         await interaction.deferReply()
 
-        const townsWithDuplicates = []
-        const nationsWithoutDuplicates = []
-
         let nations = await database.Aurora.getNations()
 
         // TODO: Should probably handle this error case
@@ -47,6 +44,9 @@ export default {
             let comparator = interaction.options.getString("comparator")
 
             if (comparator != null) {
+                const townsWithDuplicates: TownItem[] = []
+                const nationsWithoutDuplicates: NationItem[] = []
+
                 comparator = comparator.toLowerCase()
 
                 if (comparator == "online") {         
@@ -63,29 +63,26 @@ export default {
                         const nationName = cur.nation
 
                         if (nationName == "No Nation") continue
-                        const townData = {
+                        townsWithDuplicates.push({
                             name: cur.name,
                             nation: nationName,
-                            residents: cur.residents.length,
-                            residentNames: cur.residents,
+                            residents: cur.residents,
                             onlineResidents: [],
                             chunks: cur.area
-                        }
-
-                        townsWithDuplicates.push(townData)
+                        })
                     }
                     
-                    // Gets rid of duplicates and add up residents and chunks.
-                    const ctx: Record<string, any> = {}
+                    // Gets rid of duplicates and adds up residents and chunks.
+                    const ctx: Record<string, NationItem> = {}
                     townsWithDuplicates.forEach(town => {
                         if (!ctx[town.nation]) {        
-                            const onlineResidents = town.residentNames.filter(resident =>
+                            const onlineResidents = town.residents.filter(resident =>
                                 onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                             ))
                             
                             ctx[town.nation] = { 
-                                nation: town.nation,
-                                residentNames: town.residentNames,
+                                name: town.nation,
+                                residents: town.residents,
                                 onlineResidents: onlineResidents,
                                 chunks: 0
                             }
@@ -95,15 +92,15 @@ export default {
 
                         // If it already exists, add up stuff.
                         ctx[town.nation].chunks += town.chunks
-                        ctx[town.nation].residentNames = fn.removeDuplicates(ctx[town.nation].residentNames.concat(town.residentNames))
-                        ctx[town.nation].onlineResidents = ctx[town.nation].residentNames.filter(resident => 
+                        ctx[town.nation].residents = fn.fastMergeUnique(ctx[town.nation].residents, town.residents)
+                        ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
                             onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                         ))
                     })
 
                     const allData = nationsWithoutDuplicates
                         .sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
-                        .map(nation => nation.nation + " - " + nation.onlineResidents.length)                                     
+                        .map(nation => nation.name + " - " + nation.onlineResidents.length)                                     
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
                     new CustomEmbed(client, `Nation Info | Online Residents`)

@@ -19,18 +19,7 @@ import {
     AURORA
 } from "../../bot/utils/fn.js"
 
-import type { DBNation, DBSquaremapTown } from "../../bot/types.js"
-
-interface TownDataItem {
-    name: string
-    nation: string
-    residents?: string[]
-    onlineResidents: string[]
-}
-
-interface TownDataItemMap {
-    [key: string]: TownDataItem
-}
+import type { DBNation, DBSquaremapTown, TownDataItem } from "../../bot/types.js"
 
 export default {
     name: "town",
@@ -92,8 +81,8 @@ export default {
                 }
 
                 // Function to get rid of duplicates and add up residents and chunks.
-                const ctx: TownDataItemMap = Object.create(null)
-                onlineTownData.forEach(function(town) {                   
+                const ctx: Record<string, TownDataItem> = {}
+                onlineTownData.forEach(town => {                   
                     // If town doesnt exist, add it.
                     if (!ctx[town.name]) {           
                         town.onlineResidents = town.residents.filter(r => ops.some(op => r === op.name))
@@ -106,7 +95,7 @@ export default {
 
                         onlineTownDataFinal.push(ctx[town.name])
                     }
-                }, ctx)
+                })
 
                 onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
 

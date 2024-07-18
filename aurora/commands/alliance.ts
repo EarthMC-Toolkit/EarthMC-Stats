@@ -158,7 +158,7 @@ export default {
                         iconURL: message.author.displayAvatarURL() 
                     })
                     .setFooter({ 
-                        text: `Page ${++i}/${allData.length}`, 
+                        text: `Page ${i+1}/${allData.length}`, 
                         iconURL: client.user.avatarURL() 
                     })
                 }
@@ -1088,7 +1088,7 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
             .setDescription(allData[i])
             .setTimestamp()
             .setFooter({
-                text: `Page ${++i}/${len}`,
+                text: `Page ${i+1}/${len}`,
                 iconURL: client.user.avatarURL()
             })
         }
@@ -1118,7 +1118,7 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
             iconURL: message.author.displayAvatarURL()
         })
         .setFooter({
-            text: `Page ${++i}/${len}`, 
+            text: `Page ${i+1}/${len}`, 
             iconURL: client.user.avatarURL()
         })
     }

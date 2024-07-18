@@ -4,7 +4,9 @@ import type {
     ButtonInteraction,
     Client,
     CommandInteraction,
-    EmojiIdentifierResolvable
+    EmojiIdentifierResolvable,
+    User,
+    APIEmbedField
 } from "discord.js"
 
 import {
@@ -48,7 +50,7 @@ const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fet
 const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
 const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
-const embedField = (name, value, inline = false) => ({ name, value, inline })
+const embedField = (name: string, value: string, inline = false): APIEmbedField => ({ name, value, inline })
 
 // TODO: Use this list instead for future-proofing -> https://github.com/jwkerr/staff/blob/master/staff.json
 // Since it uses UUIDs, the OAPI will need to be used to grab the names.
@@ -221,7 +223,7 @@ const paginatorDM  = async (
         setTimeout(() => msg.reactions.removeAll().catch(() => {}), fiveMin)
     }
 
-    const filter = (reaction: MessageReaction, user) => {
+    const filter = (reaction: MessageReaction, user: User) => {
         return user.id == author && ["◀", "▶", "⏪", "⏩"].includes(reaction.emoji.name)
     }
 
@@ -322,7 +324,7 @@ function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascend
     return arr
 }
 
-const len = x => x.length
+const len = (x: any[]) => x.length
 const defaultSort = (arr: any[]) => sortByOrder(arr, [{
     key: 'residents',
     callback: len
@@ -330,7 +332,7 @@ const defaultSort = (arr: any[]) => sortByOrder(arr, [{
     key: 'area'
 }, {
     key: 'name',
-    callback: k => k.toLowerCase()
+    callback: (k: string) => k.toLowerCase()
 }])
 
 const defaultSortAlliance = (arr: any[]) => sortByOrder(arr, [{ 
@@ -390,7 +392,7 @@ function argsHelper(args: string[], spliceAmt: number) {
         original: args,
         spliced: [] as string[],
         format: function() { 
-            this.spliced = this.original.splice(spliceAmt).map(e => e.replace(/,/g, ''))
+            this.spliced = this.original.splice(spliceAmt).map((e: string) => e.replace(/,/g, ''))
             return this.spliced
         },
         asArray: function() { return this.spliced?.length < 1 ? this.format() : this.spliced },

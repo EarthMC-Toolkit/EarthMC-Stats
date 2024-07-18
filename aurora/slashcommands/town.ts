@@ -17,7 +17,7 @@ import {
 
 import { Aurora, formatString, NotFoundError } from 'earthmc'
 
-import type { DBNation, DBSquaremapTown } from '../../bot/types.js'
+import type { DBNation, DBSquaremapTown, TownDataItem } from '../../bot/types.js'
 
 export default {
     name: "town",
@@ -57,11 +57,11 @@ export default {
             const comparator = args2.toLowerCase()
 
             if (comparator == "online") {
-                const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                if (!onlinePlayers) return await interaction.editReply({ embeds: [fetchError] })
+                const ops = await Aurora.Players.online().catch(() => {})
+                if (!ops) return await interaction.editReply({ embeds: [fetchError] })
 
-                const onlineTownData = []
-                const onlineTownDataFinal = []
+                const onlineTownData: TownDataItem[] = []
+                const onlineTownDataFinal: TownDataItem[] = []
 
                 const len = towns.length
                 for (let i = 0; i < len; i++) {
@@ -70,33 +70,31 @@ export default {
                     onlineTownData.push({
                         name: cur.name,
                         nation: cur.nation,
-                        residentNames: cur.residents,
-                        onlineResidents: [],
-                        onlineResidentAmount: 0
+                        residents: cur.residents,
+                        onlineResidents: []
                     }) 
                 }
 
                 // Function to get rid of duplicates and add up residents and chunks.
-                const ctx: Record<string, any> = {}
+                const ctx: Record<string, TownDataItem> = {}
                 onlineTownData.forEach(a => {                   
                     // If town doesnt exist, add it.
                     if (!ctx[a.name]) {           
-                        a.onlineResidents = a.residentNames.filter(resident => onlinePlayers.find(op => resident === op.name))
+                        a.onlineResidents = a.residents.filter(res => ops.find(op => res === op.name))
 
                         ctx[a.name] = { 
                             name: a.name, 
                             nation: a.nation,
-                            onlineResidents: a.onlineResidents,
-                            onlineResidentAmount: a.onlineResidents.length
+                            onlineResidents: a.onlineResidents
                         }
 
                         onlineTownDataFinal.push(ctx[a.name])
                     }     
                 })
 
-                onlineTownDataFinal.sort((a, b) => b.onlineResidentAmount - a.onlineResidentAmount)
+                onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
 
-                const allData = onlineTownDataFinal.map(town => `${town.name} (${town.nation}) - ${town.onlineResidentAmount}`)
+                const allData = onlineTownDataFinal.map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
                     .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
                 new CustomEmbed(client, "Town Info | Online Residents")

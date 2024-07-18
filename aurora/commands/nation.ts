@@ -15,27 +15,7 @@ import News from "../../bot/objects/News.js"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
-import type { DBSquaremapNation } from "../../bot/types.js"
-
-interface TownItem {
-    name: string
-    nation: string
-    chunks: number
-    residents: string[]
-    residentsAmt: number
-    onlineResidents?: string[]
-}
-
-interface NationItemMap {
-    [key: string]: NationItem
-}
-
-interface NationItem {
-    name: string
-    residents: string[]
-    onlineResidents: string[]
-    chunks: number
-}
+import type { DBSquaremapNation, NationItem, TownItem } from "../../bot/types.js"
 
 export default {
     name: "nation",
@@ -81,20 +61,18 @@ export default {
                         const nationName = cur.nation
 
                         if (nationName == "No Nation") continue
-                        else townsWithDuplicates.push({
+                        townsWithDuplicates.push({
                             name: cur.name,
                             nation: nationName,
                             residents: cur.residents,
-                            residentsAmt: cur.residents.length,
                             onlineResidents: [],
                             chunks: cur.area
                         })
                     }
                 
-                    const ctx: NationItemMap = Object.create(null)
-
-                    // Function to get rid of duplicates and add up residents and chunks.
-                    townsWithDuplicates.forEach(function(town) {                             
+                    // Gets rid of duplicates and adds up residents and chunks.
+                    const ctx: Record<string, NationItem> = {}
+                    townsWithDuplicates.forEach(town => {                             
                         if (!ctx[town.nation]) {
 
                             // TODO: Use set, with O(n) `has` lookup.
@@ -113,7 +91,7 @@ export default {
                         }
 
                         // If it already exists, add up stuff.
-                        ctx[town.nation].residents = fn.removeDuplicates(fn.fastMerge(ctx[town.nation].residents, town.residents))
+                        ctx[town.nation].residents = fn.fastMergeUnique(ctx[town.nation].residents, town.residents)
                         ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
                             onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                         ))

@@ -7,12 +7,15 @@ import * as database from '../bot/utils/database.js'
 import {
     OfficialAPI, 
     Nova, Aurora,
-    type OAPIResident
+    type OAPIResident,
+    type Resident
 } from 'earthmc'
 
-import  { 
+import { 
+    type DBResident,
     type MCSessionProfile,
-    type SkinOpts, SkinType3D
+    type SkinOpts,
+    SkinType3D
 } from "../bot/types.js"
 
 import { secToMs } from "../bot/utils/fn.js"
@@ -26,7 +29,7 @@ const buildSkinURL = (opts: SkinOpts) => {
 }
 
 class ResidentHelper extends BaseHelper {
-    dbResident = null
+    dbResident: DBResident | Resident = null
     
     #apiResident: OAPIResident = null
 
@@ -37,7 +40,7 @@ class ResidentHelper extends BaseHelper {
 
     onlinePlayer: { name: string } = null
 
-    pInfo = null
+    pInfo: any = null
 
     player: MCSessionProfile = null
     
@@ -48,7 +51,7 @@ class ResidentHelper extends BaseHelper {
         this.embed.setColor('#A405BA')
     }
 
-    async fetchResidents() {
+    async fetchResidents(): Promise<Resident[]> {
         const arr = await (this.isNova ? database.Nova : database.Aurora).getResidents()
         return arr ? arr : await (this.isNova ? Nova : Aurora).Residents.all()
     }
@@ -116,7 +119,7 @@ class ResidentHelper extends BaseHelper {
     }
 
     #setupResidentEmbed() {
-        const res = this.apiResident || this.dbResident
+        const res: any = this.apiResident || this.dbResident
         const formattedPlayerName = res.name.replace(/_/g, "\\_")
         const affiliation = `${res.town ?? res.townName} (${res.nation ?? res.townNation})`
 

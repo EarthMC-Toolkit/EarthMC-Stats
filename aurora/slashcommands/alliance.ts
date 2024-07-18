@@ -73,8 +73,7 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
         switch(cmd) {
             case "create": {
                 // Make sure it doesn't exist already.
-                if (foundAlliance) return interaction.reply({embeds: [
-                    new EmbedBuilder()
+                if (foundAlliance) return interaction.reply({embeds: [new EmbedBuilder()
                     .setColor(Colors.Red)
                     .setTitle("Error creating alliance!")
                     .setDescription("That alliance already exists.\nChoose another name or disband/rename the current one.")
@@ -86,8 +85,7 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
             }
             case "edit": {
                 // Make sure it exists already.
-                if (!foundAlliance) return interaction.reply({embeds: [
-                    new EmbedBuilder()
+                if (!foundAlliance) return interaction.reply({embeds: [new EmbedBuilder()
                     .setColor(Colors.Red)
                     .setTitle("Error editing alliance!")
                     .setDescription("That alliance does not exist.")

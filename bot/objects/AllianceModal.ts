@@ -7,6 +7,7 @@ import {
 } from 'discord.js'
 
 import { cache } from '../constants.js'
+import type { DBAlliance } from '../types.js'
 
 const ParagraphStyle = TextInputStyle.Paragraph
 const optionals = ['flag', 'discord', 'fill', 'outline', 'full_name']
@@ -16,27 +17,12 @@ const optLower = (opts: CommandInteractionOptionResolver, k: string) =>
 const fieldVal = (interaction: ModalSubmitInteraction, name: string) => 
     interaction.fields.getField(name).value
 
-type Alliance = {
-    map: string
-    name: string
-    fullName: string
-    nations: string[]
-    leaders: string[]
-    imageURL: string
-    discordInvite: string
-    type: string
-    colours: {
-        fill: string
-        outline: string
-    }
-}
-
 class AllianceModal extends ModalBuilder {
     rows: ActionRowBuilder<any>[] = []
     required = false
-    alliance: Alliance = null
+    alliance: DBAlliance & { map?: string } = null
 
-    constructor(id: string, title: string, alliance: Alliance = null) {
+    constructor(id: string, title: string, alliance: DBAlliance = null) {
         super({ customId: id, title, components: [] })
 
         this.alliance = alliance
@@ -61,7 +47,7 @@ class AllianceModal extends ModalBuilder {
     }
 
     show = (interaction: ChatInputCommandInteraction) => {
-        console.log(`Showing creation wizard for ${this.alliance.name}`)
+        console.log(`Showing creation wizard for ${this.alliance.allianceName}`)
 
         const key = interaction.member.user.id
         cache.set(`${key}_creating`, this)
@@ -73,14 +59,13 @@ class AllianceModal extends ModalBuilder {
     main = (options: CommandInteractionOptionResolver) => {
         this.rows = [
             this.createRow('nations', 'List of Nations', this.alliance?.nations.join(", "), ParagraphStyle),
-            this.createRow('leaders', 'Leader(s)', this.alliance?.leaders.join(", "), ParagraphStyle),
+            this.createRow('leaders', 'Leader(s)', this.alliance?.leaderName, ParagraphStyle),
             this.createRow('flag', 'Flag Image Link (Optional)', this.alliance?.imageURL),
             this.createRow('discord', 'Discord Invite Link (Optional)', this.alliance?.discordInvite),
             this.createRow('full_name', 'Full Name (Optional)', this.alliance?.fullName)
         ]
 
         this.alliance.map = optLower(options, 'map')
-        this.alliance.name = optLower(options, 'name')
 
         return this
     }
@@ -88,7 +73,7 @@ class AllianceModal extends ModalBuilder {
     asObject = (interaction: ModalSubmitInteraction) => { 
         const obj: any = {
             mapName: this.alliance.map,
-            allianceName: this.alliance.name,
+            allianceName: this.alliance.allianceName,
             nations: fieldVal(interaction, 'nations').replaceAll(' ', '').split(','),
             leaders: fieldVal(interaction, 'leaders')
         }

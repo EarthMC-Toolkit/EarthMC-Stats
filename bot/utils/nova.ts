@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { divideArray, sortByOrder } from "./fn.js"
 import { cache } from '../constants.js'
 import { request } from "undici"
