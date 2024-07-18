@@ -1,8 +1,3 @@
-/**
-* @file Util module for interacting with Firestore
-* @author Owen3H
-*/
-
 import { cache } from '../constants.js'
 import { request } from "undici"
 
@@ -11,9 +6,14 @@ import type {
     SquaremapPlayersResponse
 } from "earthmc"
 
-import { divideArray, sortByOrder } from "./fn.js"
 import { db } from "../constants.js"
 import type { DBAlliance, DBResident, DBSquaremapNation, DBSquaremapTown } from '../types.js'
+
+import { 
+    divideArray, 
+    fastMerge,
+    sortByOrder 
+} from "./fn.js"
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -113,25 +113,26 @@ async function getAlliance(name: string) {
     const nations = await getNations()
     if (!nations) return null
 
+    const data = await getOnlinePlayerData()
+
     // Get nations that are in the inputted alliance.
     const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
-    let onlineInAlliance = []
-    
-    let totalWealth = 0
+    const len = allianceNations.length
 
-    const data = await getOnlinePlayerData()
-    if (!data) return null
-    
-    allianceNations.forEach(n => {
-        const onlineInNation = n.residents.filter(res => data.players.find(op => op.name == res))
-        onlineInAlliance = onlineInAlliance.concat(onlineInNation)
+    for (let i = 0; i < len; i++) {
+        const n = allianceNations[i]
 
-        totalWealth += n.wealth
-    })
+        foundAlliance.wealth += n.wealth
+
+        if (data) {
+            const onlineInNation = n.residents.filter(res => data.players.find(op => op.name == res))
+            fastMerge(foundAlliance.online, onlineInNation)
+        }
+    }
 
     // Only get rank if 2 or more alliances exist.
     const alliancesLen = alliances.length
-    if (alliancesLen >= 1) {      
+    if (alliancesLen >= 1) {
         for (let i = 0; i < alliancesLen; i++) {
             const alliance = alliances[i]
 
@@ -151,9 +152,9 @@ async function getAlliance(name: string) {
                 currentAllianceTowns += foundNation.towns.length
             }
 
-            alliance["residents"] = currentAllianceResidents
-            alliance["towns"] = currentAllianceTowns
-            alliance["area"] = currentAllianceArea
+            alliance.residents = currentAllianceResidents
+            alliance.towns = currentAllianceTowns
+            alliance.area = currentAllianceArea
         }
         
         //#region Default sort
@@ -165,10 +166,7 @@ async function getAlliance(name: string) {
         ])
         //#endregion
 
-        const index = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName) as number
-        foundAlliance.rank = index + 1
-        foundAlliance.online = onlineInAlliance
-        foundAlliance.wealth = totalWealth
+        foundAlliance.rank = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName) + 1
     }
 
     return foundAlliance

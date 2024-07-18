@@ -104,9 +104,9 @@ async function getAlliance(name: string) {
                 // Only get rank if 2 or more alliances exist.
                 if (alliances.length >= 1) {          
                     alliances.forEach(alliance => {
-                        let currentAllianceResidents = 0,
-                            currentAllianceArea = 0,
-                            currentAllianceTowns = 0
+                        let currentAllianceResidents = 0
+                        let currentAllianceArea = 0
+                        let currentAllianceTowns = 0
                             
                         for (const allianceNation of alliance.nations) {
                             const foundNation = nations.find(nation => nation.name == allianceNation)                       

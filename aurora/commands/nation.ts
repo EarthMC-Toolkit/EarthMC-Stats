@@ -263,50 +263,50 @@ export default {
                 .editMessage(m)
         }
         else if (args[0].toLowerCase() == "allies") {
-            database.Aurora.getAlliances().then(async alliances => {
-                if (!alliances) return await m.edit({embeds: [fn.databaseError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+            const alliances = await database.Aurora.getAlliances()
+            if (!alliances) return await m.edit({embeds: [fn.databaseError]})
+                .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
-                const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
-                if (!nation) {
-                    nationEmbed.setTitle("Invalid Nation")
-                        .setDescription(args[1] + " is not a valid nation, please try again.")
-                        .setColor(Colors.Red)
-                
-                    return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                }
+            const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
+            if (!nation) {
+                nationEmbed.setTitle("Invalid Nation")
+                    .setDescription(args[1] + " is not a valid nation, please try again.")
+                    .setColor(Colors.Red)
+            
+                return m.edit({ embeds: [nationEmbed] })
+                    .then(m => setTimeout(() => m.delete(), 10000))
+                    .catch(() => {})
+            }
 
-                const alliancesWithNation = alliances.filter(a => a.nations.includes(nation.name))
-                const allies = []
+            const nationAlliances = alliances.filter(a => a.nations.includes(nation.name))
+            const allies = new Set<string>
 
-                // If the nation is in one or more alliances.
-                if (alliancesWithNation.length > 0) {
-                    alliancesWithNation.forEach(a => { 
-                        a.nations.forEach(n => { 
-                            if (!allies.includes(n) && n != nation.name) allies.push(n) 
-                        }) 
-                    })
-                } else {
-                    nationEmbed.setTitle("Unable to fetch allies")
-                        .setDescription(args[1] + " is not in any alliances.")
-                        .setColor(Colors.Red)
+            // If the nation is in one or more alliances.
+            if (nationAlliances.length > 0) {
+                nationAlliances.flatMap(a => a.nations).forEach(n => { 
+                    if (n != nation.name) allies.add(n) 
+                })
+            } else {
+                nationEmbed.setTitle("Unable to fetch allies")
+                    .setDescription(args[1] + " is not in any alliances.")
+                    .setColor(Colors.Red)
 
-                    return m.edit({ embeds: [nationEmbed] })
-                        .then(m => setTimeout(() => m.delete(), 10000))
-                        .catch(() => {})
-                }
+                return m.edit({ embeds: [nationEmbed] })
+                    .then(m => setTimeout(() => m.delete(), 10000))
+                    .catch(() => {})
+            }
 
-                let page = 1
-                if (isNaN(page)) page = 0        
-                else page--
+            let page = 1
+            if (isNaN(page)) page = 0        
+            else page--
 
-                const allData = allies.join('\n').match(/(?:^.*$\n?){1,10}/mg)
-                new CustomEmbed(client, `(Aurora) Nation Info | ${nation.name} Allies`)
-                    .setDefaultAuthor(message)
-                    .setType(EntityType.Nation)
-                    .setPage(page)
-                    .paginate(allData, "```", "```")
-                    .editMessage(m)
-            }).catch(() => {})
+            const allData = [...allies].join('\n').match(/(?:^.*$\n?){1,10}/mg)
+            new CustomEmbed(client, `(Aurora) Nation Info | ${nation.name} Allies`)
+                .setDefaultAuthor(message)
+                .setType(EntityType.Nation)
+                .setPage(page)
+                .paginate(allData, "```", "```")
+                .editMessage(m)
         }
         else { // /n <nation>
             const nation = nations.find(n => n.name.toLowerCase() == args[0].toLowerCase())

@@ -60,7 +60,7 @@ export default {
                 botembed[i] = embed.setDescription(
                     "```" + townlessPlayers[0].name + "\n" + allData[i] + "```"
                 ).setFooter({ 
-                    text: `Page ${i+1}/${len}`, 
+                    text: `Page ${++i}/${len}`, 
                     iconURL: client.user.avatarURL() 
                 })
             }

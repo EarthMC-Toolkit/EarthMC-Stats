@@ -9,8 +9,14 @@ import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
 import * as database from "../../bot/utils/database.js"
 import type { AllianceType, DBAlliance } from "../../bot/types.js"
-import { argsHelper, AURORA, botDevs, defaultSortAlliance, embedField, jsonReq, paginator } from "../../bot/utils/fn.js"
-import { Aurora } from "earthmc"
+
+import { 
+    argsHelper, AURORA, botDevs, 
+    defaultSortAlliance, embedField, 
+    jsonReq, paginator 
+} from "../../bot/utils/fn.js"
+
+import { Aurora, type SquaremapPlayer } from "earthmc"
 
 const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
     .setTitle("That command is for developers only!")
@@ -115,7 +121,7 @@ export default {
                     })
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const ops = await Aurora.Players.online(true).catch(() => null)
+                const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
                 if (!ops) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Error fetching online players`)
                     .setDescription("")
@@ -123,9 +129,11 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const allianceOps = ops?.filter(op => foundAlliance.online.find(p => p == op.name)) ?? []
+                const name = getName(foundAlliance)
+                
+                const allianceOps = ops.filter(op => foundAlliance.online.find(p => p == op.name)) ?? []
                 if (allianceOps.length < 1) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle(`Online in ${getName(foundAlliance)} [0]`)
+                    .setTitle(`Online in ${name} [0]`)
                     .setDescription("No players are online in this alliance :(")
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()
@@ -139,7 +147,7 @@ export default {
                 const len = allData.length
                 for (let i = 0; i < len; i++) {
                     botembed[i] = new EmbedBuilder()
-                    .setTitle("Online in " + getName(foundAlliance))
+                    .setTitle(`Online in ${name} [${allianceOps.length}]`)
                     .setDescription("```" + allData[i] + "```")
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()
@@ -148,7 +156,7 @@ export default {
                         iconURL: message.author.displayAvatarURL() 
                     })
                     .setFooter({ 
-                        text: `Page ${i + 1}/${allData.length}`, 
+                        text: `Page ${++i}/${allData.length}`, 
                         iconURL: client.user.avatarURL() 
                     })
                 }
@@ -1073,7 +1081,7 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
             .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
             .setDescription(allData[i])
             .setTimestamp()
-            .setFooter({text: `Page ${i+1}/${len}`, iconURL: client.user.avatarURL()})
+            .setFooter({text: `Page ${++i}/${len}`, iconURL: client.user.avatarURL()})
         }
 
         return await m.edit({ embeds: [botEmbed[0]] })
@@ -1101,7 +1109,7 @@ async function sendAllianceList(client: Client, message: Message, m, args: strin
             iconURL: message.author.displayAvatarURL()
         })
         .setFooter({
-            text: `Page ${i+1}/${len}`, 
+            text: `Page ${++i}/${len}`, 
             iconURL: client.user.avatarURL()
         })
     }
@@ -1170,7 +1178,7 @@ async function sendSingleAlliance(
             embedField("Leader(s)", leadersStr, false),
             embedField("Type", allianceType, true),
             //embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
-            embedField("Size", `\`${foundAlliance.area}\` Chunks`, true),
+            embedField("Size", `\`${Math.round(foundAlliance.area)}\` Chunks`, true),
             embedField("Towns", foundAlliance.towns.toString(), true),
             embedField("Residents", foundAlliance.residents.toString(), true),
             embedField("Online", foundAlliance.online.length.toString(), true)
