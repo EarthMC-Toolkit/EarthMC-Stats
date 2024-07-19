@@ -27,8 +27,7 @@ const invalidUsageEmbed = () => new EmbedBuilder()
     .setDescription(
         "**Command Usage**:\n" +
         "Get info on a single town - `/town <name>`\n" +
-        "Show a page-by-page display of all towns - `/town list`\n" + 
-        "Shows a list "
+        "Show a page-by-page display of all towns - `/town list`\n"
     )
 
 export default {
