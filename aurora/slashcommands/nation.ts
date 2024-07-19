@@ -315,8 +315,8 @@ export default {
             const alliances = await database.Aurora.getAlliances()
             if (alliances) {
                 const nationAlliances = alliances
-                    .filter(alliance => alliance.nations.map(e => e.toLowerCase())
-                    .includes(nation.name.toLowerCase())).map(a => a.allianceName) 
+                    .filter(A => A.nations.map(e => e.toLowerCase()).includes(nation.name.toLowerCase()))
+                    .map(a => a.allianceName)
 
                 const len = nationAlliances?.length
                 if (len > 0) nationEmbed.addFields(fn.embedField(

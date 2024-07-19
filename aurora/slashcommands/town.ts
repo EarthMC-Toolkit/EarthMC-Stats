@@ -19,16 +19,22 @@ import { Aurora, formatString, NotFoundError } from 'earthmc'
 
 import type { DBNation, DBSquaremapTown, TownDataItem } from '../../bot/types.js'
 
+const invalidUsageEmbed = () => new EmbedBuilder()
+    .setColor(Colors.Red)
+    .setTitle("Invalid Arguments")
+    .setDescription(
+        "**Command Usage**:\n" +
+        "Get info on a single town - `/town <name>`\n" +
+        "Show a page-by-page display of all towns - `/town list`\n" + 
+        "Shows a list "
+    )
+
 export default {
     name: "town",
     description: "Displays info for a town.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         if (!interaction.options.getSubcommand()) {
-            return await interaction.reply({embeds: [new EmbedBuilder()
-                .setColor(Colors.Red)
-                .setTitle("Command Usage")
-                .setDescription("`/town <name>`, `/town list` or `/town activity <name>`")
-            ], ephemeral: true})
+            return await interaction.reply({ embeds: [invalidUsageEmbed()], ephemeral: true })
         }
 
         await interaction.deferReply()
@@ -232,8 +238,8 @@ export default {
                     ))
                 }
 
-                const disc = townNation?.discord
-                const nationString = !disc ? `\`${town.nation}\`` : `[${townNation.name}](${disc})`
+                const nationWiki = town?.wikis.nation
+                const nationString = !nationWiki ? `\`${town.nation}\`` : `[${town.nation}](${nationWiki})`
                 
                 townEmbed.addFields(
                     embedField("Nation", nationString, true),
@@ -278,8 +284,8 @@ export default {
                             "```" + town.residents.join(", ") + "```"
                         ))
                     }
-                    else townEmbed.addFields(embedField("Residents", townResidentsLength.toString()))
-                } 
+                    else townEmbed.addFields(embedField("Residents", `\`${townResidentsLength.toString()}\``))
+                }
                 else townEmbed.addFields(embedField("Residents", "There are no residents in this town?")) 
 
                 const townCouncillorsLen = town.councillors.length
@@ -337,12 +343,7 @@ export default {
             })
         }
 
-        return await interaction.editReply({embeds: [new EmbedBuilder()
-            .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
-            .setFooter(devsFooter(client))
-            .setTimestamp()
-            .setColor(Colors.Red)
-        ]})
+        return await interaction.editReply({embeds: [invalidUsageEmbed()]})
     }, data: new SlashCommandBuilder()
         .setName("town")
         .setDescription("Displays info for a town.")
@@ -395,9 +396,9 @@ function sendList(
 
     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
         `Residents: \`${town.residentNames.length}\`\n` +
-        `Chunks: \`${town.area}\`\n`
+        `Chunks: \`${town.area}\``
         //`${wealthStr(town.wealth)}`
-    ).join('\n\n').match(/(?:^.*$\n\n?){1,16}/mg)
+    ).join('\n\n').match(/(?:^.*$\n\n?){1,15}/mg)
 
     new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)

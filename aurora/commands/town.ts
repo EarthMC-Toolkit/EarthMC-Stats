@@ -21,6 +21,16 @@ import {
 
 import type { DBNation, DBSquaremapTown, TownDataItem } from "../../bot/types.js"
 
+const invalidUsageEmbed = () => new EmbedBuilder()
+    .setColor(Colors.Red)
+    .setTitle("Invalid Arguments")
+    .setDescription(
+        "**Command Usage**:\n" +
+        "Get info on a single town - `/town <name>`\n" +
+        "Show a page-by-page display of all towns - `/town list`\n" + 
+        "Shows a list "
+    )
+
 export default {
     name: "town",
     description: "Displays info for a town.",
@@ -28,11 +38,8 @@ export default {
     aliases: ["t"],
     run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        if (!req) return await message.reply({embeds: [new EmbedBuilder()
-            .setColor(Colors.Red)
-            .setTitle("Command Usage")
-            .setDescription("**Command Usage**:\nGet info on a single town - `/town <name>`\nShows a page-by-page display of all towns - `/town list`")
-        ]}).then((m => setTimeout(() => m.delete(), 15000))).catch(() => {})
+        if (!req) return await message.reply({ embeds: [invalidUsageEmbed()] })
+            .then(m => setTimeout(() => m.delete(), 15000)).catch(() => {})
         
         const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching town data, this might take a moment.")
@@ -228,13 +235,7 @@ export default {
                 .editMessage(m)
         }
         else if (args.length > 3 || args.length == null || opt == null) {
-            return await m.edit({embeds: [new EmbedBuilder()
-                .setDescription("Invalid arguments! Usage: `/t townName` or `/t list`")
-                .setFooter(devsFooter(client))
-                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                .setTimestamp()
-                .setColor(Colors.Red)
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+            return await m.edit({ embeds: [invalidUsageEmbed()] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
         
         //#region /t <name>
@@ -293,8 +294,8 @@ export default {
                     : townResidentsLength == 1 ? "Hermit " : "" }\`${mayor}\``, true)) 
             }
 
-            const discord = townNation?.discord
-            const nationString = !discord ? `\`${town.nation}\`` : `[${townNation.name}](${townNation.discord})`
+            const nationWiki = town?.wikis.nation
+            const nationString = !nationWiki ? `\`${town.nation}\`` : `[${town.nation}](${nationWiki})`
 
             townEmbed.addFields(
                 embedField("Nation", nationString, true),
@@ -340,7 +341,7 @@ export default {
                         "```" + town.residents.join(", ") + "```"
                     ))    
                 }  
-                else townEmbed.addFields(embedField("Residents", townResidentsLength.toString()))
+                else townEmbed.addFields(embedField("Residents", `\`${townResidentsLength.toString()}\``))
             }
             else townEmbed.addFields(embedField("Residents", "There are no residents in this town?"))
 
@@ -434,9 +435,9 @@ async function sendList(client: Client, msg: Message, comparator: string, towns:
     const townData = extractTownData(towns)
     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
         `Residents: \`${town.residentNames.length}\`\n` +
-        `Chunks: \`${town.area}\`\n`
+        `Chunks: \`${town.area}\``
         //`${wealthStr(town.wealth)}`
-    ).join('\n\n').match(/(?:^.*$\n\n?){1,16}/mg)
+    ).join('\n\n').match(/(?:^.*$\n\n?){1,15}/mg)
 
     const embed = new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)
