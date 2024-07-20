@@ -7,55 +7,68 @@ import {
 import { Aurora } from "earthmc"
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
-import * as fn from '../../bot/utils/fn.js'
+import {
+    fetchError,
+    staff, sortByKey,
+    devsFooter
+} from '../../bot/utils/fn.js'
 
 const embed = (client: Client, msg: Message) => new EmbedBuilder()
     .setColor(0x556b2f)
     .setAuthor({ name: msg.author.username, iconURL: msg.author.displayAvatarURL() })
     .setTimestamp()
-    .setFooter(fn.devsFooter(client))
+    .setFooter(devsFooter(client))
+
+const pageFromArgs = (args: string[], page = 1) => {
+    if (args[0]) page = parseInt(args[0])
+    if (isNaN(page)) page = 0
+    else page--
+
+    return page
+}
 
 export default {
     name: "online",
     slashCommand: true,
     run: async (client: Client, message: Message, args: string[]) => {
         const req = args.join(" ")
-        const m = await message.reply({embeds: [new EmbedBuilder()
-            .setTitle("<a:loading:966778243615191110> Fetching activity data, this might take a moment.")
-            .setColor(0x556b2f)]
-        })
-
-        if (!req) return m.edit({embeds: [new EmbedBuilder()
+        if (!req) return message.reply({embeds: [new EmbedBuilder()
             .setColor(Colors.Red)
             .setTitle("No Arguments Given")
             .setDescription("Arguments: `all`, `staff`/`mods`, `mayors`, `kings`")
         ]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
+        const m = await message.reply({embeds: [new EmbedBuilder()
+            .setTitle("<a:loading:966778243615191110> Fetching activity data, this might take a moment.")
+            .setColor(0x556b2f)]
+        })
+
         const onlinePlayers = await Aurora.Players.online().catch(err => console.log(err))
-        if (!onlinePlayers) return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+        if (!onlinePlayers) return await m.edit({ embeds: [fetchError] })
+            .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
         switch(args[0].toLowerCase()) {
             case "all": {
                 // Alphabetical sort
-                fn.sortByKey(onlinePlayers, 'name')
+                sortByKey(onlinePlayers, 'name')
 
-                let page = 1
-                if (isNaN(page)) page = 0
-                else page--
+                // let page = 1
+                // if (isNaN(page)) page = 0
+                // else page--
 
                 const allData = onlinePlayers.map(
                     op => op.name != op.nickname ? `${op.name} (${op.nickname})` : op.name
                 ).join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
                 return await new CustomEmbed(client, "(Aurora) Online Activity | All")
-                    .setPage(page)
+                    .setPage(1)
                     .setColor(0x556b2f)
                     .paginate(allData, "```", "```")
                     .editMessage(m)
             }
             case "staff":
             case "mods": {
-                const onlineStaff = fn.staff.all().filter(sm => onlinePlayers.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+                const onlineStaff = staff.all().filter(sm => onlinePlayers.find(op => op.name.toLowerCase() == sm.toLowerCase()))
                 return m.edit({embeds: [
                     embed(client, message)
                     .setTitle("(Aurora) Online Activity | Staff")
@@ -67,36 +80,28 @@ export default {
                     arr.filter(t => onlinePlayers.find(op => op.name == t.mayor)))
                 
                 if (!towns) return
-                fn.sortByKey(towns, 'mayor')
-            
-                let page = 1
-                if (req.split(" ")[0]) page = parseInt(req.split(" ")[0])
-                if (isNaN(page)) page = 0
-                else page--
+                sortByKey(towns, 'mayor')
             
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "(Aurora) Online Activity | Mayors")
-                    .setPage(page)
+                    .setPage(pageFromArgs(req.split(" ")))
                     .setColor(0x556b2f)
                     .paginate(allData, `Total: ${towns.length}$` + "```", "```")
                     .editMessage(m)
             }
             case "kings": {
                 const allNations = await Aurora.Nations.all().catch(err => console.log(err))
-                if (!allNations || allNations.length < 1) 
-                    return await m.edit({embeds: [fn.fetchError]}).then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                if (!allNations || allNations.length < 1) {
+                    return await m.edit({ embeds: [fetchError] })
+                        .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
+                }
 
-                const nations = allNations.filter(n => onlinePlayers.find(op => op.name == n.king))
-                fn.sortByKey(nations, 'king')
-            
-                let page = 1
-                if (req.split(" ")[0]) page = parseInt(req.split(" ")[0])
-                if (isNaN(page)) page = 0
-                else page--
+                const nations = allNations.filter(n => onlinePlayers.some(op => op.name == n.king))
+                sortByKey(nations, 'king')
             
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "(Aurora) Online Activity | Kings")
-                    .setPage(page)
+                    .setPage(pageFromArgs(req.split(" ")))
                     .setColor(0x556b2f)
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
                     .editMessage(m)

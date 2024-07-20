@@ -6,7 +6,8 @@ import {
 } from "discord.js"
 
 import * as database from '../../bot/utils/database.js'
-import * as fn from '../../bot/utils/fn.js'
+import { botDevs } from '../../bot/utils/fn.js'
+
 import AllianceModal from '../../bot/objects/AllianceModal.js'
 import type { SlashCommand } from "../../bot/types.js"
 
@@ -18,7 +19,7 @@ const checkEditor = async (interaction: ChatInputCommandInteraction) => {
     const isEditor = editingChannels.includes(interaction.channelId) && 
           author.roles.cache.has('966359842417705020')
 
-    if (!fn.botDevs.includes(author.id) && !isEditor) {
+    if (!botDevs.includes(author.id) && !isEditor) {
         return interaction.reply({embeds: [new EmbedBuilder()
             .setTitle("That command is for editors only!\nIf you are an editor, you're probably in the wrong channel.")
             .setAuthor({ name: author.user.username, iconURL: author.displayAvatarURL() })

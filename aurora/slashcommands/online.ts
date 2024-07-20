@@ -6,21 +6,24 @@ import {
     Colors
 } from 'discord.js'
 
+import { Aurora, type Player } from "earthmc"
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
-import * as fn from '../../bot/utils/fn.js'
-import { Aurora, type Player } from "earthmc"
+import { 
+    devsFooter, fetchError, sortByKey, 
+    staff
+} from '../../bot/utils/fn.js'
 
 const EMBED_COLOUR = "#d67a82"
 
 function displayOnlineStaff(client: Client, interaction: ChatInputCommandInteraction, ops: Player[]) {
-    const onlineStaff = fn.staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+    const onlineStaff = staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
     return interaction.editReply({embeds: [new EmbedBuilder()
         .setTitle("Online Activity | Staff")
         .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
         .setColor(EMBED_COLOUR)
         .setTimestamp()
-        .setFooter(fn.devsFooter(client))
+        .setFooter(devsFooter(client))
     ]})
 }
 
@@ -31,12 +34,12 @@ export default {
         await interaction.deferReply()
 
         const ops: Player[] | null = await Aurora.Players.online().catch(() => null)
-        if (!ops) return interaction.editReply({ embeds: [fn.fetchError] /*ephemeral: true */ })
+        if (!ops) return interaction.editReply({ embeds: [fetchError] /*ephemeral: true */ })
 
         switch(interaction.options.getSubcommand().toLowerCase()) {
             case "all": {
                 // Alphabetical sort
-                fn.sortByKey(ops, 'name')
+                sortByKey(ops, 'name')
 
                 const allData = ops
                     .map(op => op.name === op.nickname ? op.name : `${op.name} (${op.nickname})`)
@@ -55,12 +58,12 @@ export default {
             case "mayors": {
                 const allTowns = await Aurora.Towns.all().catch(() => {})
                 if (!allTowns || allTowns.length < 1) return await interaction.editReply({
-                    embeds: [fn.fetchError]
+                    embeds: [fetchError]
                     //ephemeral: true
                 })
 
                 const towns = allTowns.filter(t => ops.find(op => op.name == t.mayor))
-                fn.sortByKey(towns, 'mayor')
+                sortByKey(towns, 'mayor')
             
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Mayors")
@@ -72,12 +75,12 @@ export default {
             case "kings": {
                 const allNations = await Aurora.Nations.all().catch(err => console.log(err))
                 if (!allNations || allNations.length < 1) return await interaction.editReply({
-                    embeds: [fn.fetchError]
+                    embeds: [fetchError]
                     //ephemeral: true
                 })
 
                 const nations = allNations.filter(n => ops.find(op => op.name == n.king))
-                fn.sortByKey(nations, 'king')
+                sortByKey(nations, 'king')
             
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Kings")
@@ -90,7 +93,7 @@ export default {
                 .setColor(Colors.Red)
                 .setTitle("Invalid Arguments")
                 .setDescription("Arguments: `all`, `staff`, `mayors`, `kings`")
-            ] /* ephemeral: true */ })
+            ]})
         }
     }, data: new SlashCommandBuilder()
         .setName("online")

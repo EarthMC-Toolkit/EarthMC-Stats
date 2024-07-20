@@ -6,7 +6,11 @@ import {
     PermissionFlagsBits
 } from 'discord.js'
 
-import * as fn from '../../bot/utils/fn.js'
+import { 
+    devsFooter, 
+    queueSubbedChannelArray, 
+    townlessSubbedChannelArray 
+} from '../../bot/utils/fn.js'
 
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
@@ -42,13 +46,13 @@ export default {
                 .setDescription("<:red_tick:1036290475012915270> You need either the Manage Messages permission or the Manage Channels permission to subscribe!")
                 .setColor(Colors.Red)
                 .setTimestamp()
-                .setFooter(fn.devsFooter(client))
+                .setFooter(devsFooter(client))
             ], ephemeral: true})
         }
 
         const subCmd = interaction.options.getSubcommand()
         if (!subCmd) return interaction.reply({embeds: [
-            invalidUsage.setFooter(fn.devsFooter(client))
+            invalidUsage.setFooter(devsFooter(client))
         ], ephemeral: true})
 
         const channelID = channel.id
@@ -71,7 +75,7 @@ export default {
                     ], ephemeral: true})
 
                     await queueSubbedChannels.update({ channelIDs: FieldValue.arrayUnion(channelID) })
-                    fn.queueSubbedChannelArray.push(channelID)
+                    queueSubbedChannelArray.push(channelID)
 
                     await interaction.channel.send({embeds: [
                         new EmbedBuilder()
@@ -111,7 +115,7 @@ export default {
                     await interaction.channel.send({ embeds: [embed.setTitle("Live Townless Players (Aurora)")] })
                   
                     await townlessSubbedChannels.update({ channelIDs: FieldValue.arrayUnion(channelID) })
-                    fn.townlessSubbedChannelArray.push(channelID)
+                    townlessSubbedChannelArray.push(channelID)
     
                     subscriptionSuccess.setDescription(`<@${memberID}> has successfully subscribed this channel to receive live townless players.`)
                     return interaction.reply({embeds: [subscriptionSuccess]})
@@ -120,7 +124,7 @@ export default {
                 break
             }
             default: return interaction.reply({ embeds: [
-                invalidUsage.setFooter(fn.devsFooter(client))
+                invalidUsage.setFooter(devsFooter(client))
             ], ephemeral: true })
         }
     }, data: new SlashCommandBuilder()

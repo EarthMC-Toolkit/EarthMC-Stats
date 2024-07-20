@@ -7,7 +7,7 @@ import {
 } from "discord.js"
 
 //import { Service } from 'koyeb.js'
-import * as fn from '../../bot/utils/fn.js'
+import { botDevs } from '../../bot/utils/fn.js'
 
 import dotenv from 'dotenv'
 dotenv.config()
@@ -24,7 +24,7 @@ export default {
 
         const member = interaction.member as GuildMember
 
-        if (!fn.botDevs.includes(member.id)) {
+        if (!botDevs.includes(member.id)) {
             try {
                 const m = await interaction.reply({embeds: [
                     embed.setTitle("Goofy ah :skull:")

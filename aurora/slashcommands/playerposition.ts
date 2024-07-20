@@ -7,7 +7,10 @@ import {
 import striptags from 'striptags'
 
 import * as db from "../../bot/utils/database.js"
-import * as fn from '../../bot/utils/fn.js'
+import { 
+    botDevs, devsFooter, 
+    embedField
+} from '../../bot/utils/fn.js'
 
 export default {
     name: "playerposition",
@@ -19,7 +22,7 @@ export default {
             .setTitle("Error while using /playerposition:")
             .setDescription("Not enough arguments, please provide a valid playername.")
             .setTimestamp()
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
         ], ephemeral: true})
 
         const opsData = await db.Aurora.getOnlinePlayerData()
@@ -27,15 +30,18 @@ export default {
             .setTimestamp()
             .setColor(Colors.Red)
             .setTitle("Connection Issues")
-            .setAuthor({name: interaction.user.username, iconURL: interaction.user.displayAvatarURL()})
+            .setAuthor({
+                name: interaction.user.username,
+                iconURL: interaction.user.displayAvatarURL()
+            })
             .setDescription("Unable to fetch Towny data, the server may be down for maintenance.\n\nPlease try again later.")
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const ops = opsData.players
         const foundPlayer = ops.find(op => op.name.toLowerCase() == player.toLowerCase())
           
-        if (foundPlayer && !fn.botDevs.includes(player.toLowerCase())) {
+        if (foundPlayer && !botDevs.includes(player.toLowerCase())) {
             const acc = foundPlayer.name
 
             if (foundPlayer.world == "-some-other-bogus-world-") {
@@ -52,16 +58,16 @@ export default {
                 .setThumbnail(`https://crafatar.com/avatars/${acc}/256.png`)
                 .setColor(Colors.DarkVividPink)
                 .setTimestamp()
-                .setFooter(fn.devsFooter(client))
+                .setFooter(devsFooter(client))
                 
             const foundPlayerNickname = striptags(foundPlayer.display_name)
             if (acc !== foundPlayerNickname)
-                locationEmbed.addFields(fn.embedField("Nickname", foundPlayerNickname))
+                locationEmbed.addFields(embedField("Nickname", foundPlayerNickname))
             
             const { x, z } = foundPlayer
             locationEmbed.addFields(
-                fn.embedField("Coordinates", `X: ${x}\nZ: ${z}`),
-                fn.embedField("Dynmap Link", `[${x}, ${z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
+                embedField("Coordinates", `X: ${x}\nZ: ${z}`),
+                embedField("Dynmap Link", `[${x}, ${z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
             )
 
             return interaction.reply({ embeds: [locationEmbed] }).catch(() => {})

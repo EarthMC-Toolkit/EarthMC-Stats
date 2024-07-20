@@ -4,8 +4,8 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import * as fn from '../../bot/utils/fn.js'
 import { Aurora } from 'earthmc'
+import { fetchError, paginatorInteraction } from '../../bot/utils/fn.js'
 
 const embed = (len: number, desc: string, footer?: { text: string, iconURL: string }) => {
     const builder = new EmbedBuilder()
@@ -23,7 +23,7 @@ export default {
     description: "Lists all online players without a town.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const townlessPlayers = await Aurora.Players.townless()
-        if (!townlessPlayers) return await interaction.reply({embeds: [fn.fetchError], ephemeral: true})
+        if (!townlessPlayers) return await interaction.reply({embeds: [fetchError], ephemeral: true})
 
         const townlessLen = townlessPlayers.length
         const allData = townlessPlayers.map(p => p.name).join('\n').match(/(?:^.*$\n?){1,10}/mg)
@@ -54,7 +54,7 @@ export default {
         }
 
         await interaction.reply({ embeds: [botEmbed[page]] })
-            .then(() => fn.paginatorInteraction(interaction, botEmbed, page))
+            .then(() => paginatorInteraction(interaction, botEmbed, page))
             .catch(console.log)
     }, data: new SlashCommandBuilder()
         .setName("townless")

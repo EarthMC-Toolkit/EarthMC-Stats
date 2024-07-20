@@ -4,7 +4,7 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from 'discord.js'
 
-import * as fn from '../../bot/utils/fn.js'
+import { devsFooter } from '../../bot/utils/fn.js'
 
 const formatCoord = (coord: number) => coord.toString().replace(/[, ]/g, " ")
 const convertToOverworld = (coord: number) => Math.floor(coord / 8).toString()
@@ -17,7 +17,7 @@ export default {
             .setDescription("<:red_tick:1036290475012915270> Please enter 2 numerical arguments, divided by a space or comma.")
             .setColor(Colors.Red)
             .setTimestamp()
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
 
         const x = interaction.options.getInteger("x"),
               z = interaction.options.getInteger("z")
@@ -37,7 +37,7 @@ export default {
             .setColor(Colors.Green)
             .setDescription(`\n${convertToOverworld(arg0)}, ${convertToOverworld(arg1)}`)
             .setTimestamp()
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
         ]})
     }, data: new SlashCommandBuilder()
         .setName("nether")

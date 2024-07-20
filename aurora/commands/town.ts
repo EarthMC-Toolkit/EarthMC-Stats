@@ -24,11 +24,11 @@ import type { DBNation, DBSquaremapTown, TownDataItem } from "../../bot/types.js
 const invalidUsageEmbed = () => new EmbedBuilder()
     .setColor(Colors.Red)
     .setTitle("Invalid Arguments")
-    .setDescription(
-        "**Command Usage**:\n" +
-        "Get info on a single town - `/town <name>`\n" +
-        "Show a page-by-page display of all towns - `/town list`\n"
-    )
+    .setDescription(`
+        **Command Usage**:
+        Get info on a single town - \`/town <name>\`
+        Show a page-by-page display of all towns - \`/town list\`
+    `)
 
 export default {
     name: "town",
