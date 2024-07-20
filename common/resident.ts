@@ -7,11 +7,11 @@ import * as database from '../bot/utils/database.js'
 import {
     OfficialAPI, 
     Nova, Aurora,
-    type OAPIResident,
     type Resident
 } from 'earthmc'
 
 import { 
+    type V3Player,
     type DBResident,
     type MCSessionProfile,
     type SkinOpts,
@@ -20,6 +20,7 @@ import {
 
 import { secToMs } from "../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
+import { request } from "undici"
 
 const buildSkinURL = (opts: SkinOpts) => {
     const domain = "https://visage.surgeplay.com/"
@@ -31,19 +32,12 @@ const buildSkinURL = (opts: SkinOpts) => {
 class ResidentHelper extends BaseHelper {
     dbResident: DBResident | Resident = null
     
-    #apiResident: OAPIResident = null
-
+    #apiResident: V3Player = null
     get apiResident() { return this.#apiResident }
-    private set apiResident(val: OAPIResident) {
-        this.#apiResident = val
-    }
 
     onlinePlayer: { name: string } = null
-
     pInfo: any = null
-
     player: MCSessionProfile = null
-    
     status: "Online" | "Offline"
 
     constructor(client: Client, isNova = false) {
@@ -73,16 +67,16 @@ class ResidentHelper extends BaseHelper {
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
         if (!this.isNova) {
-            let res: OAPIResident
+            let res: V3Player
             try {
-                res = await OfficialAPI.V2.resident(arg1)
+                res = await request(`https://api.earthmc.net/v3/aurora/players?query=${arg1}`).then(res => res.body.json()) as V3Player
             } catch (e) {
                 console.log(e)
                 return false
             }
 
             if (res.town) {
-                const resTown = await OfficialAPI.V2.town(res.town.toLowerCase())
+                const resTown = await OfficialAPI.V2.town(res.town.name.toLowerCase())
 
                 let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
                 if (rank == "Mayor" && resTown.status.isCapital) 
@@ -91,11 +85,11 @@ class ResidentHelper extends BaseHelper {
                 res['rank'] = rank
             }
 
-            this.apiResident = res
+            this.#apiResident = res
         }
 
         this.status = this.onlinePlayer ? "Online" : "Offline"
-        this.pInfo = await database.getPlayerInfo(resName, this.isNova).catch(e => console.log("Database error!\n" + e))
+        this.pInfo = await database.getPlayerInfo(resName, this.isNova).catch(e => console.log(`Database error!\n${e}`))
 
         this.tryAddAvatar()
 
@@ -103,7 +97,7 @@ class ResidentHelper extends BaseHelper {
     }
 
     createEmbed() {
-        if (this.apiResident.town) this.#setupResidentEmbed()
+        if (this.apiResident.town.uuid) this.#setupResidentEmbed()
         else this.#setupTownlessEmbed()
 
         return this.embed
@@ -119,12 +113,16 @@ class ResidentHelper extends BaseHelper {
     }
 
     #setupResidentEmbed() {
-        const res: any = this.apiResident || this.dbResident
+        const res: any = this.dbResident || this.apiResident
         const formattedPlayerName = res.name.replace(/_/g, "\\_")
-        const affiliation = `${res.town ?? res.townName} (${res.nation ?? res.townNation})`
+        
+        const affiliation = {
+            town: res.townName ?? (res.town ?? res.town.name),
+            nation: res.townNation ?? (res.nation ?? res.nation.name)
+        }
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | ${formattedPlayerName}`)
-        this.addField("Affiliation", affiliation, true)
+        this.addField("Affiliation", `${affiliation.town} (${affiliation.nation})`, true)
         if (res.rank) this.addField("Rank", res.rank, true)
 
         this.tryAddNickname()
@@ -134,7 +132,7 @@ class ResidentHelper extends BaseHelper {
     addCommonFields() {
         if (!this.apiResident) this.addDatesFromDB()
         else {
-            this.addBalance(this.apiResident?.balance)
+            this.addBalance(this.apiResident?.stats.balance)
             this.addDatesFromAPI()
         }
 

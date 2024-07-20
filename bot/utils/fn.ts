@@ -154,7 +154,7 @@ const paginator = async(
     const lastPage = embedArr.length - 1
 
     // Edit message to show arrow buttons
-    await msg.edit({ components: [await buildButtons(currentPage, lastPage)] }).catch(() => {})
+    await msg.edit({ components: [buildButtons(currentPage, lastPage)] }).catch(() => {})
     setTimeout(() => msg.edit({ components: [] }).catch(() => {}), fiveMin)
 
     // Decide what page to display according to the button interaction
@@ -165,7 +165,7 @@ const paginator = async(
 
         await msg.edit({
             embeds: [embedArr[currentPage]],
-            components: [await buildButtons(currentPage, lastPage)]
+            components: [buildButtons(currentPage, lastPage)]
         })
     })
 }
@@ -180,7 +180,7 @@ const paginatorInteraction = async(
     paginator(interaction.user.id, msg, embeds, currentPage)
 }
 
-async function buildButtons(currentPage: number, lastPage: number) {
+function buildButtons(currentPage: number, lastPage: number) {
     const noFurther = currentPage >= lastPage
     const noLess = currentPage <= 0
 
