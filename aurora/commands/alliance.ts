@@ -11,7 +11,7 @@ import * as database from "../../bot/utils/database.js"
 import type { AllianceType, DBAlliance } from "../../bot/types.js"
 
 import { 
-    argsHelper, AURORA, botDevs, 
+    argsHelper, AURORA, backtick, botDevs, 
     defaultSortAlliance, embedField, 
     fastMerge, 
     jsonReq, paginator 
@@ -352,7 +352,6 @@ export default {
                         continue
                     }
 
-                    // Replace with `Set` like we do in "add" block.
                     const foundNation = alliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
                     if (!foundNation) {
                         alliance.nations.push(nation.name)
@@ -491,8 +490,6 @@ export default {
                 const nationsAdded = []
                 const len = nationsToAdd.length
 
-                const foundAllianceNations = new Set(foundAlliance.nations.map(n => n.toLowerCase()))
-                
                 for (let i = 0; i < len; i++) {   
                     const cur = nationsToAdd[i]                                              
                     const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
@@ -503,13 +500,12 @@ export default {
                     }
 
                     // If the current nation doesn't already exist in the alliance, add it.
-                    if (!foundAllianceNations.has(cur.toLowerCase())) {
-                        foundAllianceNations.add(nation.name)
+                    const foundNation = foundAlliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
+                    if (!foundNation) {
+                        foundAlliance.nations.push(nation.name)
                         nationsAdded.push(nation.name)
                     }
                 }
-
-                foundAlliance.nations = [...foundAllianceNations]
 
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
@@ -1158,7 +1154,7 @@ async function sendSingleAlliance(
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
     const allianceType = 
         typeString == 'sub' ? "Sub-Meganation" : 
-        typeString == 'mega' ? "Meganation" : "Normal"
+        typeString == 'mega' ? "Meganation" : "Normal/Pact"
     
     const playersLen = players.length
     const leaders: string[] = []
@@ -1184,13 +1180,13 @@ async function sendSingleAlliance(
 
     const allianceEmbed = new CustomEmbed(client, `(Aurora) Alliance Info | ${getName(foundAlliance)}${rank}`)
         .addFields(
-            embedField("Leader(s)", leadersStr, false),
-            embedField("Type", allianceType, true),
+            embedField("Leader(s)", backtick(leadersStr), false),
+            embedField("Type", backtick(allianceType), true),
             //embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
-            embedField("Size", `\`${Math.round(foundAlliance.area)}\` Chunks`, true),
-            embedField("Towns", foundAlliance.towns.toString(), true),
-            embedField("Residents", foundAlliance.residents.toString(), true),
-            embedField("Online", foundAlliance.online.length.toString(), true)
+            embedField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true),
+            embedField("Towns", backtick(foundAlliance.towns), true),
+            embedField("Residents", backtick(foundAlliance.residents), true),
+            embedField("Online", backtick(foundAlliance.online.length), true)
         )
         .setColor(foundAlliance.colours 
             ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 

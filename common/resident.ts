@@ -37,7 +37,7 @@ class ResidentHelper extends BaseHelper {
 
     onlinePlayer: { name: string } = null
     pInfo: any = null
-    player: MCSessionProfile = null
+    mcProfile: MCSessionProfile = null
     status: "Online" | "Offline"
 
     constructor(client: Client, isNova = false) {
@@ -52,10 +52,10 @@ class ResidentHelper extends BaseHelper {
 
     async init(input: string) {
         const arg1 = input?.toLowerCase()
-        const p = await MC.Players.get(arg1).catch(err => { console.log(err); return null })
 
-        if (!p) return false
-        this.player = p
+        MC.Players.get(arg1)
+            .then(p => this.mcProfile = p)
+            .catch(console.error)
 
         const residents = await this.fetchResidents()
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)
@@ -105,15 +105,20 @@ class ResidentHelper extends BaseHelper {
     }
 
     #setupResidentEmbed() {
-        const res: any = this.dbResident || this.apiResident
+        const res: any = this.apiResident || this.dbResident
         const formattedPlayerName = res.name.replace(/_/g, "\\_")
         
         const affiliation = {
-            town: res.townName ?? (res.town ?? res.town.name),
-            nation: res.townNation ?? (res.nation ?? res.nation.name)
+            town: (res.town ?? res.town.name) ?? res.townName,
+            nation: (res.nation ?? res.nation.name) ?? res.townNation
         }
 
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | ${formattedPlayerName}`)
+        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | \`${formattedPlayerName}\``)
+
+        if (res.about) {
+            this.embed.setDescription(`*${res.about}*`)
+        }
+
         this.addField("Affiliation", `${affiliation.town} (${affiliation.nation})`, true)
         if (res.rank) this.addField("Rank", res.rank, true)
 
@@ -122,7 +127,8 @@ class ResidentHelper extends BaseHelper {
     }
 
     #setupTownlessEmbed() {
-        const formattedPlayerName = this.player.name.replace(/_/g, "\\_")
+        // TODO: mcProfile could be null, handle this case.
+        const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
 
         this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | ${formattedPlayerName}`)
         this.addField("Affiliation", "No Town", true)
@@ -164,11 +170,11 @@ class ResidentHelper extends BaseHelper {
     }
 
     tryAddAvatar = () => {
-        if (!this.player) return
+        if (!this.mcProfile) return
 
         this.embed.setThumbnail(buildSkinURL({ 
             view: SkinType3D.BUST, 
-            subject: this.player.id
+            subject: this.mcProfile.id
         }))
     }
 
@@ -183,10 +189,10 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = (bal: string | number) => this.addField("Balance", `${bal ?? 0}G`, true)
+    addBalance = (bal: string | number) => this.addField("Balance", `\`${bal ?? 0}\`G`, true)
 
     addLinkedAcc = () => {
-        if (!this.player?.name) return
+        if (!this.mcProfile?.name) return
 
         const disc = this.pInfo?.discord
         if (disc && disc != "")

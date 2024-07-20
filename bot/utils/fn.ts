@@ -6,7 +6,8 @@ import type {
     CommandInteraction,
     EmojiIdentifierResolvable,
     User,
-    APIEmbedField
+    APIEmbedField,
+    Awaitable
 } from "discord.js"
 
 import {
@@ -24,37 +25,40 @@ import fs from 'fs'
 import { request } from "undici"
 import path from "path"
 
-const botDevs = ["Owen3H", "263377802647175170"]
+export const botDevs = ["Owen3H", "263377802647175170"]
 
 // eslint-disable-next-line
-let queueSubbedChannelArray: string[] = []
-const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
+export let queueSubbedChannelArray: string[] = []
+export const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
 
 // eslint-disable-next-line
-let newsSubbedChannelArray: string[] = []
-const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
+export let newsSubbedChannelArray: string[] = []
+export const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
 
 // eslint-disable-next-line
-let townlessSubbedChannelArray: string[] = []
-const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
+export let townlessSubbedChannelArray: string[] = []
+export const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
 
-const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
+export const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
     .setTitle(title)
     .setDescription(desc)
     .setColor(Colors.Red)
     .setTimestamp()
 
-const serverIssues = errorEmbed("Server Issues", "We are currently unable to reach EarthMC, it's most likely down.")
-const townyIssues = errorEmbed("Towny Issues", "We are currently unable to fetch Towny data, try again later!" )
-const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fetch Dynmap data, try again later!")
-const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
-const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
+export const serverIssues = errorEmbed("Server Issues", "We are currently unable to reach EarthMC, it's most likely down.")
+export const townyIssues = errorEmbed("Towny Issues", "We are currently unable to fetch Towny data, try again later!" )
+export const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fetch Dynmap data, try again later!")
+export const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
+export const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
-const embedField = (name: string, value: string, inline = false): APIEmbedField => ({ name, value, inline })
+export const embedField = (name: string, value: string, inline = false): APIEmbedField => ({ name, value, inline })
+export const backtick = (value: string | number, opts?: { prefix?: string, postfix?: string }) => {
+    return `${opts?.prefix ?? ""}\`${value.toString()}\`${opts?.postfix ?? ""}`
+}
 
 // TODO: Use this list instead for future-proofing -> https://github.com/jwkerr/staff/blob/master/staff.json
 // Since it uses UUIDs, the OAPI will need to be used to grab the names.
-const staff = {
+export const staff = {
     all: () => fastMerge(staff.active, staff.inactive),
     active: [
         "Fix", "KarlOfDuty", "CorruptedGreed", "1212ra", "PolkadotBlueBear", "RlZ58", "Ebola_chan",
@@ -70,52 +74,52 @@ const staff = {
     ]
 }
 
-const staffListEmbed = (client: Client, arr: string[], active = true) => new EmbedBuilder({
+export const staffListEmbed = (client: Client, arr: string[], active = true) => new EmbedBuilder({
     title: `Staff List (${active ? "Active" : "Inactive"})`,
     description: alphabetSort(arr).join(", "),
     footer: devsFooter(client),
     color: Colors.Green
 }).setThumbnail(client.user.avatarURL()).setTimestamp()
 
-const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 100
+export const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 100
     : residentAmt >= 120 ? 80
     : residentAmt >= 80 ? 60
     : residentAmt >= 60 ? 50
     : residentAmt >= 40 ? 30
     : residentAmt >= 20 ? 10 : 0
 
-const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
+export const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
     : residentAmt >= 40 ? 100
     : residentAmt >= 30 ? 60
     : residentAmt >= 20 ? 40
     : residentAmt >= 10 ? 20
     : residentAmt < 10 ? 10 : 0
 
-const NOVA = {
+export const NOVA = {
     thumbnail: attachmentFromFile('/bot/images/nova.png', 'nova.png'),
     newsChannel: "970962923285540915"
 }
 
-const AURORA = {
+export const AURORA = {
     thumbnail: attachmentFromFile('/bot/images/aurora.png', 'aurora.png'),
     newsChannel: "970962878486183958"
 }
 
-const time = (date = moment()) => moment(date).utc().format("YYYY/MM/DD HH:mm:ss")
+export const time = (date = moment()) => moment(date).utc().format("YYYY/MM/DD HH:mm:ss")
 
-const error = (client: Client, message: string, error: string) => new EmbedBuilder()
+export const error = (client: Client, message: string, error: string) => new EmbedBuilder()
     .setColor(Colors.Red)
     .setTitle(message)
     .setDescription(`${error}`)
     .setFooter({ text: client.user.username, iconURL: client.user.avatarURL() })
     .setTimestamp()
 
-const devsFooter = (client: Client) => ({
+export const devsFooter = (client: Client) => ({
     text: `Maintained by ${botDevs[0]}`, 
     iconURL: client.user.avatarURL()
 })
 
-function unixFromDate(date: Date | Timestamp): number {
+export function unixFromDate(date: Date | Timestamp): number {
     let result: Date = null
 
     if (date instanceof Timestamp) result = new Date(date["seconds"] * 1000)
@@ -124,18 +128,22 @@ function unixFromDate(date: Date | Timestamp): number {
     return result ? moment.utc(result).unix() : null
 }
 
-const removeDuplicates = (arr: any[]) => [...new Set(arr)]
-const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
-const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
-const isEmpty = (str: string) => (!str || str.length === 0)
-const fiveMin = 5 * 60 * 1000
+export const removeDuplicates = (arr: any[]) => [...new Set(arr)]
+export const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
+export const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+export const isEmpty = (str: string) => (!str || str.length === 0)
+export const fiveMin = 5 * 60 * 1000
 
-const paginator = async(
+export const paginator = async(
     author: string, 
     msg: Message, 
-    embedArr: EmbedBuilder[], 
-    currentPage: number
-) => {   
+    embeds: EmbedBuilder[], 
+    currentPage: number,
+    collectOverride?: (
+        interaction: ButtonInteraction, msg: Message,
+        currentPage: number, embeds: EmbedBuilder[]
+    ) => Awaitable<void>
+) => {
     // DM messages don't work with component collectors right now
     if (msg?.channel?.type == ChannelType.DM) 
         return await msg.edit("DMs do not support buttons yet! Try again in a server.")
@@ -151,33 +159,42 @@ const paginator = async(
         time: fiveMin
     })
 
-    const lastPage = embedArr.length - 1
+    collector.on("collect", interaction => collectOverride ? 
+        collectOverride(interaction, msg, currentPage, embeds) : 
+        defaultCollect(interaction, msg, currentPage, embeds)
+    )
 
     // Edit message to show arrow buttons
-    await msg.edit({ components: [buildButtons(currentPage, lastPage)] }).catch(() => {})
+    await msg.edit({ components: [buildButtons(currentPage, embeds.length - 1)] }).catch(() => {})
     setTimeout(() => msg.edit({ components: [] }).catch(() => {}), fiveMin)
+}
+
+const defaultCollect = (interaction: ButtonInteraction, msg: Message, currentPage: number, embeds: EmbedBuilder[]) => {
+    const lastPage = embeds.length - 1
 
     // Decide what page to display according to the button interaction
-    collector.on("collect", async interaction => {
-        currentPage = interaction.customId == "last" ? lastPage 
-            : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
-            : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
+    currentPage = interaction.customId == "last" ? lastPage 
+        : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
+        : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
 
-        await msg.edit({
-            embeds: [embedArr[currentPage]],
-            components: [buildButtons(currentPage, lastPage)]
-        })
+    msg.edit({
+        embeds: [embeds[currentPage]],
+        components: [buildButtons(currentPage, lastPage)]
     })
 }
 
 /** Helper method to create a paginator on an interaction. */
-const paginatorInteraction = async(
+export const paginatorInteraction = async(
     interaction: CommandInteraction,
     embeds: EmbedBuilder[],
-    currentPage: number
+    currentPage: number,
+    collectOverride: (
+        interaction: ButtonInteraction, msg: Message,
+        currentPage: number, embeds: EmbedBuilder[]
+    ) => Awaitable<void> = null
 ) => {
     const msg = await interaction.fetchReply().catch(console.log) as Message
-    paginator(interaction.user.id, msg, embeds, currentPage)
+    paginator(interaction.user.id, msg, embeds, currentPage, collectOverride)
 }
 
 function buildButtons(currentPage: number, lastPage: number) {
@@ -207,7 +224,7 @@ const reactionOpts = {
     errors: ['time']
 }
 
-const paginatorDM  = async (
+export const paginatorDM  = async (
     author: string,
     msg: Message,
     embeds: EmbedBuilder[], 
@@ -259,12 +276,12 @@ const paginatorDM  = async (
 }
 
 // UTC is safe to divide by 24 hours
-const daysBetween = (start: Date, end: Date) => {
+export const daysBetween = (start: Date, end: Date) => {
     const diff = end.getTime() - start.getTime()
     return Math.ceil(diff / (1000 * 3600 * 24))
 }
 
-function divideArray(arr: any[], n: number) {
+export function divideArray(arr: any[], n: number) {
     const chunks = []
 
     const arrLen = arr.length
@@ -280,14 +297,14 @@ function divideArray(arr: any[], n: number) {
     return chunks
 }
 
-const alphabetSort = (arr: any[], key?: string) => arr.sort((a, b) => {
+export const alphabetSort = (arr: any[], key?: string) => arr.sort((a, b) => {
     const aVal = (key ? a[key] : a).toLowerCase()
     const bVal = (key ? a[key] : b).toLowerCase()
 
     return (bVal < aVal) ? 1 : (bVal > aVal ? -1 : 0)
 })
 
-const sortByKey = (arr: any[], key: string) => {
+export const sortByKey = (arr: any[], key: string) => {
     arr.sort(function(a, b) {
         const [aKey, bKey] = [a[key].toLowerCase(), b[key].toLowerCase()]
 
@@ -300,7 +317,7 @@ const sortByKey = (arr: any[], key: string) => {
     return arr
 }
 
-function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascending = false) {
+export function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascending = false) {
     arr.sort((a, b) => {
         for (const { key, callback } of keys) {
             const aVal = a[key]
@@ -325,7 +342,7 @@ function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascend
 }
 
 const len = (x: any[]) => x.length
-const defaultSort = (arr: any[]) => sortByOrder(arr, [{
+export const defaultSort = (arr: any[]) => sortByOrder(arr, [{
     key: 'residents',
     callback: len
 }, {
@@ -335,7 +352,7 @@ const defaultSort = (arr: any[]) => sortByOrder(arr, [{
     callback: (k: string) => k.toLowerCase()
 }])
 
-const defaultSortAlliance = (arr: any[]) => sortByOrder(arr, [{ 
+export const defaultSortAlliance = (arr: any[]) => sortByOrder(arr, [{ 
     key: "residents"
 }, { 
     key: "area"
@@ -347,14 +364,14 @@ const defaultSortAlliance = (arr: any[]) => sortByOrder(arr, [{
     callback: len
 }])
 
-const maxTownSize = 940
+export const maxTownSize = 940
 
-function attachmentFromFile(absolutePath: string, name: string, description?: string) {
+export function attachmentFromFile(absolutePath: string, name: string, description?: string) {
     const file = fs.readFileSync(process.cwd() + absolutePath)
     return new AttachmentBuilder(file, description ? { name, description } : { name })
 }
 
-const random = (array: any[], last: number) => {
+export const random = (array: any[], last: number) => {
     const len = array.length
     while(true) {
         const rand = Math.floor(Math.random() * len)
@@ -363,7 +380,7 @@ const random = (array: any[], last: number) => {
 }
 
 /** Checks whether the client can view and send messages in a channel */
-function canViewAndSend(channel: Channel) {
+export function canViewAndSend(channel: Channel) {
     switch (channel.type) {
         case ChannelType.GuildText:
         case ChannelType.GuildAnnouncement: {
@@ -379,15 +396,15 @@ function canViewAndSend(channel: Channel) {
     }
 }
 
-const secToMs = (ts: number) => Math.round(ts / 1000)
-const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
+export const secToMs = (ts: number) => Math.round(ts / 1000)
+export const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
 
-const readTsFiles = (str: string) => {
+export const readTsFiles = (str: string) => {
     const fullPath = path.join(path.resolve(process.cwd(), `./${str}`))
     return fs.readdirSync(fullPath).filter(file => file.endsWith('.ts'))
 }
 
-function argsHelper(args: string[], spliceAmt: number) {
+export function argsHelper(args: string[], spliceAmt: number) {
     return {
         original: args,
         spliced: [] as string[],
@@ -400,7 +417,7 @@ function argsHelper(args: string[], spliceAmt: number) {
     }
 }
 
-const inWorldBorder = (x: number, z: number) => {
+export const inWorldBorder = (x: number, z: number) => {
     const [numX, numZ] = [x, z]
     return numX >= 33081 || numX < -33280 || 
            numZ >= 16508 || numZ < -16640
@@ -424,53 +441,4 @@ export const fastMergeByKey = <T>(original: T[], arr: any[], key: string) => {
     }
 
     return original
-}
-
-export {
-    jsonReq,
-    readTsFiles,
-    maxTownSize,
-    time,
-    error,
-    paginator,
-    paginatorDM,
-    daysBetween,
-    botDevs,
-    removeDuplicates,
-    deepCopy,
-    isEmpty,
-    getUserCount,
-    queueSubbedChannelArray,
-    newsSubbedChannelArray,
-    townlessSubbedChannelArray,
-    townyIssues,
-    fetchError,
-    databaseError,
-    serverIssues,
-    dynmapIssues,
-    paginatorInteraction,
-    divideArray,
-    unixFromDate,
-    devsFooter,
-    staff,
-    staffListEmbed,
-    alphabetSort,
-    sortByKey,
-    sortByOrder,
-    defaultSort,
-    defaultSortAlliance, 
-    attachmentFromFile,
-    novaNationBonus,
-    auroraNationBonus,
-    random,
-    canViewAndSend,
-    NOVA,
-    AURORA,
-    embedField,
-    secToMs,
-    setQueueSubbedChannels,
-    setNewsSubbedChannels,
-    setTownlessSubbedChannels,
-    argsHelper,
-    inWorldBorder
 }

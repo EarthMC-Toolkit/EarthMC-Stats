@@ -16,7 +16,8 @@ import {
     embedField, removeDuplicates,
     defaultSort, unixFromDate,
     databaseError,
-    auroraNationBonus, AURORA
+    auroraNationBonus, AURORA,
+    backtick
 } from '../../bot/utils/fn.js'
 
 import * as database from "../../bot/utils/database.js"
@@ -355,10 +356,14 @@ export default {
                 .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
                 .addFields(
                     embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
-                    embedField("Capital", `\`${nation.capital.name}\``, true),
+                    embedField("Capital", backtick(nation.capital.name), true),
                     embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
-                    embedField("Size/Worth", `Chunks: \`${nation.area.toString()}\`\nGold: \`${(nation.area * 16)}\``, true),
-                    embedField("Residents", `\`${nationResLength.toString()}\``, true),
+                    embedField("Size/Worth",
+                        backtick(nation.area, { postfix: " Chunks\n" }) +
+                        backtick(nation.area * 16, { postfix: "G" }), 
+                        true
+                    ),
+                    embedField("Residents", backtick(nationResLength), true),
                     embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                 )
 

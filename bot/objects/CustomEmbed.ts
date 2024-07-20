@@ -117,7 +117,7 @@ class CustomEmbed extends EmbedBuilder {
                 .setTimestamp()
                 .setFooter({ 
                     text: `Page ${i+1}/${len}`, 
-                    iconURL: this.client?.user.avatarURL() ?? "" 
+                    iconURL: this.client?.user?.avatarURL()
                 })
         }
 
