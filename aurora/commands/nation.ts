@@ -14,14 +14,14 @@ import News from "../../bot/objects/News.js"
 
 import {
     embedField, removeDuplicates,
-    fastMergeUnique, defaultSort, unixFromDate,
-    databaseError, fetchError,
+    defaultSort, unixFromDate,
+    databaseError,
     auroraNationBonus, AURORA
 } from '../../bot/utils/fn.js'
 
 import * as database from "../../bot/utils/database.js"
 
-import type { DBSquaremapNation, NationItem, TownItem } from "../../bot/types.js"
+import type { DBSquaremapNation } from "../../bot/types.js"
 
 export default {
     name: "nation",
@@ -48,150 +48,150 @@ export default {
         let nations = await database.Aurora.getNations()
         if (!nations) nations = await Aurora.Nations.all() as DBSquaremapNation[]
 
-        if (args[0].toLowerCase() == "list") {
-            if (args[1] != null) {
-                const townsWithDuplicates: TownItem[] = []
-                const nationsWithoutDuplicates: NationItem[] = []
+        // if (args[0].toLowerCase() == "list") {
+        //     if (args[1] != null) {
+        //         const townsWithDuplicates: TownItem[] = []
+        //         const nationsWithoutDuplicates: NationItem[] = []
 
-                if (args[1].toLowerCase() == "online") {         
-                    const onlinePlayers = await Aurora.Players.online()
-                    if (!onlinePlayers) return await m.edit({ embeds: [fetchError] })
-                        .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        //         if (args[1].toLowerCase() == "online") {         
+        //             const onlinePlayers = await Aurora.Players.online()
+        //             if (!onlinePlayers) return await m.edit({ embeds: [fetchError] })
+        //                 .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                    let towns = await database.Aurora.getTowns()
-                    if (!towns) towns = await Aurora.Towns.all()
+        //             let towns = await database.Aurora.getTowns()
+        //             if (!towns) towns = await Aurora.Towns.all()
 
-                    const len = towns.length
-                    for (let i = 0; i < len; i++) {  
-                        const cur = towns[i]
-                        const nationName = cur.nation
+        //             const len = towns.length
+        //             for (let i = 0; i < len; i++) {  
+        //                 const cur = towns[i]
+        //                 const nationName = cur.nation
 
-                        if (nationName == "No Nation") continue
-                        townsWithDuplicates.push({
-                            name: cur.name,
-                            nation: nationName,
-                            residents: cur.residents,
-                            onlineResidents: [],
-                            chunks: cur.area
-                        })
-                    }
+        //                 if (nationName == "No Nation") continue
+        //                 townsWithDuplicates.push({
+        //                     name: cur.name,
+        //                     nation: nationName,
+        //                     residents: cur.residents,
+        //                     onlineResidents: [],
+        //                     chunks: cur.area
+        //                 })
+        //             }
                 
-                    // Gets rid of duplicates and adds up residents and chunks.
-                    const ctx: Record<string, NationItem> = {}
-                    townsWithDuplicates.forEach(town => {                             
-                        if (!ctx[town.nation]) {
+        //             // Gets rid of duplicates and adds up residents and chunks.
+        //             const ctx: Record<string, NationItem> = {}
+        //             townsWithDuplicates.forEach(town => {                             
+        //                 if (!ctx[town.nation]) {
 
-                            // TODO: Use set, with O(n) `has` lookup.
-                            const onlineResidents = town.residents.filter(res => 
-                                onlinePlayers.some(op => res === op.name || res.includes(op.name)
-                            ))
+        //                     // TODO: Use set, with O(n) `has` lookup.
+        //                     const onlineResidents = town.residents.filter(res => 
+        //                         onlinePlayers.some(op => res === op.name || res.includes(op.name)
+        //                     ))
                             
-                            ctx[town.nation] = { 
-                                name: town.nation,
-                                chunks: 0,
-                                residents: town.residents,
-                                onlineResidents
-                            }
+        //                     ctx[town.nation] = { 
+        //                         name: town.nation,
+        //                         chunks: 0,
+        //                         residents: town.residents,
+        //                         onlineResidents
+        //                     }
 
-                            nationsWithoutDuplicates.push(ctx[town.nation])
-                        }
+        //                     nationsWithoutDuplicates.push(ctx[town.nation])
+        //                 }
 
-                        // If it already exists, add up stuff.
-                        ctx[town.nation].residents = fastMergeUnique(ctx[town.nation].residents, town.residents)
-                        ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
-                            onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
-                        ))
+        //                 // If it already exists, add up stuff.
+        //                 ctx[town.nation].residents = fastMergeUnique(ctx[town.nation].residents, town.residents)
+        //                 ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
+        //                     onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
+        //                 ))
                             
-                        ctx[town.nation].chunks += town.chunks                            
-                    })
+        //                 ctx[town.nation].chunks += town.chunks                            
+        //             })
 
-                    let page = 1
-                    const split = req.split(" ")
+        //             let page = 1
+        //             const split = req.split(" ")
 
-                    if (args[2]) if (split[2]) page = parseInt(split[2])
-                    else if (split[1]) page = parseInt(split[1])
+        //             if (args[2]) if (split[2]) page = parseInt(split[2])
+        //             else if (split[1]) page = parseInt(split[1])
 
-                    if (isNaN(page)) page = 0        
-                    else page--
+        //             if (isNaN(page)) page = 0        
+        //             else page--
 
-                    nationsWithoutDuplicates.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+        //             nationsWithoutDuplicates.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
 
-                    const allData = nationsWithoutDuplicates
-                        .map(nation => nation.name + " - " + nation.onlineResidents.length)
-                        .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+        //             const allData = nationsWithoutDuplicates
+        //                 .map(nation => nation.name + " - " + nation.onlineResidents.length)
+        //                 .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                    new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
-                        .setType(EntityType.Nation)
-                        .setPage(page)
-                        .setDefaultAuthor(message)
-                        .paginate(allData, "```", "```")
-                        .editMessage(m)
-                }
-                else if (args[1].toLowerCase() == "residents") {            
-                    nations.sort((a, b) => b.residents.length - a.residents.length)
-                }
-                else if (args[1].toLowerCase() == "chunks" || args[1].toLowerCase() == "land" || args[1].toLowerCase() == "area") {
-                    nations.sort((a, b) => b.area - a.area)
-                }
-                else if (args[1].toLowerCase() == "alphabetical" || args[1].toLowerCase() == "name") {
-                    nations.sort((a, b) => {
-                        if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
-                        if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
+        //             new CustomEmbed(client, `(Aurora) Nation Info | Online Residents`)
+        //                 .setType(EntityType.Nation)
+        //                 .setPage(page)
+        //                 .setDefaultAuthor(message)
+        //                 .paginate(allData, "```", "```")
+        //                 .editMessage(m)
+        //         }
+        //         else if (args[1].toLowerCase() == "residents") {            
+        //             nations.sort((a, b) => b.residents.length - a.residents.length)
+        //         }
+        //         else if (args[1].toLowerCase() == "chunks" || args[1].toLowerCase() == "land" || args[1].toLowerCase() == "area") {
+        //             nations.sort((a, b) => b.area - a.area)
+        //         }
+        //         else if (args[1].toLowerCase() == "alphabetical" || args[1].toLowerCase() == "name") {
+        //             nations.sort((a, b) => {
+        //                 if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
+        //                 if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
 
-                        if (b.residents.length > a.residents.length) return 1
-                        if (b.residents.length < a.residents.length) return -1
+        //                 if (b.residents.length > a.residents.length) return 1
+        //                 if (b.residents.length < a.residents.length) return -1
 
-                        if (b.area > a.area) return 1
-                        if (b.area < a.area) return -1
+        //                 if (b.area > a.area) return 1
+        //                 if (b.area < a.area) return -1
 
-                        return 0
-                    })
-                }
-                else nations = defaultSort(nations)
+        //                 return 0
+        //             })
+        //         }
+        //         else nations = defaultSort(nations)
 
-                if (args[1].toLowerCase() != "online") {
-                    let page = 1
+        //         if (args[1].toLowerCase() != "online") {
+        //             let page = 1
 
-                    if (args[2] != null) if (req.split(" ")[2]) page = parseInt(req.split(" ")[2])
-                    else if (req.split(" ")[1]) page = parseInt(req.split(" ")[1]) 
+        //             if (args[2] != null) if (req.split(" ")[2]) page = parseInt(req.split(" ")[2])
+        //             else if (req.split(" ")[1]) page = parseInt(req.split(" ")[1]) 
 
-                    if (isNaN(page)) page = 0        
-                    else page--
+        //             if (isNaN(page)) page = 0        
+        //             else page--
 
-                    const allData = nations
-                        .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
-                        .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+        //             const allData = nations
+        //                 .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
+        //                 .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                    new CustomEmbed(client, `(Aurora) Nation Info | Nation List`)
-                        .setDefaultAuthor(message)
-                        .setType(EntityType.Nation).setPage(page)
-                        .paginate(allData, "```", "```")
-                        .editMessage(m)
-                }
-            }
-            else { // /n list
-                nations = defaultSort(nations)
+        //             new CustomEmbed(client, `(Aurora) Nation Info | Nation List`)
+        //                 .setDefaultAuthor(message)
+        //                 .setType(EntityType.Nation).setPage(page)
+        //                 .paginate(allData, "```", "```")
+        //                 .editMessage(m)
+        //         }
+        //     }
+        //     else { // /n list
+        //         nations = defaultSort(nations)
                 
-                let page = 1
+        //         let page = 1
 
-                if (args[2] != null) if (req.split(" ")[2]) page = parseInt(req.split(" ")[2]) 
-                else if (req.split(" ")[1]) page = parseInt(req.split(" ")[1])
+        //         if (args[2] != null) if (req.split(" ")[2]) page = parseInt(req.split(" ")[2]) 
+        //         else if (req.split(" ")[1]) page = parseInt(req.split(" ")[1])
 
-                if (isNaN(page)) page = 0        
-                else page--
+        //         if (isNaN(page)) page = 0        
+        //         else page--
 
-                const allData = nations
-                    .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+        //         const allData = nations
+        //             .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
+        //             .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                new CustomEmbed(client, `(Aurora) Nation Info | Nation List`)
-                    .setDefaultAuthor(message)
-                    .setType(EntityType.Nation).setPage(page)
-                    .paginate(allData, "```", "```")
-                    .editMessage(m)
-            }
-        }
-        else if (args[0].toLowerCase() == "activity" && args[1] != null) {
+        //         new CustomEmbed(client, `(Aurora) Nation Info | Nation List`)
+        //             .setDefaultAuthor(message)
+        //             .setType(EntityType.Nation).setPage(page)
+        //             .paginate(allData, "```", "```")
+        //             .editMessage(m)
+        //     }
+        // }
+        if (args[0].toLowerCase() == "activity" && args[1] != null) {
             const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
             if (!nation) {
                 nationEmbed.setTitle("Invalid Nation")

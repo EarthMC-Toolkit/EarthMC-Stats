@@ -11,15 +11,14 @@ import {
 } from "discord.js"
 
 import {
-    databaseError, fetchError,
-    defaultSort, sortByOrder, 
+    databaseError, defaultSort,
     devsFooter, embedField, 
     maxTownSize, auroraNationBonus,
     unixFromDate,
     AURORA
 } from "../../bot/utils/fn.js"
 
-import type { DBNation, DBSquaremapTown, TownDataItem } from "../../bot/types.js"
+import type { DBNation } from "../../bot/types.js"
 
 const invalidUsageEmbed = () => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -57,126 +56,125 @@ export default {
 
         const townEmbed = new EmbedBuilder()
 
-        //let onlineResidents = []
-
         const opt = args[0]
-        const arg1 = args[1]?.toLowerCase()
+        const arg1 = args[1]?.toLowerCase() ?? null
 
-        if (opt.toLowerCase() == "list") {
-            if (!arg1) return
+        // if (opt.toLowerCase() == "list") {
+        //     if (!arg1) return await m.edit({ content: "Something went wrong. PepeHands", embeds: [] })
+        //         .then(m => setTimeout(() => m.delete(), 10000))
+        //         .catch(() => {})
 
-            if (arg1 == "online") {
-                const ops = await Aurora.Players.online().catch(() => {})
-                if (!ops) return await m.edit({ embeds: [fetchError] })
-                    .then(m => setTimeout(() => m.delete(), 10000))
-                    .catch(() => {})
+        //     if (arg1 == "online") {
+        //         const ops = await Aurora.Players.online().catch(() => {})
+        //         if (!ops) return await m.edit({ embeds: [fetchError] })
+        //             .then(m => setTimeout(() => m.delete(), 10000))
+        //             .catch(() => {})
 
-                const onlineTownData: TownDataItem[] = []
-                const onlineTownDataFinal: TownDataItem[] = []
+        //         const onlineTownData: TownDataItem[] = []
+        //         const onlineTownDataFinal: TownDataItem[] = []
 
-                const len = towns.length
-                for (let i = 0; i < len; i++) {        
-                    const cur = towns[i]
+        //         const len = towns.length
+        //         for (let i = 0; i < len; i++) {        
+        //             const cur = towns[i]
                     
-                    onlineTownData.push({
-                        name: cur.name,
-                        nation: cur.nation,
-                        residents: cur.residents,
-                        onlineResidents: []
-                    }) 
-                }
+        //             onlineTownData.push({
+        //                 name: cur.name,
+        //                 nation: cur.nation,
+        //                 residents: cur.residents,
+        //                 onlineResidents: []
+        //             }) 
+        //         }
 
-                // Function to get rid of duplicates and add up residents and chunks.
-                const ctx: Record<string, TownDataItem> = {}
-                onlineTownData.forEach(town => {                   
-                    // If town doesnt exist, add it.
-                    if (!ctx[town.name]) {           
-                        town.onlineResidents = town.residents.filter(r => ops.some(op => r === op.name))
+        //         // Function to get rid of duplicates and add up residents and chunks.
+        //         const ctx: Record<string, TownDataItem> = {}
+        //         onlineTownData.forEach(town => {                   
+        //             // If town doesnt exist, add it.
+        //             if (!ctx[town.name]) {           
+        //                 town.onlineResidents = town.residents.filter(r => ops.some(op => r === op.name))
 
-                        ctx[town.name] = { 
-                            name: town.name, 
-                            nation: town.nation,
-                            onlineResidents: town.onlineResidents
-                        }
+        //                 ctx[town.name] = { 
+        //                     name: town.name, 
+        //                     nation: town.nation,
+        //                     onlineResidents: town.onlineResidents
+        //                 }
 
-                        onlineTownDataFinal.push(ctx[town.name])
-                    }
-                })
+        //                 onlineTownDataFinal.push(ctx[town.name])
+        //             }
+        //         })
 
-                onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+        //         onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
 
-                const allData = onlineTownDataFinal
-                    .map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+        //         const allData = onlineTownDataFinal
+        //             .map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
+        //             .join('\n').match(/(?:^.*$\n?){1,10}/mg)
                 
-                //#region Determine page
-                let page = 1
-                const split = req.split(" ")
+        //         //#region Determine page
+        //         let page = 1
+        //         const split = req.split(" ")
 
-                if (args[2] != null) if (split[2]) page = parseInt(split[2])
-                else if (split[1]) page = parseInt(split[1])
+        //         if (args[2] != null) if (split[2]) page = parseInt(split[2])
+        //         else if (split[1]) page = parseInt(split[1])
 
-                if (isNaN(page)) page = 0
-                else page--
-                //#endregion
+        //         if (isNaN(page)) page = 0
+        //         else page--
+        //         //#endregion
 
-                new CustomEmbed(client, "Town Info | Online Resident List")
-                    .setType(EntityType.Town)
-                    .setPage(page)
-                    .paginate(allData, "```", "```")
-                    .editMessage(m)
-            }
-            else if (arg1 == "residents") {          
-                towns.sort((a, b) => b.residents.length - a.residents.length)           
-            }
-            else if (arg1 == "chunks" || arg1 == "land" || arg1 == "area") {
-                towns.sort((a, b) => b.area - a.area)
-            }
-            else if (arg1 == "name" || arg1 == "alphabetical") {
-                sortByOrder(towns, [
-                    { key: 'name', callback: (n: string) => n.toLowerCase() },
-                    { key: 'residents', callback: (arr: string) => arr.length },
-                    { key: 'area' }
-                ])
-            }
-            else { // /t list <nation>
-                const foundNation = towns.find(town => town.nation.toLowerCase() == arg1)
+        //         new CustomEmbed(client, "Town Info | Online Resident List")
+        //             .setType(EntityType.Town)
+        //             .setPage(page)
+        //             .paginate(allData, "```", "```")
+        //             .editMessage(m)
+        //     }
+        //     else if (arg1 == "residents") {          
+        //         towns.sort((a, b) => b.residents.length - a.residents.length)           
+        //     }
+        //     else if (arg1 == "chunks" || arg1 == "land" || arg1 == "area") {
+        //         towns.sort((a, b) => b.area - a.area)
+        //     }
+        //     else if (arg1 == "name" || arg1 == "alphabetical") {
+        //         sortByOrder(towns, [
+        //             { key: 'name', callback: (n: string) => n.toLowerCase() },
+        //             { key: 'residents', callback: (arr: string) => arr.length },
+        //             { key: 'area' }
+        //         ])
+        //     }
+        //     else { // /t list <nation>
+        //         const foundNation = towns.find(town => town.nation.toLowerCase() == arg1)
                 
-                if (!foundNation) towns = defaultSort(towns)
-                else {
-                    // Set towns array to the filtered array (only towns that are in the specified nation)
-                    towns = towns.filter(town => town.nation.toLowerCase() == arg1)
-                    const arg2 = args[2]?.toLowerCase()
+        //         if (!foundNation) towns = defaultSort(towns)
+        //         else {
+        //             // Set towns array to the filtered array (only towns that are in the specified nation)
+        //             towns = towns.filter(town => town.nation.toLowerCase() == arg1)
+        //             const arg2 = args[2]?.toLowerCase()
 
-                    if (!arg2) towns = defaultSort(towns)
-                    else {
-                        if (arg2 == "area" || arg2 == "chunks") {
-                            towns.sort((a, b) => {
-                                if (b.area > a.area) return 1
-                                if (b.area < a.area) return -1
-                            })
-                        }
-                        else if (arg2 == "residents") {
-                            towns.sort((a, b) => {
-                                if (b.residents.length > a.residents.length) return 1
-                                if (b.residents.length < a.residents.length) return -1
-                            })
-                        }
-                        else if (arg2 == "alphabetical" || arg2 == "name") {
-                            towns.sort((a, b) => {
-                                if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
-                                if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
-                            })
-                        }
-                    }
-                }
-            }
+        //             if (!arg2) towns = defaultSort(towns)
+        //             else {
+        //                 if (arg2 == "area" || arg2 == "chunks") {
+        //                     towns.sort((a, b) => {
+        //                         if (b.area > a.area) return 1
+        //                         if (b.area < a.area) return -1
+        //                     })
+        //                 }
+        //                 else if (arg2 == "residents") {
+        //                     towns.sort((a, b) => {
+        //                         if (b.residents.length > a.residents.length) return 1
+        //                         if (b.residents.length < a.residents.length) return -1
+        //                     })
+        //                 }
+        //                 else if (arg2 == "alphabetical" || arg2 == "name") {
+        //                     towns.sort((a, b) => {
+        //                         if (b.name.toLowerCase() < a.name.toLowerCase()) return 1
+        //                         if (b.name.toLowerCase() > a.name.toLowerCase()) return -1
+        //                     })
+        //                 }
+        //             }
+        //         }
+        //     }
 
-            sendList(client, m, arg1, towns)
-        }
-        else if (opt.toLowerCase() == "activity" && arg1) {
+        //     sendList(client, m, arg1, towns)
+        // }
+        if (opt.toLowerCase() == "activity" && arg1) {
             const town = towns.find(t => t.name.toLowerCase() == arg1)
-
             if (!town) return m.edit({embeds: [new EmbedBuilder()
                 .setTitle("Invalid town name!")
                 .setDescription(args[1] + " doesn't seem to be a valid town name, please try again.")
@@ -234,7 +232,8 @@ export default {
                 .editMessage(m)
         }
         else if (args.length > 3 || args.length == null || opt == null) {
-            return await m.edit({ embeds: [invalidUsageEmbed()] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+            return await m.edit({ embeds: [invalidUsageEmbed()] })
+                .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
         
         //#region /t <name>
@@ -397,51 +396,50 @@ export default {
     }
 }
 
-type ExtractedTown = {
-    name: string
-    nation: string
-    residentNames: string[]
-    area: number
-    wealth: number
-}
+// type ExtractedTown = {
+//     name: string
+//     nation: string
+//     residentNames: string[]
+//     area: number
+//     wealth: number
+// }
 
-function extractTownData(towns: DBSquaremapTown[]) {
-    if (!towns) return []
+// function extractTownData(towns: DBSquaremapTown[]) {
+//     if (!towns) return []
 
-    const townData: ExtractedTown[] = []
-    const len = towns.length
+//     const townData: ExtractedTown[] = []
+//     const len = towns.length
 
-    for (let i = 0; i < len; i++) {     
-        const cur = towns[i]
+//     for (let i = 0; i < len; i++) {     
+//         const cur = towns[i]
 
-        townData.push({
-            name: cur.name,
-            nation: cur.nation,
-            residentNames: cur.residents,
-            area: cur.area,
-            wealth: cur.wealth
-        }) 
-    }
+//         townData.push({
+//             name: cur.name,
+//             nation: cur.nation,
+//             residentNames: cur.residents,
+//             area: cur.area,
+//             wealth: cur.wealth
+//         }) 
+//     }
 
-    return townData
-}
+//     return townData
+// }
 
 //const wealthStr = (wealth: number) => wealth ? `Wealth: \`${wealth}\`G` : `Wealth: ??`
 
-async function sendList(client: Client, msg: Message, comparator: string, towns: DBSquaremapTown[]) {
-    towns = defaultSort(towns)
+// function sendList(client: Client, msg: Message, comparator: string, towns: DBSquaremapTown[]) {
+//     towns = defaultSort(towns)
     
-    const townData = extractTownData(towns)
-    const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
-        `Residents: \`${town.residentNames.length}\`\n` +
-        `Chunks: \`${town.area}\``
-        //`${wealthStr(town.wealth)}`
-    ).join('\n\n').match(/(?:^.*$\n\n?){1,15}/mg)
+//     const townData = extractTownData(towns)
+//     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
+//         `Residents: \`${town.residentNames.length}\`\n` +
+//         `Chunks: \`${town.area}\``
+//         //`${wealthStr(town.wealth)}`
+//     ).join('\n\n').match(/(?:^.*$\n\n?){1,15}/mg)
 
-    const embed = new CustomEmbed(client, "Town Info | Town List")
-        .setType(EntityType.Town)
-        .setPage(comparator ? parseInt(comparator) : 0)
-        .paginate(allData, "\n")
-
-    await embed.editMessage(msg)
-}
+//     new CustomEmbed(client, "Town Info | Town List")
+//         .setType(EntityType.Town)
+//         .setPage(comparator ? parseInt(comparator) : 0)
+//         .paginate(allData, "\n")
+//         .editMessage(msg)
+// }
