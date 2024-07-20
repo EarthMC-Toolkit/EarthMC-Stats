@@ -12,7 +12,13 @@ import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 
 import News from "../../bot/objects/News.js"
 
-import * as fn from '../../bot/utils/fn.js'
+import {
+    embedField, removeDuplicates,
+    fastMergeUnique, defaultSort, unixFromDate,
+    databaseError, fetchError,
+    auroraNationBonus, AURORA
+} from '../../bot/utils/fn.js'
+
 import * as database from "../../bot/utils/database.js"
 
 import type { DBSquaremapNation, NationItem, TownItem } from "../../bot/types.js"
@@ -49,7 +55,7 @@ export default {
 
                 if (args[1].toLowerCase() == "online") {         
                     const onlinePlayers = await Aurora.Players.online()
-                    if (!onlinePlayers) return await m.edit({ embeds: [fn.fetchError] })
+                    if (!onlinePlayers) return await m.edit({ embeds: [fetchError] })
                         .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                     let towns = await database.Aurora.getTowns()
@@ -91,7 +97,7 @@ export default {
                         }
 
                         // If it already exists, add up stuff.
-                        ctx[town.nation].residents = fn.fastMergeUnique(ctx[town.nation].residents, town.residents)
+                        ctx[town.nation].residents = fastMergeUnique(ctx[town.nation].residents, town.residents)
                         ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
                             onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                         ))
@@ -141,7 +147,7 @@ export default {
                         return 0
                     })
                 }
-                else nations = fn.defaultSort(nations)
+                else nations = defaultSort(nations)
 
                 if (args[1].toLowerCase() != "online") {
                     let page = 1
@@ -164,7 +170,7 @@ export default {
                 }
             }
             else { // /n list
-                nations = fn.defaultSort(nations)
+                nations = defaultSort(nations)
                 
                 let page = 1
 
@@ -187,58 +193,56 @@ export default {
         }
         else if (args[0].toLowerCase() == "activity" && args[1] != null) {
             const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
-
             if (!nation) {
                 nationEmbed.setTitle("Invalid Nation")
                     .setDescription(args[0] + " is not a valid nation, please try again.")
                     .setColor(Colors.Red)
 
-                return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                return m.edit({ embeds: [nationEmbed] })
+                    .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
 
-            database.getPlayers().then(async players => {
-                // Sort by highest offline duration
-                nation.residents.sort((a, b) => {
-                    const foundPlayerA = players.find(p => p.name == a)
-                    const foundPlayerB = players.find(p => p.name == b)
+            const players = await database.getPlayers()
+            if (!players) return await m.edit({ embeds: [databaseError] })
+                .then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                    if (foundPlayerA && !foundPlayerB) return -1
-                    if (!foundPlayerA && foundPlayerB) return 1
+            // Sort by highest offline duration
+            nation.residents.sort((a, b) => {
+                const foundPlayerA = players.find(p => p.name == a)
+                const foundPlayerB = players.find(p => p.name == b)
 
-                    if (foundPlayerA && foundPlayerB) {
-                        const loA = foundPlayerA.lastOnline
-                        const loB = foundPlayerB.lastOnline
-                        
-                        if (loA.aurora === loB.aurora) return 0
-                        if (!loA) return 1
-                        if (!loB) return -1
+                if (foundPlayerA && !foundPlayerB) return -1
+                if (!foundPlayerA && foundPlayerB) return 1
 
-                        const dateB = fn.unixFromDate(loB.aurora)
-                        const dateA = fn.unixFromDate(loA.aurora)
+                if (foundPlayerA && foundPlayerB) {
+                    const loA = foundPlayerA.lastOnline
+                    const loB = foundPlayerB.lastOnline
+                    
+                    if (loA.aurora === loB.aurora) return 0
+                    if (!loA) return 1
+                    if (!loB) return -1
 
-                        return dateB - dateA
-                    }
-                })
+                    const dateB = unixFromDate(loB.aurora)
+                    const dateA = unixFromDate(loA.aurora)
 
-                let page = 1
-                if (isNaN(page)) page = 0
-                else page--
+                    return dateB - dateA
+                }
+            })
 
-                const allData = nation.residents.map(resident => {
-                    const residentInPlayers = players.find(p => p.name == resident)
-                    const lo = residentInPlayers.lastOnline
+            const allData = nation.residents.map(resident => {
+                const residentInPlayers = players.find(p => p.name == resident)
+                const lo = residentInPlayers.lastOnline
 
-                    return residentInPlayers && lo 
-                        ? "``" + resident + "`` - " + `<t:${fn.unixFromDate(lo.aurora)}:R>`
-                        : "" + resident + " | Unknown"
-                }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                return residentInPlayers && lo 
+                    ? "``" + resident + "`` - " + `<t:${unixFromDate(lo.aurora)}:R>`
+                    : "" + resident + " | Unknown"
+            }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                new CustomEmbed(client, `(Aurora) Nation Info | Activity in ${nation.name}`)
-                    .setDefaultAuthor(message)
-                    .setType(EntityType.Nation).setPage(page)
-                    .paginate(allData)
-                    .editMessage(m)
-            }).catch(() => {})
+            new CustomEmbed(client, `(Aurora) Nation Info | Activity in ${nation.name}`)
+                .setDefaultAuthor(message)
+                .setType(EntityType.Nation)
+                .paginate(allData)
+                .editMessage(m)
         }
         else if (args[0].toLowerCase() == "invitable") {
             const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
@@ -250,23 +254,19 @@ export default {
                 return m.edit({ embeds: [nationEmbed] }).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
 
-            let page = 1
-            if (isNaN(page)) page = 0
-            else page--
-
             // TODO: Fix invitableTowns returning FetchError instead of throwing.
             const invitableTowns = await Aurora.Towns.invitable(nation.name) as any[]
             const allData = invitableTowns.map(t => t.name).join('\n').match(/(?:^.*$\n?){1,10}/mg)                
 
             new CustomEmbed(client, `(Aurora) Nation Info | Towns invitable to ${nation.name}`)
                 .setDefaultAuthor(message)
-                .setType(EntityType.Nation).setPage(page)
+                .setType(EntityType.Nation)
                 .paginate(allData, "```", "```")
                 .editMessage(m)
         }
         else if (args[0].toLowerCase() == "allies") {
             const alliances = await database.Aurora.getAlliances()
-            if (!alliances) return await m.edit({embeds: [fn.databaseError]})
+            if (!alliances) return await m.edit({ embeds: [databaseError] })
                 .then((m => setTimeout(() => m.delete(), 10000))).catch(() => {})
 
             const nation = nations.find(n => n.name.toLowerCase() == args[1].toLowerCase())
@@ -298,15 +298,10 @@ export default {
                     .catch(() => {})
             }
 
-            let page = 1
-            if (isNaN(page)) page = 0        
-            else page--
-
             const allData = [...allies].join('\n').match(/(?:^.*$\n?){1,10}/mg)
             new CustomEmbed(client, `(Aurora) Nation Info | ${nation.name} Allies`)
                 .setDefaultAuthor(message)
                 .setType(EntityType.Nation)
-                .setPage(page)
                 .paginate(allData, "```", "```")
                 .editMessage(m)
         }
@@ -347,7 +342,7 @@ export default {
                 : `Land of ${backtickedName}`
             //#endregion
 
-            nations = fn.defaultSort(nations)
+            nations = defaultSort(nations)
 
             const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
             const kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
@@ -359,12 +354,12 @@ export default {
             nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
                 .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
                 .addFields(
-                    fn.embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
-                    fn.embedField("Capital", `\`${nation.capital.name}\``, true),
-                    fn.embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
-                    fn.embedField("Chunks", `\`${nation.area.toString()}\``, true),
-                    fn.embedField("Residents", `\`${nationResLength.toString()}\``, true),
-                    fn.embedField("Nation Bonus", `\`${fn.auroraNationBonus(nationResLength).toString()}\``)
+                    embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
+                    embedField("Capital", `\`${nation.capital.name}\``, true),
+                    embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
+                    embedField("Size/Worth", `Chunks: \`${nation.area.toString()}\`\nGold: \`${(nation.area * 16)}\``, true),
+                    embedField("Residents", `\`${nationResLength.toString()}\``, true),
+                    embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                 )
 
             if (nation.discord) 
@@ -373,12 +368,12 @@ export default {
             const onlinePlayers = await Aurora.Players.online().catch(() => {})
             if (onlinePlayers) {
                 // Filter nation residents by which are online
-                const onlineNationResidents = fn.removeDuplicates(
+                const onlineNationResidents = removeDuplicates(
                     nation.residents.filter(resident => onlinePlayers.find(op => resident == op.name)
                 ))
 
                 const onlineNationResidentsLen = onlineNationResidents.length
-                if (onlineNationResidentsLen >= 1) nationEmbed.addFields(fn.embedField(
+                if (onlineNationResidentsLen >= 1) nationEmbed.addFields(embedField(
                     `Online Residents [${onlineNationResidentsLen}]`, 
                     "```" + onlineNationResidents.join(", ") + "```"
                 ))
@@ -386,7 +381,7 @@ export default {
             //#endregion
 
             //#region Recent news logic
-            const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as TextChannel
+            const newsChannel = client.channels.cache.get(AURORA.newsChannel) as TextChannel
             const newsChannelMessages = await newsChannel?.messages.fetch()
 
             const filterNews = (msg: Message) => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
@@ -409,7 +404,7 @@ export default {
                     .map(a => a.allianceName)
 
                 const len = nationAlliances.length
-                if (len > 0) nationEmbed.addFields(fn.embedField(
+                if (len > 0) nationEmbed.addFields(embedField(
                     `Alliances [${len}]`, 
                     "```" + nationAlliances.join(", ") + "```"
                 ))
@@ -419,14 +414,14 @@ export default {
             const nationTownsString = nationTowns.toString().replace(/^\s+|\s+$/gm, "")
             
             if (nationTownsString.length >= 1024) {
-                nationEmbed.addFields(fn.embedField(
+                nationEmbed.addFields(embedField(
                     `Towns [${nation.towns.length}]`, 
                     "Too many towns to display!\nClick the **View All Towns** button to see the full list."
                 ))
                 
                 nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
             } else {                   
-                nationEmbed.addFields(fn.embedField(
+                nationEmbed.addFields(embedField(
                     `Towns [${nation.towns.length}]`, 
                     "```" + nationTownsString + "```"
                 ))
@@ -436,15 +431,10 @@ export default {
                 const news = new News(recentNews)
                 const img = news?.images[0]
 
-                nationEmbed.addFields(fn.embedField(
-                    "Recent News",
-                    news.message + (img ? " ([Image](" + img + "))" : "")
-                ))
+                nationEmbed.addFields(embedField("Recent News", news.message + (img ? ` ([Image](${img}))` : "")))
             }
 
-            const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail]
-            
-            nationEmbed.setFiles(thumbnail)
+            nationEmbed.setFiles(nation.flag ? [] : [AURORA.thumbnail])
             nationEmbed.editMessage(m)
         }
     }
