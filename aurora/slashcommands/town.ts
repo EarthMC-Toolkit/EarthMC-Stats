@@ -237,7 +237,7 @@ export default {
                     ))
                 }
 
-                const nationWiki = town?.wikis.nation
+                const nationWiki = town?.wikis?.nation
                 const nationString = !nationWiki ? `\`${town.nation}\`` : `[${town.nation}](${nationWiki})`
                 
                 townEmbed.addFields(

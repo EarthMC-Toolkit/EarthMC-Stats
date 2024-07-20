@@ -69,13 +69,14 @@ class ResidentHelper extends BaseHelper {
         if (!this.isNova) {
             let res: V3Player
             try {
-                res = await request(`https://api.earthmc.net/v3/aurora/players?query=${arg1}`).then(res => res.body.json()) as V3Player
+                const arr = await request(`https://api.earthmc.net/v3/aurora/players?query=${arg1}`).then(res => res.body.json()) as V3Player[]
+                res = arr[0]
             } catch (e) {
                 console.log(e)
                 return false
             }
 
-            if (res.town) {
+            if (res.town?.uuid) {
                 const resTown = await OfficialAPI.V2.town(res.town.name.toLowerCase())
 
                 let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
@@ -97,19 +98,10 @@ class ResidentHelper extends BaseHelper {
     }
 
     createEmbed() {
-        if (this.apiResident.town.uuid) this.#setupResidentEmbed()
+        if (this.apiResident?.town?.uuid) this.#setupResidentEmbed()
         else this.#setupTownlessEmbed()
 
         return this.embed
-    }
-
-    #setupTownlessEmbed() {
-        const formattedPlayerName = this.player.name.replace(/_/g, "\\_")
-
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | ${formattedPlayerName}`)
-        this.addField("Affiliation", "No Town", true)
-
-        this.addCommonFields()
     }
 
     #setupResidentEmbed() {
@@ -129,10 +121,19 @@ class ResidentHelper extends BaseHelper {
         this.addCommonFields()
     }
 
+    #setupTownlessEmbed() {
+        const formattedPlayerName = this.player.name.replace(/_/g, "\\_")
+
+        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | ${formattedPlayerName}`)
+        this.addField("Affiliation", "No Town", true)
+
+        this.addCommonFields()
+    }
+
     addCommonFields() {
         if (!this.apiResident) this.addDatesFromDB()
         else {
-            this.addBalance(this.apiResident?.stats.balance)
+            this.addBalance(this.apiResident?.stats?.balance)
             this.addDatesFromAPI()
         }
 
@@ -182,7 +183,7 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = (bal: string | number) => this.addField("Balance", `${bal ?? 0}G`)
+    addBalance = (bal: string | number) => this.addField("Balance", `${bal ?? 0}G`, true)
 
     addLinkedAcc = () => {
         if (!this.player?.name) return
