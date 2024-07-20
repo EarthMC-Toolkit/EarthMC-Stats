@@ -1,5 +1,13 @@
-import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
+
+import { 
+    AURORA,
+    auroraNationBonus, embedField,
+    databaseError, fetchError,
+    defaultSort, devsFooter, 
+    fastMergeUnique, removeDuplicates, 
+    sortByOrder, unixFromDate
+} from '../../bot/utils/fn.js'
 
 import {
     type Client, 
@@ -17,6 +25,7 @@ import type { SquaremapTown } from 'earthmc'
 import { Aurora, NotFoundError } from 'earthmc'
 
 import type { DBSquaremapNation, NationItem, TownItem } from '../../bot/types.js'
+import {  } from "../../bot/utils/fn.js"
 
 export default {
     name: "nation",
@@ -51,7 +60,7 @@ export default {
 
                 if (comparator == "online") {         
                     const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                    if (!onlinePlayers) return await interaction.editReply({ embeds: [fn.fetchError] })
+                    if (!onlinePlayers) return await interaction.editReply({ embeds: [fetchError] })
                         .then(() => setTimeout(() => interaction.deleteReply(), 10000)).catch(() => {})
 
                     let towns = await database.Aurora.getTowns()
@@ -92,7 +101,7 @@ export default {
 
                         // If it already exists, add up stuff.
                         ctx[town.nation].chunks += town.chunks
-                        ctx[town.nation].residents = fn.fastMergeUnique(ctx[town.nation].residents, town.residents)
+                        ctx[town.nation].residents = fastMergeUnique(ctx[town.nation].residents, town.residents)
                         ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
                             onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                         ))
@@ -111,7 +120,7 @@ export default {
                 else if (comparator == "residents") nations.sort((a, b) => b.residents.length - a.residents.length)  
                 else if (comparator == "chunks" || comparator == "land" || comparator == "area") nations.sort((a, b) => b.area - a.area)
                 else if (comparator == "alphabetical" || comparator == "name") {
-                    fn.sortByOrder(nations, [{
+                    sortByOrder(nations, [{
                         key: 'name',
                         callback: (k: string) => k.toLowerCase()
                     }, {
@@ -121,7 +130,7 @@ export default {
                         key: 'area'
                     }])
                 }
-                else nations = fn.defaultSort(nations)
+                else nations = defaultSort(nations)
 
                 if (comparator != "online") {
                     const allData = nations
@@ -135,7 +144,7 @@ export default {
                 }
             }
             else { // /n list
-                nations = fn.defaultSort(nations)
+                nations = defaultSort(nations)
                 
                 const allData = nations
                     .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
@@ -159,7 +168,7 @@ export default {
             }
 
             const players = await database.getPlayers()
-            if (!players) return await interaction.editReply({ embeds: [fn.databaseError] })
+            if (!players) return await interaction.editReply({ embeds: [databaseError] })
                 .then(() => setTimeout(() => interaction.deleteReply(), 10000))
 
             // Sort by highest offline duration
@@ -179,8 +188,8 @@ export default {
                     if (!loA) return 1
                     if (!loB) return -1
 
-                    const dateB = fn.unixFromDate(loB.aurora)
-                    const dateA = fn.unixFromDate(loA.aurora)
+                    const dateB = unixFromDate(loB.aurora)
+                    const dateA = unixFromDate(loA.aurora)
 
                     return dateB - dateA
                 }
@@ -194,7 +203,7 @@ export default {
                 const residentInPlayers = players.find(p => p.name == resident)
 
                 if (residentInPlayers && residentInPlayers.lastOnline != null)
-                    return "``" + resident + "`` - " + `<t:${fn.unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
+                    return "``" + resident + "`` - " + `<t:${unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
 
                 return "" + resident + " | Unknown"
             }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
@@ -239,27 +248,25 @@ export default {
                 : "Land of " + nation.name
             //#endregion
 
-            nations = fn.defaultSort(nations)
+            nations = defaultSort(nations)
 
             const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
             const kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
 
             //#region Embed Stuff
-            const capitalX = nation.capital.x
-            const capitalZ = nation.capital.z
+            const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
+            const mapUrl = Aurora.buildMapLink({ x: capitalX, z: capitalZ }, 5)
             
             nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
                 .setThumbnail(nation.flag || 'attachment://aurora.png')
-                .setFooter(fn.devsFooter(client))
+                .setFooter(devsFooter(client))
                 .addFields(
-                    fn.embedField("King", kingPrefix + nation.king.replace(/_/g, "\\_"), true),
-                    fn.embedField("Capital", nation.capital.name, true),
-                    fn.embedField("Location", 
-                        "[" + capitalX + ", " + capitalZ + "]" + 
-                        "(https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=" + capitalX + "&y=64&z=" + capitalZ + ")"),
-                    fn.embedField("Chunks", nation.area.toString(), true),
-                    fn.embedField("Residents", nationResLength.toString(), true),
-                    fn.embedField("Nation Bonus", fn.auroraNationBonus(nationResLength).toString())
+                    embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
+                    embedField("Capital", `\`${nation.capital.name}\``, true),
+                    embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
+                    embedField("Size/Worth", `Chunks: \`${nation.area.toString()}\`\nGold: \`${(nation.area * 16)}\``, true),
+                    embedField("Residents", `\`${nationResLength.toString()}\``, true),
+                    embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                 )
 
             if (nation.discord) 
@@ -268,10 +275,10 @@ export default {
             const onlinePlayers = await Aurora.Players.online().catch(() => {})
             if (onlinePlayers) {
                 // Filter nation residents by which are online
-                const onlineNationResidents = fn.removeDuplicates(
+                const onlineNationResidents = removeDuplicates(
                     nation.residents.filter(resident => onlinePlayers.find(op => resident == op.name)))
                 
-                if (onlineNationResidents.length >= 1) nationEmbed.addFields(fn.embedField(
+                if (onlineNationResidents.length >= 1) nationEmbed.addFields(embedField(
                     "Online Residents [" + onlineNationResidents.length + "]", 
                     "```" + onlineNationResidents.join(", ") + "```"
                 ))
@@ -279,7 +286,7 @@ export default {
             //#endregion
 
             //#region Recent news logic
-            const newsChannel = client.channels.cache.get(fn.AURORA.newsChannel) as TextChannel
+            const newsChannel = client.channels.cache.get(AURORA.newsChannel) as TextChannel
             const newsChannelMessages = await newsChannel?.messages.fetch()
 
             const filterNews = (msg: Message) => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
@@ -299,14 +306,14 @@ export default {
             const nationTownsString = nationTowns.toString().replace(/^\s+|\s+$/gm, "")
             
             if (nationTownsString.length >= 1024) {
-                nationEmbed.addFields(fn.embedField(
+                nationEmbed.addFields(embedField(
                     `Towns [${nation.towns.length}]`, 
                     "Too many towns to display!\nClick the **View All Towns** button to see the full list."
                 ))
         
                 nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
             } else {                   
-                nationEmbed.addFields(fn.embedField(
+                nationEmbed.addFields(embedField(
                     `Towns [${nation.towns.length}]`, 
                     "```" + nationTownsString + "```"
                 ))
@@ -319,7 +326,7 @@ export default {
                     .map(a => a.allianceName)
 
                 const len = nationAlliances?.length
-                if (len > 0) nationEmbed.addFields(fn.embedField(
+                if (len > 0) nationEmbed.addFields(embedField(
                     `Alliances [${len}]`, 
                     "```" + nationAlliances.join(", ") + "```"
                 ))
@@ -329,13 +336,13 @@ export default {
                 const news = new News(recentNews)
                 const img = news?.images ? news.images[0] : null
 
-                nationEmbed.addFields(fn.embedField(
+                nationEmbed.addFields(embedField(
                     "Recent News", 
                     news.message + (img ? " ([Image](" + img + "))" : "")
                 ))
             }
 
-            const thumbnail = nation.flag ? [] : [fn.AURORA.thumbnail] 
+            const thumbnail = nation.flag ? [] : [AURORA.thumbnail] 
             nationEmbed.setFiles(thumbnail)
             nationEmbed.editInteraction(interaction)
         }
