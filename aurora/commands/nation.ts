@@ -429,7 +429,7 @@ export default {
             
             if (recentNews) {
                 const news = new News(recentNews)
-                const img = news?.images[0]
+                const img = news?.images ? news.images[0] : null
 
                 nationEmbed.addFields(embedField("Recent News", news.message + (img ? ` ([Image](${img}))` : "")))
             }
