@@ -109,11 +109,11 @@ class ResidentHelper extends BaseHelper {
         //const formattedPlayerName = res.name.replace(/_/g, "\\_")
         
         const affiliation = {
-            town: (res.town ?? res.town.name) ?? res.townName,
-            nation: (res.nation ?? res.nation.name) ?? res.townNation
+            town: (res.town?.name ?? res.town) ?? res.townName,
+            nation: (res.nation?.name ?? res.nation) ?? res.townNation
         }
 
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | \`${this.mcProfile.name}\``)
+        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | \`${res.name}\``)
 
         if (res.about) {
             this.embed.setDescription(`*${res.about}*`)
