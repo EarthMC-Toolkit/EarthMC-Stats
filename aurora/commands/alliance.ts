@@ -1093,14 +1093,20 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
             .then(msg => paginator(message.author.id, msg, botEmbed, 0))
     }
 
-    const allData = alliances.map((alliance, index) => 
-        (index + 1) + ". **" + getName(alliance) + "**" + " (" + getType(alliance) + ")" +
-        "```Leader(s): " + alliance.leaderName + 
-        "``````Nation(s): " + alliance.nations.length +
-        "``````Towns: " + alliance.towns +
-        "``````Residents: " + alliance.residents + 
-        "``````Area: " + alliance.area + 
-        "``````Discord Link: " + alliance.discordInvite + "```").join('\n').match(/(?:^.*$\n?){1,3}/mg)
+    const hasDiscord = (a: DBAlliance) => a.discordInvite.startsWith("https://") && a.discordInvite.includes("discord.")
+
+    const allData = alliances.map((alliance, index) => {
+        const nameStr = hasDiscord(alliance) 
+            ? `[${getName(alliance)}](${alliance.discordInvite})` 
+            : `**${getName(alliance)}**`
+
+        return `${index + 1}. ${nameStr} (${getType(alliance)})` +
+            "```Leader(s): " + alliance.leaderName + 
+            "``````Nations: " + alliance.nations.length +
+            "``````Towns: " + alliance.towns +
+            "``````Residents: " + alliance.residents + 
+            "``````Area: " + Math.round(alliance.area) + " Chunks"
+    }).join('\n').match(/(?:^.*$\n?){1,3}/mg)
 
     const len = allData.length
     for (let i = 0; i < len; i++) {
