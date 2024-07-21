@@ -1,8 +1,8 @@
 import type { Client } from "discord.js"
 import striptags from 'striptags'
 
-import * as MC from '../bot/utils/minecraft.js'
-import * as database from '../bot/utils/database.js'
+import * as MC from '../../bot/utils/minecraft.js'
+import * as database from '../../bot/utils/database.js'
 
 import {
     OfficialAPI, 
@@ -16,9 +16,9 @@ import {
     type MCSessionProfile,
     type SkinOpts,
     SkinType3D
-} from "../bot/types.js"
+} from "../../bot/types.js"
 
-import { secToMs } from "../bot/utils/fn.js"
+import { secToMs } from "../../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
 import { request } from "undici"
 

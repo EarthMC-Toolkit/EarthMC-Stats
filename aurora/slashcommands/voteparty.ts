@@ -5,7 +5,7 @@ import {
 } from "discord.js"
 
 import { AURORA, devsFooter } from "../../bot/utils/fn.js"
-import { VPHelper } from "../../common/voteparty.js"
+import { VPHelper } from "../common/voteparty.js"
 
 export default {
     name: "voteparty",

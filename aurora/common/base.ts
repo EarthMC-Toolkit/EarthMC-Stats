@@ -1,4 +1,4 @@
-import * as fn from '../bot/utils/fn.js'
+import * as fn from '../../bot/utils/fn.js'
 
 import { EmbedBuilder } from 'discord.js'
 import type { Client } from 'discord.js'

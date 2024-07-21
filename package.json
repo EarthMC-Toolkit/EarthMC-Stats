@@ -21,13 +21,13 @@
     "discord.js": "14.13.0",
     "dotenv": "^16.4.5",
     "earthmc": "^9.7.3",
-    "firebase": "10.12.3",
+    "firebase": "10.12.4",
     "firebase-admin": "12.2.0",
-    "moment": "^2.29.4",
+    "moment": "2.30.1",
     "striptags": "^3.2.0",
     "tslib": "latest",
     "tsx": "latest",
-    "undici": "5.28.4"
+    "undici": "^5"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",

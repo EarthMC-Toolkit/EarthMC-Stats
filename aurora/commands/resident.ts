@@ -1,6 +1,6 @@
 import { devsFooter } from '../../bot/utils/fn.js'
 
-import { ResidentHelper } from '../../common/resident.js'
+import { ResidentHelper } from '../common/resident.js'
 import type { MessageCommand } from '../../bot/types.js'
 
 import { 

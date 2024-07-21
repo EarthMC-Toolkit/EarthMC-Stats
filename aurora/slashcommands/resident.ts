@@ -4,7 +4,7 @@ import {
     EmbedBuilder, SlashCommandBuilder, Colors
 } from "discord.js"
 
-import { ResidentHelper } from '../../common/resident.js'
+import { ResidentHelper } from '../common/resident.js'
 import { devsFooter } from "../../bot/utils/fn.js"
 
 export default {
