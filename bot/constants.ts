@@ -22,8 +22,8 @@ let db: Firestore = null
 let queueSubbedChannels: DocReference = null
 let townlessSubbedChannels: DocReference = null
 
-const setDatabase = (val: Firestore) => {
-    db = val
+const setDatabase = (instance: Firestore) => {
+    db = instance
 
     const subsCollection = db.collection("subs")
     queueSubbedChannels = subsCollection.doc("queue")
@@ -31,17 +31,17 @@ const setDatabase = (val: Firestore) => {
 }
 
 const NOVA: MapInstance = { 
-    emc: Nova, 
-    db: NovaDB 
+    emc: Nova,
+    db: NovaDB
 }
 
 const AURORA: MapInstance = { 
-    emc: Aurora, 
-    db: AuroraDB 
+    emc: Aurora,
+    db: AuroraDB
 }
 
 // We update this every x seconds, so expiry isn't needed.
-const cache = new TTLCache<string, any>({ ttl: Infinity }) 
+const cache = new TTLCache<string, any>({ ttl: Infinity })
 
 export {
     prod, setProduction,
