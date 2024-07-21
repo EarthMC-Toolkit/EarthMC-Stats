@@ -68,11 +68,14 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
         const opts = interaction.options as CommandInteractionOptionResolver
         const cmd = opts.getSubcommand().toLowerCase()
 
-        await checkEditor(interaction) 
-        const foundAlliance = await getAlliance(opts, false)
-
         switch(cmd) {
+            case "lookup": {
+                break
+            }
             case "create": {
+                await checkEditor(interaction) 
+                const foundAlliance = await getAlliance(opts, false)
+
                 // Make sure it doesn't exist already.
                 if (foundAlliance) return interaction.reply({embeds: [new EmbedBuilder()
                     .setColor(Colors.Red)
@@ -85,6 +88,9 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
                 return creationModal.main(opts).show(interaction)
             }
             case "edit": {
+                await checkEditor(interaction)
+                const foundAlliance = await getAlliance(opts, false) 
+
                 // Make sure it exists already.
                 if (!foundAlliance) return interaction.reply({embeds: [new EmbedBuilder()
                     .setColor(Colors.Red)
@@ -94,9 +100,7 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
                 ]})
 
                 const editingModal = new AllianceModal('alliance_edit', 'Editing an alliance', foundAlliance)
-                editingModal.main(opts).show(interaction)
-
-                break
+                return editingModal.main(opts).show(interaction)
             }
             case "disband": {
                 // Check dev perm.
