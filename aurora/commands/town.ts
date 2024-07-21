@@ -249,7 +249,7 @@ export default {
 
         const townName = town.name
         const townRank = (towns.findIndex(t => t.name == townName)) + 1
-        const mayor = town.mayor.replace(/_/g, "\\_")
+        //const mayor = town.mayor.replace(/_/g, "\\_")
         
         // const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => t instanceof NotFoundError ? null : t.colours)
         // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
@@ -279,7 +279,7 @@ export default {
                     : nationResidentsLength >= 30 ? "King "
                     : nationResidentsLength >= 20 ? "Duke "
                     : nationResidentsLength >= 10 ? "Count "
-                    : nationResidentsLength >= 0  ? "Leader " : "" }\`${mayor}\``, true))
+                    : nationResidentsLength >= 0  ? "Leader " : "" }\`${town.mayor}\``, true))
             } else {
                 townEmbed.addFields(embedField("Mayor", 
                     `${townResidentsLength >= 28 ? "Lord "
@@ -289,7 +289,7 @@ export default {
                     : townResidentsLength >= 10 ? "Viscount "
                     : townResidentsLength >= 6 ? "Baron "
                     : townResidentsLength >= 2 ? "Chief "
-                    : townResidentsLength == 1 ? "Hermit " : "" }\`${mayor}\``, true)) 
+                    : townResidentsLength == 1 ? "Hermit " : "" }\`${town.mayor}\``, true)) 
             }
 
             const nationWiki = town?.wikis?.nation

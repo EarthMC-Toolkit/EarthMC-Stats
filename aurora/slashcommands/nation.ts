@@ -6,7 +6,8 @@ import {
     databaseError, fetchError,
     defaultSort, devsFooter, 
     fastMergeUnique, removeDuplicates, 
-    sortByOrder, unixFromDate
+    sortByOrder, unixFromDate,
+    backtick
 } from '../../bot/utils/fn.js'
 
 import {
@@ -261,7 +262,7 @@ export default {
                 .setThumbnail(nation.flag || 'attachment://aurora.png')
                 .setFooter(devsFooter(client))
                 .addFields(
-                    embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
+                    embedField("King", backtick(nation.king, { prefix: kingPrefix }), true),
                     embedField("Capital", `\`${nation.capital.name}\``, true),
                     embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
                     embedField("Size/Worth", `Chunks: \`${nation.area.toString()}\`\nGold: \`${(nation.area * 16)}\``, true),

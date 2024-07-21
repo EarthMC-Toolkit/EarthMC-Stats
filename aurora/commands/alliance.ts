@@ -1157,7 +1157,7 @@ async function sendSingleAlliance(
         typeString == 'mega' ? "Meganation" : "Normal/Pact"
     
     const playersLen = players.length
-    const leaders: string[] = []
+    const leaderSet = new Set<string>()
 
     for (let i = 0; i < playersLen; i++) {
         const leader = players[i]
@@ -1167,15 +1167,17 @@ async function sendSingleAlliance(
             const members = (message.channel as TextChannel).members
             if (members.get(leaderID.toString())) {
                 // Leader can view channel where command was issued, use mention.
-                leaders.push(`<@${leaderID}>`)
+                leaderSet.add(`<@${leaderID}>`)
                 continue
             }
         }
 
-        leaders.push(leader.name.replace(/_/g, "\\_"))
+        leaderSet.add(leader.name)
     }
     
     const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
+
+    const leaders = [...leaderSet]
     const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
 
     const allianceEmbed = new CustomEmbed(client, `(Aurora) Alliance Info | ${getName(foundAlliance)}${rank}`)

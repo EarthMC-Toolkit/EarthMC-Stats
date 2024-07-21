@@ -106,14 +106,14 @@ class ResidentHelper extends BaseHelper {
 
     #setupResidentEmbed() {
         const res: any = this.apiResident || this.dbResident
-        const formattedPlayerName = res.name.replace(/_/g, "\\_")
+        //const formattedPlayerName = res.name.replace(/_/g, "\\_")
         
         const affiliation = {
             town: (res.town ?? res.town.name) ?? res.townName,
             nation: (res.nation ?? res.nation.name) ?? res.townNation
         }
 
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | \`${formattedPlayerName}\``)
+        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | \`${this.mcProfile.name}\``)
 
         if (res.about) {
             this.embed.setDescription(`*${res.about}*`)
@@ -128,9 +128,9 @@ class ResidentHelper extends BaseHelper {
 
     #setupTownlessEmbed() {
         // TODO: mcProfile could be null, handle this case.
-        const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
+        //const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
 
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | ${formattedPlayerName}`)
+        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | \`${this.mcProfile.name}\``)
         this.addField("Affiliation", "No Town", true)
 
         this.addCommonFields()

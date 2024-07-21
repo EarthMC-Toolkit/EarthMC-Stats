@@ -355,7 +355,7 @@ export default {
             nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
                 .setThumbnail(nation.flag ? nation.flag : 'attachment://aurora.png')
                 .addFields(
-                    embedField("King", kingPrefix + `\`${nation.king.replace(/_/g, "\\_")}\``, true),
+                    embedField("King", backtick(nation.king, { prefix: kingPrefix }), true),
                     embedField("Capital", backtick(nation.capital.name), true),
                     embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
                     embedField("Size/Worth",
@@ -364,7 +364,7 @@ export default {
                         true
                     ),
                     embedField("Residents", backtick(nationResLength), true),
-                    embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
+                    embedField("Bonus Grant", backtick(auroraNationBonus(nationResLength)), true)
                 )
 
             if (nation.discord) 
