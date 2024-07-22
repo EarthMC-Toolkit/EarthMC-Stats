@@ -1076,8 +1076,11 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
                 ? `[${getName(alliance)}](${alliance.discordInvite})` 
                 : `**${getName(alliance)}**`
     
+            const leaders = alliance.leaderName.split(', ').map(name => backtick(name))
+            const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
+    
             return `${index + 1}. ${nameStr} (${getType(alliance)})` +
-                `\nLeader(s): ${backtick(alliance.leaderName)}`  + 
+                `\nLeader(s): ${leadersStr}` + 
                 `\nNations: ${backtick(alliance.nations.length)}` +
                 `\nTowns: ${backtick(alliance.towns)}` +
                 `\nResidents: ${backtick(alliance.residents)}` +
@@ -1106,8 +1109,11 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
             ? `[${getName(alliance)}](${alliance.discordInvite})` 
             : `**${getName(alliance)}**`
 
+        const leaders = alliance.leaderName.split(', ').map(name => backtick(name))
+        const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
+
         return `${index + 1}. ${nameStr} (${getType(alliance)})` +
-            `\nLeader(s): ${backtick(alliance.leaderName)}`  + 
+            `\nLeader(s): ${leadersStr}` + 
             `\nNations: ${backtick(alliance.nations.length)}` +
             `\nTowns: ${backtick(alliance.towns)}` +
             `\nResidents: ${backtick(alliance.residents)}` +
