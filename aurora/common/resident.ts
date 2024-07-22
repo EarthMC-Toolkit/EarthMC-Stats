@@ -53,9 +53,7 @@ class ResidentHelper extends BaseHelper {
     async init(input: string) {
         const arg1 = input?.toLowerCase()
 
-        MC.Players.get(arg1)
-            .then(p => this.mcProfile = p)
-            .catch(console.error)
+        this.mcProfile = await MC.Players.get(arg1).catch(() => null)
 
         const residents = await this.fetchResidents()
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)

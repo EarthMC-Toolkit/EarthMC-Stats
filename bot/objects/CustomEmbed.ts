@@ -42,6 +42,7 @@ class CustomEmbed extends EmbedBuilder {
     constructor(client: Client, title: string = null) {
         super({ title, footer: fn.devsFooter(client) })
         this.client = client
+        this.title = title
     }
 
     addField(name: string, value: string, inline = false) {

@@ -8,7 +8,7 @@ import { jsonReq } from "../utils/fn.js"
 class Players {
     static async nameToUUID(name: string) {
         const player = await jsonReq(`https://api.mojang.com/users/profiles/minecraft/${name}`) as MCUserProfile
-        return player ? player.id : null
+        return player?.id
     }
 
     static async get(input: string | number) {
@@ -16,7 +16,7 @@ class Players {
         if (!uuid) uuid = input // If not, maybe it's already a UUID?
 
         const profile = await jsonReq(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`) as MCSessionProfile
-        return profile.id ? profile : null // No UUID, must not exist.
+        return profile?.id ? profile : null // No UUID, must not exist.
     }
 }
 

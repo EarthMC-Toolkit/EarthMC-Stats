@@ -126,7 +126,7 @@ async function getAlliance(name: string) {
 
         if (data) {
             const onlineInNation = n.residents.filter(res => data.players.find(op => op.name == res))
-            fastMerge(foundAlliance.online, onlineInNation)
+            foundAlliance.online = fastMerge([], onlineInNation)
         }
     }
 

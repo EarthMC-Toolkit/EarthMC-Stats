@@ -139,10 +139,10 @@ export const paginator = async(
     msg: Message, 
     embeds: EmbedBuilder[], 
     currentPage: number,
-    collectOverride?: (
-        interaction: ButtonInteraction, msg: Message,
-        currentPage: number, embeds: EmbedBuilder[]
-    ) => Awaitable<void>
+    _forwardCallback?: (
+        interaction: ButtonInteraction, 
+        msg: Message, embeds: EmbedBuilder[]
+    ) => Awaitable<any>
 ) => {
     // DM messages don't work with component collectors right now
     if (msg?.channel?.type == ChannelType.DM) 
@@ -159,27 +159,21 @@ export const paginator = async(
         time: fiveMin
     })
 
-    collector.on("collect", interaction => collectOverride ? 
-        collectOverride(interaction, msg, currentPage, embeds) : 
-        defaultCollect(interaction, msg, currentPage, embeds)
-    )
-
-    // Edit message to show arrow buttons
-    await msg.edit({ components: [buildButtons(currentPage, embeds.length - 1)] }).catch(() => {})
-    setTimeout(() => msg.edit({ components: [] }).catch(() => {}), fiveMin)
-}
-
-const defaultCollect = (interaction: ButtonInteraction, msg: Message, currentPage: number, embeds: EmbedBuilder[]) => {
     const lastPage = embeds.length - 1
 
-    // Decide what page to display according to the button interaction
-    currentPage = interaction.customId == "last" ? lastPage 
-        : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
-        : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
+    // Edit message to show arrow buttons
+    await msg.edit({ components: [buildButtons(currentPage, lastPage)] }).catch(console.error)
+    setTimeout(() => msg.edit({ components: [] }).catch(() => {}), fiveMin)
 
-    msg.edit({
-        embeds: [embeds[currentPage]],
-        components: [buildButtons(currentPage, lastPage)]
+    collector.on("collect", async interaction => {
+        currentPage = interaction.customId == "last" ? lastPage 
+            : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
+            : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
+
+        await msg.edit({
+            embeds: [embeds[currentPage]],
+            components: [buildButtons(currentPage, lastPage)]
+        })
     })
 }
 
@@ -187,14 +181,10 @@ const defaultCollect = (interaction: ButtonInteraction, msg: Message, currentPag
 export const paginatorInteraction = async(
     interaction: CommandInteraction,
     embeds: EmbedBuilder[],
-    currentPage: number,
-    collectOverride: (
-        interaction: ButtonInteraction, msg: Message,
-        currentPage: number, embeds: EmbedBuilder[]
-    ) => Awaitable<void> = null
+    currentPage: number
 ) => {
     const msg = await interaction.fetchReply().catch(console.log) as Message
-    paginator(interaction.user.id, msg, embeds, currentPage, collectOverride)
+    paginator(interaction.user.id, msg, embeds, currentPage)
 }
 
 function buildButtons(currentPage: number, lastPage: number) {

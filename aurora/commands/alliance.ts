@@ -90,15 +90,15 @@ export default {
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
 
-        if (commandName == "/submeganations" || commandName == "submeganations") return sendAllianceList(client, message, m, args, 'sub') 
-        if (commandName == "/meganations" || commandName == "meganations") return sendAllianceList(client, message, m, args, 'mega')
-        if (commandName == "/pacts" || commandName == "pacts") return sendAllianceList(client, message, m, args, 'normal') // Normal/pacts only.
+        if (commandName == "/submeganations" || commandName == "submeganations") return sendAllianceList(message, m, args, 'sub') 
+        if (commandName == "/meganations" || commandName == "meganations") return sendAllianceList(message, m, args, 'mega')
+        if (commandName == "/pacts" || commandName == "pacts") return sendAllianceList(message, m, args, 'normal') // Normal/pacts only.
 
         const arg1Lower = args[0]?.toLowerCase()
 
         // /alliances or /alliance list
         if (commandName == "/alliances" || commandName == "alliances" || arg1Lower == "list")
-            return sendAllianceList(client, message, m, args, 'all') // Includes all types.
+            return sendAllianceList(message, m, args, 'all') // Includes all types.
         
         // /alliance <allianceName>
         if (args.length == 1 && arg1Lower != "list" && arg1Lower != "wizard") {
@@ -192,7 +192,7 @@ export default {
             // Creating an alliance
             if (arg1 == "create" || arg1 == "new") {   
                 const allianceName = args[1]
-                const leaderName = !args[2] ? "No leader set." : argsHelper(args, 2).asString()
+                const leaderName = !args[2] ? "None" : argsHelper(args, 2).asString()
                 
                 if (typeof(allianceName) == "number") {
                     return m.edit({embeds: [new EmbedBuilder()
@@ -234,7 +234,10 @@ export default {
                         iconURL: message.author.displayAvatarURL() 
                     })
 
-                const postfix = leaderName == "No leader set." ? `No leader has been set.` : `Leader(s): \`${leaderName}\``
+                const postfix = leaderName == "No leader set." || leaderName ==  "None" 
+                    ? `No leader has been set.` 
+                    : `Leader(s): \`${leaderName}\``
+
                 return m.edit({embeds: [embed
                     .setTitle("Alliance Created")
                     .setDescription(`The alliance \`${allianceName}\` has been created.\n\n${postfix}`)
@@ -327,7 +330,7 @@ export default {
 
                 const alliance: DBAlliance = {
                     allianceName,
-                    leaderName: info[2] || "No leader set.",
+                    leaderName: info[2] || "None",
                     nations: [],
                     type: type as AllianceType,
                     discordInvite: info[5] || "No discord invite has been set for this alliance",
@@ -979,7 +982,9 @@ export default {
     }
 }
 
-async function sendAllianceList(client: Client, message: Message, m: Message, args: string[], type: string) {
+const hasDiscord = (a: DBAlliance) => a.discordInvite.startsWith("https://") && a.discordInvite.includes("discord.")
+
+async function sendAllianceList(message: Message, m: Message, args: string[], type: string) {
     let alliances = await database.Aurora.getAlliances()
     alliances = type.toLowerCase() == 'all' ? alliances : alliances.filter(a => !!a.type && (a.type.toLowerCase() == type.toLowerCase()))
 
@@ -1051,7 +1056,7 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
     }
     //#endregion
 
-    const botEmbed: EmbedBuilder[] = []
+    const embeds: EmbedBuilder[] = []
 
     //#region Search or send all
     if (searching) {
@@ -1066,34 +1071,35 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
             })
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const allData = foundAlliances.map(alliance => 
-            "**" + getName(alliance) + "**" + " (" + getType(alliance) + ")" +
-            "```Leader(s): " + alliance.leaderName + 
-            "``````Nation(s): " + alliance.nations.length +
-            "``````Towns: " + alliance.towns +
-            "``````Residents: " + alliance.residents + 
-            "``````Area: " + alliance.area + 
-            "``````Discord Link: " + alliance.discordInvite + "```").join('\n').match(/(?:^.*$\n?){1,3}/mg)
-
+        const allData = alliances.map((alliance, index) => {
+            const nameStr = hasDiscord(alliance) 
+                ? `[${getName(alliance)}](${alliance.discordInvite})` 
+                : `**${getName(alliance)}**`
+    
+            return `${index + 1}. ${nameStr} (${getType(alliance)})` +
+                `\nLeader(s): ${backtick(alliance.leaderName)}`  + 
+                `\nNations: ${backtick(alliance.nations.length)}` +
+                `\nTowns: ${backtick(alliance.towns)}` +
+                `\nResidents: ${backtick(alliance.residents)}` +
+                `\nArea: ${backtick(Math.round(alliance.area))} Chunks`
+        }).join('\n\n').match(/(?:^.*$\n\n?){1,24}/mg)
+    
         const len = allData.length
         for (let i = 0; i < len; i++) {
-            botEmbed[i] = new EmbedBuilder()
+            embeds[i] = new EmbedBuilder()
             .setColor(Colors.DarkBlue)
             .setTitle("List of Alliances")
-            .setAuthor({name: message.author.username, iconURL: message.author.displayAvatarURL()})
             .setDescription(allData[i])
             .setTimestamp()
-            .setFooter({
-                text: `Page ${i+1}/${len}`,
-                iconURL: client.user.avatarURL()
+            .setAuthor({
+                name: message.author.username, 
+                iconURL: message.author.displayAvatarURL()
             })
         }
 
-        return await m.edit({ embeds: [botEmbed[0]] })
-            .then(msg => paginator(message.author.id, msg, botEmbed, 0))
+        return await m.edit({ embeds: [embeds[0]] })
+            .then(msg => paginator(message.author.id, msg, embeds, 0))
     }
-
-    const hasDiscord = (a: DBAlliance) => a.discordInvite.startsWith("https://") && a.discordInvite.includes("discord.")
 
     const allData = alliances.map((alliance, index) => {
         const nameStr = hasDiscord(alliance) 
@@ -1101,16 +1107,16 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
             : `**${getName(alliance)}**`
 
         return `${index + 1}. ${nameStr} (${getType(alliance)})` +
-            "```Leader(s): " + alliance.leaderName + 
-            "``````Nations: " + alliance.nations.length +
-            "``````Towns: " + alliance.towns +
-            "``````Residents: " + alliance.residents + 
-            "``````Area: " + Math.round(alliance.area) + " Chunks"
-    }).join('\n').match(/(?:^.*$\n?){1,3}/mg)
+            `\nLeader(s): ${backtick(alliance.leaderName)}`  + 
+            `\nNations: ${backtick(alliance.nations.length)}` +
+            `\nTowns: ${backtick(alliance.towns)}` +
+            `\nResidents: ${backtick(alliance.residents)}` +
+            `\nArea: ${backtick(Math.round(alliance.area))} Chunks`
+    }).join('\n\n').match(/(?:^.*$\n\n?){1,24}/mg)
 
     const len = allData.length
     for (let i = 0; i < len; i++) {
-        botEmbed[i] = new EmbedBuilder()
+        embeds[i] = new EmbedBuilder()
         .setColor(Colors.DarkBlue)
         .setTitle("List of Alliances")
         .setDescription(allData[i])
@@ -1119,13 +1125,9 @@ async function sendAllianceList(client: Client, message: Message, m: Message, ar
             name: message.author.username, 
             iconURL: message.author.displayAvatarURL()
         })
-        .setFooter({
-            text: `Page ${i+1}/${len}`, 
-            iconURL: client.user.avatarURL()
-        })
     }
 
-    return await m.edit({ embeds: [botEmbed[0]] }).then(msg => paginator(message.author.id, msg, botEmbed, 0))
+    return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
     //#endregion
 }
 
@@ -1135,6 +1137,15 @@ async function sendSingleAlliance(
     m: Message, 
     args: string[]
 ) {
+    let players = await database.getPlayers()
+    if (!players) return m.edit({embeds: [new EmbedBuilder()
+        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+        .setTitle("Database error occurred")
+        .setDescription("Failed to fetch players needed for this command to work.")
+        .setColor(Colors.Red)
+        .setTimestamp()
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+
     const foundAlliance = await database.Aurora.getAlliance(args[0])
     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
@@ -1145,17 +1156,7 @@ async function sendSingleAlliance(
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
     const leaderNames = foundAlliance.leaderName.split(', ')
-    const players = await database.getPlayers().then(arr => arr.filter(p => 
-        leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase())
-    ))
-
-    if (!players) return m.edit({embeds: [new EmbedBuilder()
-        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-        .setTitle("Database error occurred")
-        .setDescription("Failed to fetch players needed for this command to work.")
-        .setColor(Colors.Red)
-        .setTimestamp()
-    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+    players = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase()))
 
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
     const allianceType = 
