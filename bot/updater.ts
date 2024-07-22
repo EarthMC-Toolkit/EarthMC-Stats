@@ -205,7 +205,7 @@ async function updateMapData(map: MapInstance) {
 
     console.log(`[${mapName}] Updating data..`)
 
-    //#region Town Logic 
+    //#region Town Logic
     const townsArray = towns.map(t => {
         const isNPC = /^NPC[0-9]{1,5}$/.test(t.mayor)
         t["ruined"] = !isNPC && t.residents ? false : true

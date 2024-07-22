@@ -78,10 +78,10 @@ export interface MapDB {
     setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>
     setResidents(residents: DBResident[]): Promise<void>
-    getTowns(): Promise<(DBTown | DBSquaremapTown)[]>
-    setTowns(towns: (DBTown | DBSquaremapTown)[]): Promise<void>
-    getNations(): Promise<(DBNation | DBSquaremapNation)[]>
-    setNations(nations: (DBNation | DBSquaremapNation)[]): Promise<void>
+    getTowns(): Promise<(DBSquaremapTown)[]>
+    setTowns(towns: (DBSquaremapTown)[]): Promise<void>
+    getNations(): Promise<(DBSquaremapNation)[]>
+    setNations(nations: (DBSquaremapNation)[]): Promise<void>
 }
 
 export type AllianceType = 'sub' | 'mega' | 'normal'
