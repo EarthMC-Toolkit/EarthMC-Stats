@@ -29,7 +29,7 @@ export default {
     name: 'interactionCreate',
     async execute(interaction: BaseInteraction) {
         const client: ExtendedClient = interaction.client
-        const username = interaction.user.username
+        const username = interaction.user.displayName
 
         let cmdName: string = null
         if (interaction.isCommand())
@@ -39,17 +39,13 @@ export default {
             const cmd = client.slashCommands.get(cmdName)
             if (!cmd) return
         
-            console.log(`${username} used command: '${cmdName}'`)
+            console.log(`[${username}] Interaction triggered: '${cmdName}'`)
             return await cmd.run(client, interaction).catch(console.error)
         }
 
         if (interaction.isUserContextMenuCommand()) {
-            console.log(`${username} triggered a context menu action.`)
-
-            if (cmdName == "Link User") {
-                console.log('Attempting to link a player')
-                return await showLinkModal(interaction)  
-            }
+            console.log(`[${username}] Context menu action triggered: '${cmdName}'`)
+            if (cmdName == "Link User") return await showLinkModal(interaction)  
         }
         
         if (interaction.isModalSubmit()) {   
@@ -66,12 +62,12 @@ export default {
                 const alliance = modal.asObject(interaction)
 
                 //#region Send alliance embed preview.
-                const preview = new CustomEmbed(client, `(${alliance.mapName}) Alliance Preview | ${alliance.allianceName}`)
+                const preview = new CustomEmbed(client, `(${alliance.map}) Alliance Preview | ${alliance.allianceName}`)
                     .setColor(Colors.DarkBlue)
                     .setThumbnail(alliance.imageURL ? alliance.imageURL : 'attachment://aurora.png')
                     .addButton('creation_extra', 'Extra')
                     .addButton('creation_finish', 'Finish', ButtonStyle.Success)
-                    .addField("Leader(s)", alliance.leaders.length > 0 ? alliance.leaders : "None", true)
+                    .addField("Leader(s)", alliance.leaderName.length > 0 ? alliance.leaderName : "None", true)
 
                 if (alliance.discordInvite != "No discord invite has been set for this alliance") 
                     preview.setURL(alliance.discordInvite)

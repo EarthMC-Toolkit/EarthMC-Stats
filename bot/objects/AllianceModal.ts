@@ -71,11 +71,12 @@ class AllianceModal extends ModalBuilder {
     }
 
     asObject = (interaction: ModalSubmitInteraction) => { 
-        const obj: any = {
-            mapName: this.alliance.map,
+        const obj: DBAlliance & { map?: string } = {
+            map: this.alliance.map,
             allianceName: this.alliance.allianceName,
+            type: this.alliance.type || "normal",
             nations: fieldVal(interaction, 'nations').replaceAll(' ', '').split(','),
-            leaders: fieldVal(interaction, 'leaders')
+            leaderName: fieldVal(interaction, 'leaders')
         }
 
         const fullName = fieldVal(interaction, 'full_name')
@@ -83,7 +84,7 @@ class AllianceModal extends ModalBuilder {
         const flag = fieldVal(interaction, 'flag')
 
         if (fullName) obj.fullName = fullName
-        if (discord) obj.discord = discord
+        if (discord) obj.discordInvite = discord
         if (flag) obj.imageURL = flag
 
         return obj

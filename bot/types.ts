@@ -88,12 +88,12 @@ export type AllianceType = 'sub' | 'mega' | 'normal'
 export type DBAlliance = {
     allianceName: string
     leaderName: string
-    discordInvite: string
     type: AllianceType
     nations: string[]
 } & Partial<{
     fullName: string
     imageURL: string
+    discordInvite: string
     colours: {
         fill: string
         outline: string
