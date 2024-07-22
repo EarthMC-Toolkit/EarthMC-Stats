@@ -18,6 +18,6 @@ jobs:
         with:
           node-version: 16.x
 
-      - run: bun install --frozen-lockfile
+      - run: bun i
       - run: bun x eslint .
     
