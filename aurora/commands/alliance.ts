@@ -1179,7 +1179,7 @@ async function sendSingleAlliance(
             }
         }
 
-        leaderSet.add(leader.name)
+        leaderSet.add(backtick(leader.name))
     }
     
     const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
@@ -1189,7 +1189,7 @@ async function sendSingleAlliance(
 
     const allianceEmbed = new CustomEmbed(client, `(Aurora) Alliance Info | ${getName(foundAlliance)}${rank}`)
         .addFields(
-            embedField("Leader(s)", backtick(leadersStr), false),
+            embedField("Leader(s)", leadersStr, false),
             embedField("Type", backtick(allianceType), true),
             //embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
             embedField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true),
