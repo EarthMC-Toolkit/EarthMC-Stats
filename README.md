@@ -3,7 +3,7 @@
 
 # EarthMC Stats 
 [![Discord](https://img.shields.io/discord/966271635894190090?style=flat-square&label=Join%20development%20discord&color=%235347f5)](https://discord.com/invite/AVtgkcRgFs)
-[![Static Badge](https://img.shields.io/badge/1.6k_guilds-%23128237?style=flat-square&label=Invite%20the%20bot)](https://emctoolkit.vercel.app/invite)
+[![Static Badge](https://img.shields.io/badge/1.7k_guilds-%23128237?style=flat-square&label=Invite%20the%20bot)](https://emctoolkit.vercel.app/invite)
 
 The most popular Discord bot for **EarthMC** is now open source!
 
