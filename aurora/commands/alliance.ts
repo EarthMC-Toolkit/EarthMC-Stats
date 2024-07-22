@@ -110,6 +110,15 @@ export default {
             if (arg1Lower && !devArgs.includes(arg1Lower)) {
                 if (arg1Lower != "online") return
 
+                // TODO: Do this in getAlliance() so we dont req ops twice. 
+                const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
+                if (!ops) return m.edit({embeds: [new EmbedBuilder()
+                    .setTitle(`Error fetching online players`)
+                    .setDescription("")
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
                 const foundAlliance = await database.Aurora.getAlliance(args[1])
                 if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error fetching alliance")
@@ -120,15 +129,6 @@ export default {
                         name: message.author.username, 
                         iconURL: message.author.displayAvatarURL()
                     })
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                // TODO: Do this in getAlliance() so we dont req ops twice. 
-                const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
-                if (!ops) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle(`Error fetching online players`)
-                    .setDescription("")
-                    .setColor(Colors.Red)
-                    .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                 const name = getName(foundAlliance)
