@@ -1,4 +1,4 @@
-import { Aurora, Nova } from "earthmc"
+import { Aurora } from "earthmc"
 
 import type { Client } from "discord.js"
 import type { Firestore } from "firebase-admin/firestore"
@@ -6,8 +6,7 @@ import type { MapInstance } from "./types.js"
 
 import { 
     type DocReference, 
-    Aurora as AuroraDB, 
-    Nova as NovaDB
+    Aurora as AuroraDB
 } from "../bot/utils/database.js"
 
 import TTLCache from '@isaacs/ttlcache'
@@ -30,10 +29,10 @@ const setDatabase = (instance: Firestore) => {
     townlessSubbedChannels = subsCollection.doc("townless")
 }
 
-const NOVA: MapInstance = { 
-    emc: Nova,
-    db: NovaDB
-}
+// const NOVA: MapInstance = { 
+//     emc: Nova,
+//     db: NovaDB
+// }
 
 const AURORA: MapInstance = { 
     emc: Aurora,
@@ -49,5 +48,6 @@ export {
     cache, db, setDatabase,
     townlessSubbedChannels,
     queueSubbedChannels,
-    NOVA, AURORA
+    //NOVA, 
+    AURORA
 }

@@ -11,7 +11,7 @@ import {
 
 import { 
     prod, client, 
-    AURORA, NOVA
+    AURORA //NOVA
 } from "./constants.js"
 
 import { 
@@ -27,6 +27,7 @@ import type {
     MapInstance, ResidentRank,
     DBAlliance, DBResident, DBPlayer
 } from "./types.js"
+import { devsFooter } from "../bot/utils/fn.js"
 //#endregion
 
 //#region Call Updates
@@ -82,12 +83,15 @@ async function updateMap(players: DBPlayer[], map: MapInstance) {
 //#endregion
 
 //#region Database Update Methods
-const mapToString = (map: MapInstance) => map == AURORA ? "Aurora" : "Nova"
+const mapToString = (map: MapInstance, uppercase = false) => {
+    const str = map == AURORA ? "Aurora" : "Nova"
+    return uppercase ? str.toUpperCase() : str
+}
 
 // TODO: Set alliances for both maps with a batch update to save on writes
 async function updateAlliances(map: MapInstance) {
     const nations = await map.emc.Nations.all()
-    if (!nations) return console.warn(`Couldn't update ${mapToString(map)} alliances, failed to fetch nations.`)
+    if (!nations) return console.warn(`[${mapToString(map, true)}] Couldn't update alliances, failed to fetch nations.`)
 
     const alliances = await map.db.getAlliances(true) as DBAlliance[]
     if (!alliances) return console.warn("Couldn't update alliances, failed to fetch from DB.")
@@ -117,11 +121,13 @@ async function updateAlliances(map: MapInstance) {
 }
 
 async function sendEmptyAllianceNotif(map: MapInstance) {
+    const mapName = mapToString(map, true)
+
     const nations = await map.emc.Nations.all()
-    if (!nations) return console.warn(`Couldn't check empty ${mapToString(map)} alliances, failed to fetch nations.`)
+    if (!nations) return console.warn(`[${mapName}] Couldn't check empty alliances, failed to fetch nations.`)
 
     const alliances = await map.db.getAlliances(true)
-    if (!alliances) return console.warn("Couldn't send notifs! Failed to fetch alliances from DB.")
+    if (!alliances) return console.warn(`[${mapName}] Couldn't send notifs! Failed to fetch alliances from DB.`)
 
     const emptyAlliances: string[] = []
     const alliancesAmt = alliances.length
@@ -142,7 +148,7 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
             .setTitle(`Empty alliances - ${mapToString(map)}`)
             .setDescription(emptyAlliances.join(', '))
             .setColor(Colors.Orange)
-            .setFooter(fn.devsFooter(client))
+            .setFooter(devsFooter(client))
             .setTimestamp()
 
         editorChannel.send({ embeds: [embed] })
@@ -150,10 +156,10 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
 }
 
 async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
-    const mapName = map == AURORA ? 'aurora' : 'nova'
+    const mapName = mapToString(map, true)
 
     const onlinePlayers = await map.emc.Players.online().catch(() => {})
-    if (!onlinePlayers) return console.log(`Error updating player data on ${mapName}`)
+    if (!onlinePlayers) return console.warn(`[${mapName}] Error updating player data, bad response getting online players!`)
 
     const now = Timestamp.now()
 
@@ -189,18 +195,20 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
 
 // Updates: Towns, Nations, Residents
 async function updateMapData(map: MapInstance) {
+    const mapName = mapToString(map, true)
+
     const towns = await map.emc.Towns.all().catch(console.error)
-    if (!towns) return console.log("Could not update map data! 'towns' is null or undefined.")
+    if (!towns) return console.warn(`[${mapName}] Could not update map data! 'towns' is null or undefined.`)
 
     const nations = await map.emc.Nations.all(towns as any).catch(console.error)
-    if (!nations) return console.log("Could not update map data! 'nations' is null or undefined.")
+    if (!nations) return console.warn(`[${mapName}] Could not update map data! 'nations' is null or undefined.`)
 
-    console.log(`[${map == NOVA ? "Nova" : "Aurora"}] Updating data..`)
+    console.log(`[${mapName}] Updating data..`)
 
     //#region Town Logic 
     const townsArray = towns.map(t => {
         const isNPC = /^NPC[0-9]{1,5}$/.test(t.mayor)
-        t.ruined = !isNPC && t.residents ? false : true
+        t["ruined"] = !isNPC && t.residents ? false : true
 
         return t
     })
@@ -239,8 +247,8 @@ async function updateMapData(map: MapInstance) {
     //#endregion
 
     //#region Nation Logic
-    const dbNations = await map.db.getNations().catch(console.error)
-    if (!dbNations) return console.log('Failed to fetch db nations.')
+    const dbNations = await map.db.getNations().catch(console.warn)
+    if (!dbNations) return //console.warn(`[${mapName}] Failed to fetch db nations.`)
 
     const nationsArray = nations.map(nation => {
         const foundNation = dbNations.find(n => latinize(n.name) == latinize(nation.name))

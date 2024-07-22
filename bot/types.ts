@@ -8,7 +8,7 @@ import type {
     Collection
 } from "discord.js"
 
-import type { Dynmap, Nation, Squaremap, SquaremapNation, SquaremapTown, Town } from "earthmc"
+import type { Nation, Squaremap, SquaremapNation, SquaremapTown, Town } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type ErrorWithCode = Error & { code: number }
@@ -53,7 +53,7 @@ export type DJSEvent = {
 }
 
 export type MapInstance = { 
-    emc: Dynmap | Squaremap,
+    emc: Squaremap,
     db: MapDB
 }
 
