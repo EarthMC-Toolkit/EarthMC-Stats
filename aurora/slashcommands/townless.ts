@@ -23,7 +23,7 @@ export default {
     description: "Lists all online players without a town.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const townlessPlayers = await Aurora.Players.townless()
-        if (!townlessPlayers) return await interaction.reply({embeds: [fetchError], ephemeral: true})
+        if (!townlessPlayers) return await interaction.reply({ embeds: [fetchError], ephemeral: true })
 
         const townlessLen = townlessPlayers.length
         const allData = townlessPlayers.map(p => p.name).join('\n').match(/(?:^.*$\n?){1,10}/mg)
