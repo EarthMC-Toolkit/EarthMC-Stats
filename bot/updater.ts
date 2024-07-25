@@ -6,12 +6,14 @@ import * as database from "../bot/utils/database.js"
 import * as fn from "../bot/utils/fn.js"
 
 import { 
-    formatString
+    formatString,
+    type SquaremapOnlinePlayer
 } from "earthmc"
 
 import { 
-    prod, client, 
-    AURORA //NOVA
+    client, 
+    AURORA, //NOVA
+    lastSeenPlayers
 } from "./constants.js"
 
 import { 
@@ -23,18 +25,24 @@ import {
     Colors, EmbedBuilder 
 } from "discord.js"
 
-import type { 
-    MapInstance, ResidentRank,
-    DBAlliance, DBResident, DBPlayer
+import { 
+    type MapInstance, type ResidentRank,
+    type DBAlliance, type DBResident, type DBPlayer,
+    type SeenPlayer
 } from "./types.js"
+
 import { devsFooter } from "../bot/utils/fn.js"
 //#endregion
 
 //#region Call Updates
 const oneMinute = 60 * 1000
 
-async function initUpdates() {
+export async function initUpdates(prod = false) {
+    await updateLastSeen()
+
     if (prod) {
+        console.log("Production enabled, initializing data updates..")
+
         await updateAurora(true)
         await updateAlliances(AURORA)
 
@@ -46,7 +54,8 @@ async function initUpdates() {
         await updateNews()
     }
 
-    setInterval(() => updateAurora(), 1.5 * oneMinute)
+    setInterval(updateLastSeen, 0.15 * oneMinute)
+    setInterval(updateAurora, 1.5 * oneMinute)
 
     setInterval(async () => {
         await updateAlliances(AURORA)
@@ -54,7 +63,7 @@ async function initUpdates() {
     }, 2 * oneMinute)
 
     // Send news to API (for both maps).
-    setInterval(() => updateNews(), 10 * oneMinute)
+    setInterval(updateNews, 10 * oneMinute)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
@@ -265,6 +274,24 @@ async function updateMapData(map: MapInstance) {
     if (nationsArray?.length > 0)
         map.db.setNations(nationsArray)
     //#endregion
+}
+
+async function updateLastSeen() {
+    const ops = await AURORA.emc.Players.online() as SquaremapOnlinePlayer[]
+    if (!ops) return console.warn(`[AURORA] Error updating last seen, bad response getting online players!`)
+
+    const now = Date.now()
+
+    ops.forEach(op => {
+        op['timestamp'] = now
+        lastSeenPlayers.set(op.name, op as SeenPlayer) 
+    })
+
+    lastSeenPlayers.forEach(v => {
+        v.online = ops.some(op => op.name == v.name)
+    })
+
+    console.log(`[AURORA] Updated last seen. Length: ${lastSeenPlayers.size}`)
 }
 //#endregion
 
@@ -601,7 +628,3 @@ async function _purgeInactive(players: DBPlayer[]) {
     return players
 }
 //#endregion
-
-export {
-    initUpdates
-}

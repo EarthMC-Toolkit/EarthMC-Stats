@@ -8,7 +8,7 @@ import type {
     Collection
 } from "discord.js"
 
-import type { Nation, Squaremap, SquaremapNation, SquaremapTown, Town } from "earthmc"
+import type { Nation, Squaremap, SquaremapNation, SquaremapOnlinePlayer, SquaremapTown, Town } from "earthmc"
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 
 export type ErrorWithCode = Error & { code: number }
@@ -229,3 +229,21 @@ export interface V3Player extends Entity {
     }
     friends: Entity[]
 }
+
+export interface SeenPlayer extends SquaremapOnlinePlayer {
+    online: boolean
+    timestamp: number
+}
+
+// type OfflineEstimateType = typeof OFFLINE_ESTIMATE
+// export type OfflineEstimate = OfflineEstimateType[keyof OfflineEstimateType]
+
+// export const OFFLINE_ESTIMATE = {
+//     Possibly: 5,
+//     Likely: 10,
+//     VeryLikely: 20,
+//     Certain: 40,
+//     Definitely: 80
+// } as const
+
+// export const OFFLINE_ESTIMATES = Object.values(OFFLINE_ESTIMATE)

@@ -152,7 +152,7 @@ class ResidentHelper extends BaseHelper {
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
         this.addField("Status", statusStr, true)
 
-        if (lastOnlineTs != 0)
+        if (lastOnlineTs != 0 && this.status == "Offline")
             this.addField("Last Online", `<t:${secToMs(lastOnlineTs)}:R>`, true)
 
         if (registeredTs != 0)

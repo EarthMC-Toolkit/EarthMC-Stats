@@ -2,7 +2,7 @@ import { Aurora } from "earthmc"
 
 import type { Client } from "discord.js"
 import type { Firestore } from "firebase-admin/firestore"
-import type { MapInstance } from "./types.js"
+import type { MapInstance, SeenPlayer } from "./types.js"
 
 import { 
     type DocReference, 
@@ -41,6 +41,8 @@ const AURORA: MapInstance = {
 
 // We update this every x seconds, so expiry isn't needed.
 const cache = new TTLCache<string, any>({ ttl: Infinity })
+
+export const lastSeenPlayers = new Map<string, SeenPlayer>()
 
 export {
     prod, setProduction,

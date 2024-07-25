@@ -41,10 +41,9 @@ const rdyEvent: DJSEvent = {
             'admins sleep', 'alliances forming', 'the queue grow'
         ]
     
+        await initUpdates(prod)
+
         if (prod) {
-            console.log("Production enabled, initializing data updates..")
-            await initUpdates()
-    
             queueSubbedChannels.get().then(doc => { 
                 const { channelIDs } = doc.data()
                 fn.setQueueSubbedChannels(channelIDs)
@@ -103,12 +102,10 @@ async function registerCommands(client: ExtendedClient) {
         client.slashCommands.set(command.name, command)
 
         if (command.data) data.push(command.data.toJSON())
-        else {
-            data.push({
-                name: command.name,
-                description: command.description
-            })
-        }
+        else data.push({
+            name: command.name,
+            description: command.description
+        })
     }
 
     const linkAction = new ContextMenuCommandBuilder().setName("Link User").setType(2) 
