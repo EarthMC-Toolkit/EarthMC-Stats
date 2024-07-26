@@ -52,7 +52,7 @@ export default {
             .then(m => setTimeout(() => m.delete(), 10000))
 
         const townEmbed = new EmbedBuilder()
-        const nameArg = interaction.options.getString("name")
+        const nameArg = interaction.options.getString("name", true)
 
         const subCmdName = interaction.options.getSubcommand().toLowerCase()
         if (subCmdName == "list") {
@@ -120,20 +120,18 @@ export default {
             }
             else { // /t list <nation>
                 const nation = towns.some(town => town.nation.toLowerCase() == comparator)
-                if (!nation) return interaction.editReply({embeds: [
-                    new EmbedBuilder()
-                        .setTitle("Invalid town name!")
-                        .setDescription(comparator + " doesn't seem to be a valid town name, please try again.")
-                        .setTimestamp().setColor(Colors.Red)
-                    ] //ephemeral: true 
-                })
+                if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
+                    .setTitle("Invalid Nation!")
+                    .setDescription(`No nation with name \`${args2}\` exists.`)
+                    .setTimestamp().setColor(Colors.Red)
+                ]})
                     
                 // It exists, get only towns within the nation, and sort.
                 towns.map(town => town.nation.toLowerCase() == comparator)
                 towns = defaultSort(towns)
             }
         }
-        else if (subCmdName == "activity" && nameArg != null) {  
+        else if (subCmdName == "activity") {  
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
             if (!town) return interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid town name!")
@@ -180,13 +178,12 @@ export default {
         }
         else if (subCmdName == "lookup") { // /t <town>
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
-
             if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
-                .setTitle("Invalid town name!")
-                .setDescription(nameArg + " doesn't seem to be a valid town name, please try again.")
+                .setTitle("Invalid Town!")
+                .setDescription(`No town with name \`${nameArg}\` exists.`)
                 .setColor(Colors.Red)
                 .setTimestamp()
-            ] /*ephemeral: true */})
+            ]})
 
             towns = defaultSort(towns)
 
@@ -349,21 +346,40 @@ export default {
         .addSubcommand(subCmd => subCmd
             .setName('lookup')
             .setDescription('Get detailed information for a town')
-            .addStringOption(option => option.setName("name").setDescription("The name of the town to lookup.").setRequired(true)))
+            .addStringOption(option => option.setName("name")
+                .setDescription("The name of the town to lookup.")
+                .setRequired(true)
+            )
+        )
         .addSubcommand(subCmd => subCmd
             .setName('activity')
             .setDescription('Gets activity data for members of a town.')
-            .addStringOption(option => option.setName("name").setDescription("The name of the town to get activity data for.").setRequired(true)))              
+            .addStringOption(option => option.setName("name")
+                .setDescription("The name of the town to get activity data for.")
+                .setRequired(true)
+            )
+        )              
         .addSubcommand(subCmd => subCmd
             .setName('list')
             .setDescription('List towns using various comparators.')
-            .addStringOption(option => option.setName("comparator").setDescription("The comparator to use which the list will be filtered by.")))
+            .addStringOption(option => option.setName("comparator")
+                .setDescription("The comparator to use which the list will be filtered by.")
+            )
+        )
 }
 
-function extractTownData(towns: DBSquaremapTown[]) {
+interface ExtractedTown {
+    name: string
+    nation: string
+    residentNames: string[]
+    area: number
+    wealth: number
+}
+
+const extractTownData = (towns: DBSquaremapTown[]) => {
     if (!towns) return []
 
-    const townData = []
+    const townData: ExtractedTown[] = []
     const len = towns.length
 
     for (let i = 0; i < len; i++) {     
