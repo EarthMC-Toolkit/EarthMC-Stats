@@ -283,12 +283,12 @@ async function updateLastSeen() {
     const now = Date.now()
 
     ops.forEach((op: SeenPlayer) => {
-        op.timestamp = now
+        const seen = lastSeenPlayers.get(op.name)
 
         if (!op.transitions) op.transitions = 0
-
-        const seen = lastSeenPlayers.get(op.name)
         if (!seen?.online) op.transitions++
+
+        op.timestamp = now
 
         lastSeenPlayers.set(op.name, op) 
     })
