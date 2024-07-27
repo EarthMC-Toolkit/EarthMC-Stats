@@ -285,10 +285,10 @@ async function updateLastSeen() {
     ops.forEach((op: SeenPlayer) => {
         op.timestamp = now
 
+        if (!op.transitions) op.transitions = 0
+
         const seen = lastSeenPlayers.get(op.name)
-        if (seen?.online) {
-            op.transitions = op.transitions ? op.transitions + 1 : 0
-        }
+        if (!seen?.online) op.transitions++
 
         lastSeenPlayers.set(op.name, op) 
     })
