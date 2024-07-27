@@ -285,9 +285,7 @@ async function updateLastSeen() {
     for (const op of ops) {
         const seen = lastSeenPlayers.get(op.name)
 
-        if (!op['timesVanished']) op['timesVanished'] = 0
-        if (seen && !seen.online) op['timesVanished']++
-
+        op['timesVanished'] = seen ? seen.timesVanished : 0
         op['timestamp'] = now
 
         lastSeenPlayers.set(op.name, op as SeenPlayer) 
@@ -295,7 +293,10 @@ async function updateLastSeen() {
 
     const opNames = new Set(ops.map(op => op.name))
     for (const p of lastSeenPlayers.values()) {
-        p.online = opNames.has(p.name)
+        const newOnline = opNames.has(p.name)
+        if (!p.online && newOnline) p.timesVanished++
+
+        p.online = newOnline
     }
 
     //console.log(`[AURORA] Updated last seen. Length: ${lastSeenPlayers.size}`)
