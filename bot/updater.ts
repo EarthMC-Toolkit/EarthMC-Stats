@@ -294,7 +294,7 @@ async function updateLastSeen() {
     const opNames = new Set(ops.map(op => op.name))
     for (const p of lastSeenPlayers.values()) {
         const newOnline = opNames.has(p.name)
-        if (!p.online && newOnline) p.timesVanished++
+        if (p.online && !newOnline) p.timesVanished++
 
         p.online = newOnline
     }
