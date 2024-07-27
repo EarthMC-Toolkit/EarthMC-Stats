@@ -282,22 +282,23 @@ async function updateLastSeen() {
 
     const now = Date.now()
 
-    ops.forEach((op: SeenPlayer) => {
+    for (const op of ops) {
         const seen = lastSeenPlayers.get(op.name)
 
-        if (!op.transitions) op.transitions = 0
-        if (!seen?.online) op.transitions++
+        if (!op['transitions']) op['transitions'] = 0
+        if (!seen?.online) op['transitions']++
 
-        op.timestamp = now
+        op['timestamp'] = now
 
-        lastSeenPlayers.set(op.name, op) 
-    })
+        lastSeenPlayers.set(op.name, op as SeenPlayer) 
+    }
 
-    lastSeenPlayers.forEach(v => {
-        v.online = ops.some(op => op.name == v.name)
-    })
+    const opNames = new Set(ops.map(op => op.name))
+    for (const p of lastSeenPlayers.values()) {
+        p.online = opNames.has(p.name)
+    }
 
-    console.log(`[AURORA] Updated last seen. Length: ${lastSeenPlayers.size}`)
+    //console.log(`[AURORA] Updated last seen. Length: ${lastSeenPlayers.size}`)
 }
 //#endregion
 
