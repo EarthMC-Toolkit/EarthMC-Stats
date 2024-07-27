@@ -288,7 +288,7 @@ async function updateLastSeen() {
         if (!op['timesVanished']) op['timesVanished'] = 0
         if (seen && !seen.online) op['timesVanished']++
 
-        op['timesVanished'] = now
+        op['timestamp'] = now
 
         lastSeenPlayers.set(op.name, op as SeenPlayer) 
     }
