@@ -7,6 +7,7 @@ import {
 import { Aurora } from 'earthmc'
 import { fastMerge, fetchError, paginatorInteraction } from '../../bot/utils/fn.js'
 import { lastSeenPlayers } from "../../bot/constants.js"
+import { getResidents } from "../../bot/utils/aurora.js"
 
 const embed = (len: number, desc: string, footer?: { text: string, iconURL?: string }) => {
     const builder = new EmbedBuilder()
@@ -22,7 +23,7 @@ const embed = (len: number, desc: string, footer?: { text: string, iconURL?: str
 const townlessLastSeen = async () => {
     //#region Cache these
     // TODO
-    const residents = await Aurora.Residents.all()
+    const residents = await getResidents()
     if (!residents) {
         console.warn(`[AURORA] Error getting townless, could not get residents!`)
         return null
@@ -79,8 +80,11 @@ export default {
         }
 
         // Separate online and offline items
+        const now = Date.now()
+
         const online = townless.filter(p => p.online)
-        const offline = townless.filter(p => !p.online).sort((a, b) => b.timestamp - a.timestamp)
+        const offline = townless.filter(p => !p.online && ((now - p.timestamp) / 60000) <= 60)
+            .sort((a, b) => b.timestamp - a.timestamp)
 
         // Concatenate online items (in original order) and sorted offline items
         townless = fastMerge(online, offline)
@@ -88,13 +92,12 @@ export default {
         const allData = townless.map(p => {
             if (p.online) return `${p.name}`
 
-            const minSinceSeen = ((Date.now() - p.timestamp) / 60000)
-            if (minSinceSeen >= 1) {
-                return `${p.name} (${minSinceSeen.toFixed(0)}m ago)`
-            }
+            const diff = now - p.timestamp
+            const minSinceSeen = diff / 60000
 
-            const secSinceSeen = ((Date.now() - p.timestamp) / 1000)
-            return `${p.name} (${secSinceSeen.toFixed(0)}s ago)`
+            return minSinceSeen >= 1 ? 
+                `${p.name} (Seen ${minSinceSeen.toFixed(0)}m ago)` : 
+                `${p.name} (Seen ${(diff / 1000).toFixed(0)}s ago)`
         }).join('\n').match(/(?:^.*$\n?){1,15}/mg)
 
         // console.log("---- Online Townless ----", onlineTownlessData)

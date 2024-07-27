@@ -231,6 +231,7 @@ export interface V3Player extends Entity {
 }
 
 export interface SeenPlayer extends SquaremapOnlinePlayer {
+    transitions: number
     online: boolean
     timestamp: number
 }

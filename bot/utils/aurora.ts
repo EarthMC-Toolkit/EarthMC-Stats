@@ -6,14 +6,18 @@ import type {
     SquaremapPlayersResponse
 } from "earthmc"
 
-import { db } from "../constants.js"
-import type { DBAlliance, DBResident, DBSquaremapNation, DBSquaremapTown } from '../types.js'
+import type { 
+    DBAlliance, DBResident, 
+    DBSquaremapNation, DBSquaremapTown
+} from '../types.js'
 
 import { 
     divideArray, 
     fastMerge,
     sortByOrder 
 } from "./fn.js"
+
+import { db } from "../constants.js"
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -38,10 +42,12 @@ const getOnlinePlayerData = async () => {
     return await res.body.json() as SquaremapPlayersResponse
 }
 
-async function getResidents() {
-    return cache.get('aurora_residents') ?? residentDataCollection().get().then(async snapshot => { 
-        return snapshot.docs.flatMap(doc => doc.data().residentArray)
-    }).catch(() => {})
+async function getResidents(): Promise<DBResident[]> {
+    const cachedResidents = cache.get('aurora_residents')
+    if (cachedResidents) return cachedResidents
+
+    const snapshot = await residentDataCollection().get()
+    return snapshot.docs.flatMap(doc => doc.data().residentArray)
 }
 
 async function setResidents(residents: DBResident[]) {
