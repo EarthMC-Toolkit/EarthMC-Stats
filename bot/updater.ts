@@ -285,10 +285,10 @@ async function updateLastSeen() {
     for (const op of ops) {
         const seen = lastSeenPlayers.get(op.name)
 
-        if (!op['transitions']) op['transitions'] = 0
-        if (!seen?.online) op['transitions']++
+        if (!op['timesVanished']) op['timesVanished'] = 0
+        if (seen && !seen.online) op['timesVanished']++
 
-        op['timestamp'] = now
+        op['timesVanished'] = now
 
         lastSeenPlayers.set(op.name, op as SeenPlayer) 
     }

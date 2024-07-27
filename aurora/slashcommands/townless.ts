@@ -100,7 +100,7 @@ export default {
                 `${p.name} (Seen ${(diff / 1000).toFixed(0)}s ago)`
         }).join('\n').match(/(?:^.*$\n?){1,15}/mg)
 
-        console.log(townless.map(p => `${p.name} - ${p.transitions} transitions.`))
+        console.log(townless.map(p => `${p.name} - vanished ${p.timesVanished} times. Currently: ${p.online ? "Online" : "Offline"}`))
 
         return send(interaction, allData, townless)
     }, data: new SlashCommandBuilder()
