@@ -1193,7 +1193,7 @@ async function sendSingleAlliance(
     const leaders = [...leaderSet]
     const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
 
-    const allianceEmbed = new CustomEmbed(client, `(Aurora) Alliance Info | ${getName(foundAlliance)}${rank}`)
+    const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getName(foundAlliance)}${rank}`)
         .addFields(
             embedField("Leader(s)", leadersStr, false),
             embedField("Type", backtick(allianceType), true),

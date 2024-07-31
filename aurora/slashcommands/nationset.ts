@@ -21,11 +21,10 @@ export default {
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const mapDB = interaction.options.getString("map").toLowerCase() == "nova" ? database.Nova : database.Aurora
-        const nations = (await mapDB.getNations()).map(n => {
+        const nations = await database.Aurora.getNations().then(arr => arr.map(n => {
             n.name = emc.formatString(n.name, true)
             return n
-        })
+        }))
 
         const nationName = interaction.options.getString("name").toLowerCase()
 
@@ -54,7 +53,7 @@ export default {
 
         const save = (n: any) => {
             nations[nationIndex] = n
-            mapDB.setNations(nations)
+            database.Aurora.setNations(nations)
         }
 
         switch (interaction.options.getString("type").toLowerCase()) {
@@ -128,10 +127,6 @@ export default {
         }
     }, data: new SlashCommandBuilder().setName("nationset")
         .setDescription(desc)
-        .addStringOption(option => option.setName("map")
-            .setDescription("Name of the map this nation is in, defaults to Aurora.")
-            .setRequired(true)
-        )
         .addStringOption(option => option.setName("name")
             .setDescription("The name of your nation.")
             .setRequired(true)

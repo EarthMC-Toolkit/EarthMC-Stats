@@ -5,13 +5,13 @@ import type { Client } from 'discord.js'
 
 class BaseHelper {
     client: Client = null
-    isNova = false
+    //isNova = false
 
     embed = new EmbedBuilder()
 
-    constructor(client: Client, isNova: boolean) {
+    constructor(client: Client) {
         this.embed.setFooter(fn.devsFooter(client)).setTimestamp()
-        this.isNova = isNova
+        //this.isNova = isNova
     }
 
     addField(name: string, value: string, inline = false) {

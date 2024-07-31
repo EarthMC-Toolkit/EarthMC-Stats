@@ -111,8 +111,7 @@ export default {
                         .setColor(Colors.DarkPurple)
                         .setTimestamp()
 
-                    await interaction.channel.send({ embeds: [embed.setTitle("Live Townless Players (Nova)")] })
-                    await interaction.channel.send({ embeds: [embed.setTitle("Live Townless Players (Aurora)")] })
+                    await interaction.channel.send({ embeds: [embed.setTitle("Live Townless Players")] })
                   
                     await townlessSubbedChannels.update({ channelIDs: FieldValue.arrayUnion(channelID) })
                     townlessSubbedChannelArray.push(channelID)

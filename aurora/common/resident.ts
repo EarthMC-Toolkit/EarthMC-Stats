@@ -6,7 +6,7 @@ import * as database from '../../bot/utils/database.js'
 
 import {
     OfficialAPI, 
-    Nova, Aurora,
+    Aurora,
     type Resident
 } from 'earthmc'
 
@@ -40,14 +40,14 @@ class ResidentHelper extends BaseHelper {
     mcProfile: MCSessionProfile = null
     status: "Online" | "Offline"
 
-    constructor(client: Client, isNova = false) {
-        super(client, isNova)
+    constructor(client: Client) {
+        super(client)
         this.embed.setColor('#A405BA')
     }
 
-    async fetchResidents(): Promise<Resident[]> {
-        const arr = await (this.isNova ? database.Nova : database.Aurora).getResidents()
-        return arr ? arr : await (this.isNova ? Nova : Aurora).Residents.all()
+    async fetchResidents() {
+        const arr = await database.Aurora.getResidents()
+        return arr ? arr : await Aurora.Residents.all()
     }
 
     async init(input: string) {
@@ -59,36 +59,34 @@ class ResidentHelper extends BaseHelper {
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)
 
         const resName = this.dbResident?.name || arg1
-        const ops = await (this.isNova ? Nova : Aurora).Players.online()
+        const ops = await Aurora.Players.online()
 
         const searchName = !this.dbResident ? arg1 : resName
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
-        if (!this.isNova) {
-            let res: V3Player
-            try {
-                const arr = await request(`https://api.earthmc.net/v3/aurora/players?query=${arg1}`).then(res => res.body.json()) as V3Player[]
-                res = arr[0]
-            } catch (e) {
-                console.log(e)
-                return false
-            }
-
-            if (res.town?.uuid) {
-                const resTown = await OfficialAPI.V2.town(res.town.name.toLowerCase())
-
-                let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
-                if (rank == "Mayor" && resTown.status.isCapital) 
-                    rank = "Nation Leader" 
-
-                res['rank'] = rank
-            }
-
-            this.#apiResident = res
+        let res: V3Player
+        try {
+            const arr = await request(`https://api.earthmc.net/v3/aurora/players?query=${arg1}`).then(res => res.body.json()) as V3Player[]
+            res = arr[0]
+        } catch (e) {
+            console.log(e)
+            return false
         }
 
+        if (res.town?.uuid) {
+            const resTown = await OfficialAPI.V2.town(res.town.name.toLowerCase())
+
+            let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
+            if (rank == "Mayor" && resTown.status.isCapital) 
+                rank = "Nation Leader" 
+
+            res['rank'] = rank
+        }
+
+        this.#apiResident = res
+
         this.status = this.onlinePlayer ? "Online" : "Offline"
-        this.pInfo = await database.getPlayerInfo(resName, this.isNova).catch(e => console.log(`Database error!\n${e}`))
+        this.pInfo = await database.getPlayerInfo(resName).catch(e => console.log(`Database error!\n${e}`))
 
         this.tryAddAvatar()
 
@@ -111,7 +109,7 @@ class ResidentHelper extends BaseHelper {
             nation: (res.nation?.name ?? res.nation) ?? res.townNation
         }
 
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Resident Info | \`${res.name}\``)
+        this.embed.setTitle(`Resident Info | \`${res.name}\``)
 
         if (res.about) {
             this.embed.setDescription(`*${res.about}*`)
@@ -128,7 +126,7 @@ class ResidentHelper extends BaseHelper {
         // TODO: mcProfile could be null, handle this case.
         //const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
 
-        this.embed.setTitle(`(${this.isNova ? 'Nova' : 'Aurora'}) Player Info | \`${this.mcProfile.name}\``)
+        this.embed.setTitle(`Player Info | \`${this.mcProfile.name}\``)
         this.addField("Affiliation", "No Town", true)
 
         this.addCommonFields()

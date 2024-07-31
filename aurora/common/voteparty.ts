@@ -14,11 +14,9 @@ export class VPHelper extends BaseHelper {
         return this.#current
     }
 
-    constructor(client: Client, isNova = false) {
-        super(client, isNova)
-
-        // Pastel pink
-        this.embed.setColor("#fcb8f7")
+    constructor(client: Client) {
+        super(client)
+        this.embed.setColor("#fcb8f7") // Pastel pink
     }
 
     async init() {

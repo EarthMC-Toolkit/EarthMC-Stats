@@ -43,7 +43,7 @@ export default {
         if (!zoom) {
             const mapUrl = Aurora.buildMapLink({ x: xCoord, z: zCoord })
             return interaction.reply({embeds: [
-                embed(client, `(Aurora) Location Info`, Colors.Green)
+                embed(client, `Location Info`, Colors.Green)
                 .addFields(
                     embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true),
                     embedField("Map Link", `[Click to open](${mapUrl.toString()})`)
@@ -53,7 +53,7 @@ export default {
 
         const mapUrl = Aurora.buildMapLink({ x: numX, z: numZ }, zoom)
         return interaction.reply({embeds: [
-            embed(client, `(Aurora) Location Info`, Colors.Green)
+            embed(client, `Location Info`, Colors.Green)
             .addFields(
                 embedField("Coordinates (X, Z)", `X: \`${numX}\`\nZ: \`${numZ}\``, true),
                 embedField("Zoom", `\`${zoom}\`x`, true),
