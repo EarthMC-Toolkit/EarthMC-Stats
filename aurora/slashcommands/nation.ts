@@ -261,12 +261,12 @@ export default {
                 const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
                 const mapUrl = Aurora.buildMapLink({ x: capitalX, z: capitalZ }, 5)
 
-                const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
+                //const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
                 
                 const area = Math.round(nation.area)
                 const worth = Math.round(nation.area * 16)
 
-                nationEmbed.setTitle(`Nation Info | ${nationName} | #${nationRank}`)
+                nationEmbed.setTitle(`Nation Info | ${backtick(nationLabel)} | #${nationRank}`)
                     .setThumbnail(nation.flag || 'attachment://aurora.png')
                     .setFooter(devsFooter(client))
                     .addFields(
