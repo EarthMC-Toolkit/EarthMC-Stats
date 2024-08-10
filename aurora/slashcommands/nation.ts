@@ -244,7 +244,7 @@ export default {
                     : nationResLength >= 0 ? "Leader " : ""
                 
                 // Includes prefix
-                const nationName = nationResLength >= 60 ? "The " + nation.name + " Realm"
+                const nationLabel = nationResLength >= 60 ? "The " + nation.name + " Realm"
                     : nationResLength >= 40 ? "The " + nation.name + " Empire"
                     : nationResLength >= 30 ? "Kingdom of " + nation.name
                     : nationResLength >= 20 ? "Dominion of " + nation.name
@@ -260,15 +260,20 @@ export default {
                 //#region Embed Stuff
                 const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
                 const mapUrl = Aurora.buildMapLink({ x: capitalX, z: capitalZ }, 5)
+
+                const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
                 
-                nationEmbed.setTitle("Nation Info | " + nationName + " | #" + nationRank)
+                const area = Math.round(nation.area)
+                const worth = Math.round(nation.area * 16)
+
+                nationEmbed.setTitle(`Nation Info | ${nationName} | #${nationRank}`)
                     .setThumbnail(nation.flag || 'attachment://aurora.png')
                     .setFooter(devsFooter(client))
                     .addFields(
                         embedField("King", backtick(nation.king, { prefix: kingPrefix }), true),
-                        embedField("Capital", `\`${nation.capital.name}\``, true),
+                        embedField("Capital", backtick(nation.capital.name), true), 
                         embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
-                        embedField("Size/Worth", `Chunks: \`${nation.area.toString()}\`\nGold: \`${(nation.area * 16)}\``, true),
+                        embedField("Size/Worth", `Chunks: \`${area.toString()}\`\nGold: \`${worth}\``, true),
                         embedField("Residents", `\`${nationResLength.toString()}\``, true),
                         embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                     )
