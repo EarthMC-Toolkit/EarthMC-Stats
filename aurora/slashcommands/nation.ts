@@ -281,11 +281,10 @@ export default {
                 if (nation.discord) 
                     nationEmbed.setURL(nation.discord)
     
-                const onlinePlayers = await Aurora.Players.online().catch(() => {})
-                if (onlinePlayers) {
+                const ops = await Aurora.Players.online().catch(() => {})
+                if (ops) {
                     // Filter nation residents by which are online
-                    const onlineNationResidents = removeDuplicates(
-                        nation.residents.filter(resident => onlinePlayers.find(op => resident == op.name)))
+                    const onlineNationResidents = removeDuplicates(nation.residents.filter(res => ops.find(op => res == op.name)))
                     
                     if (onlineNationResidents.length >= 1) nationEmbed.addFields(embedField(
                         "Online Residents [" + onlineNationResidents.length + "]", 
