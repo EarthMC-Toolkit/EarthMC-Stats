@@ -133,11 +133,10 @@ class ResidentHelper extends BaseHelper {
     }
 
     addCommonFields() {
-        if (!this.apiResident) this.addDatesFromDB()
-        else {
+        if (this.apiResident) {
             this.addBalance(this.apiResident?.stats?.balance)
             this.addDatesFromAPI()
-        }
+        } else this.addDatesFromDB()
 
         this.addLinkedAcc()
     }

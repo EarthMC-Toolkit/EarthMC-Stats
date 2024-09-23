@@ -12,21 +12,21 @@ import AllianceModal from '../../bot/objects/AllianceModal.js'
 import type { SlashCommand } from "../../bot/types.js"
 
 const editingChannels = ["971408026516979813"]
+const editorRole = "966359842417705020"
 
 const checkEditor = async (interaction: ChatInputCommandInteraction) => {
     const author = interaction.member as GuildMember
-        
-    const isEditor = editingChannels.includes(interaction.channelId) && 
-          author.roles.cache.has('966359842417705020')
+    const isEditor = editingChannels.includes(interaction.channelId) && author.roles.cache.has(editorRole)
 
-    if (!botDevs.includes(author.id) && !isEditor) {
-        return interaction.reply({embeds: [new EmbedBuilder()
-            .setTitle("That command is for editors only!\nIf you are an editor, you're probably in the wrong channel.")
-            .setAuthor({ name: author.user.username, iconURL: author.displayAvatarURL() })
-            .setColor(Colors.Red)
-            .setTimestamp()
-        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-    }
+    if (!botDevs.includes(author.id) && !isEditor) interaction.reply({embeds: [new EmbedBuilder()
+        .setTitle("That command is for editors only!\nIf you are an editor, you're probably in the wrong channel.")
+        .setColor(Colors.Red)
+        .setTimestamp()
+        .setAuthor({
+            name: author.user.username,
+            iconURL: author.displayAvatarURL()
+        })
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 }
 
 const getAlliance = async (options: CommandInteractionOptionResolver, skipCache = true) => {

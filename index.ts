@@ -45,7 +45,6 @@ const client: ExtendedClient = new Client({
 client.login(process.env.DISCORD_BOT_TOKEN).then(token => {
     client.slashCommands = new Collection()
     client.auroraCommands = new Collection()
-    //client['novaCommands'] = new Collection()
 
     console.log(`Logged into Discord.\nToken: ${token}`)
 }).catch(console.error)
@@ -94,5 +93,25 @@ client.on('error', (err: ErrorWithCode) => {
 process.on('unhandledRejection', (err: ErrorWithCode) => console.error('Unhandled promise rejection: ', err))
 process.on('uncaughtException', (err: ErrorWithCode) => {
     if (err.code != 50013) console.error('Uncaught Exception!\n', err)
+})
+//#endregion
+
+//#region ANTI-RETARD PING SPAM
+const replies = [
+    "no.", "be fucking patient moron", "I DO NOT CARE", "Do it again, I dare you.", 
+    "^ this guy likes boys", "you have severe brain damage.", "shutup and smd", 
+    "You have been automatically reported to Discord.", "Please hold. Currently doing your mother."
+]
+
+client.on('messageCreate', async ({ member, guild, content, mentions, reply }) => {
+    if (guild.id != "966271635894190090") return // Ensure toolkit discord
+    if (member.roles.cache.has("966359842417705020")) return // Ensure not editor
+
+    // Check regular content, if somehow mention was bypassed.
+    const isPing = content.includes("@Owen3H") || content.includes("<@263377802647175170>")
+    if (isPing || mentions.has("263377802647175170")) {
+        await reply(replies[Math.floor(Math.random() * replies.length)])
+        member.timeout(10 * 60 * 1000)
+    }
 })
 //#endregion
