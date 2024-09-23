@@ -103,15 +103,12 @@ const replies = [
     "You have been automatically reported to Discord.", "Please hold. Currently doing your mother."
 ]
 
-client.on('messageCreate', async ({ member, guild, content, mentions, reply }) => {
+client.on('messageCreate', async ({ member, guild, mentions, reply }) => {
     if (guild.id != "966271635894190090") return // Ensure toolkit discord
     if (member.roles.cache.has("966359842417705020")) return // Ensure not editor
+    if (!mentions.has("263377802647175170")) return // Ensure mention is me
 
-    // Check regular content, if somehow mention was bypassed.
-    const isPing = content.includes("@Owen3H") || content.includes("<@263377802647175170>")
-    if (isPing || mentions.has("263377802647175170")) {
-        await reply(replies[Math.floor(Math.random() * replies.length)])
-        member.timeout(10 * 60 * 1000)
-    }
+    await reply(replies[Math.floor(Math.random() * replies.length)])
+    member.timeout(10 * 60 * 1000)
 })
 //#endregion
