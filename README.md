@@ -12,8 +12,8 @@ This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/
 </div>
 
 ## Notes
-- Duplicated code is slowly being phased out in favour of helper classes found in the `common` folder.
-- To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - please don't mess with this.
+- Duplicate code is slowly being phased out in favour of helper classes found in the `common` folder.
+- To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - no PR's should edit this.
 - This repo is meant for viewing and attribution, hosting it yourself will **NOT** work.
 
 ## Features
