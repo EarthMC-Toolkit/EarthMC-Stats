@@ -7,7 +7,9 @@ import type {
     EmojiIdentifierResolvable,
     User,
     APIEmbedField,
-    Awaitable
+    Awaitable,
+    APIActionRowComponent,
+    APIMessageActionRowComponent
 } from "discord.js"
 
 import {
@@ -187,14 +189,14 @@ export const paginatorInteraction = async(
     paginator(interaction.user.id, msg, embeds, currentPage)
 }
 
-function buildButtons(currentPage: number, lastPage: number) {
+const buildButtons = (currentPage: number, lastPage: number) => {
     const noFurther = currentPage >= lastPage
     const noLess = currentPage <= 0
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
         emojiButton("first", "⏪", noLess), emojiButton("back", "◀", noLess), 
         emojiButton("forward", "▶", noFurther), emojiButton("last", "⏩", noFurther)
-    )
+    ).toJSON() as APIActionRowComponent<APIMessageActionRowComponent>
 }
 
 const emojiButton = (

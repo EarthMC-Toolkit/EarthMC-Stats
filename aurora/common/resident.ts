@@ -65,22 +65,26 @@ class ResidentHelper extends BaseHelper {
         const searchName = !this.dbResident ? arg1 : resName
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
-        const res = await OfficialAPI.V3.players().then(arr => arr[0]).catch(e => {
+        let resident: V3Player
+        try {
+            const players = await OfficialAPI.V3.players()
+            resident = players[0] as V3Player
+        } catch(e: any) {
             console.error(e)
             return false
-        })
+        }
 
-        if (res.town?.uuid) {
-            const resTown = await OfficialAPI.V2.town(res.town.name.toLowerCase())
+        if (resident.town?.uuid) {
+            const resTown = await OfficialAPI.V2.town(resident.town.name.toLowerCase())
 
-            let rank = resTown.mayor == res.name ? "Mayor" : "Resident"
+            let rank = resTown.mayor == resident.name ? "Mayor" : "Resident"
             if (rank == "Mayor" && resTown.status.isCapital) 
                 rank = "Nation Leader" 
 
-            res['rank'] = rank
+            resident['rank'] = rank
         }
 
-        this.#apiResident = res
+        this.#apiResident = resident
 
         this.status = this.onlinePlayer ? "Online" : "Offline"
         this.pInfo = await database.getPlayerInfo(resName).catch(e => console.log(`Database error!\n${e}`))
