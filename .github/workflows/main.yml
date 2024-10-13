@@ -7,17 +7,21 @@ on:
     branches:
       - main
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
 
-      - run: bun i
-      - run: bun x eslint .
-    
+      - name: Setup Node
+        uses: actions/setup-node@v4
+
+      - name: Install & Lint
+        run: |
+          bun i
+          bun x eslint .
