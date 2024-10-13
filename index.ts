@@ -96,7 +96,7 @@ process.on('uncaughtException', (err: ErrorWithCode) => {
 })
 //#endregion
 
-//#region ANTI-RETARD PING SPAM
+//#region ANTI-PING SPAM
 const replies = [
     "no.", "be fucking patient moron", "I DO NOT CARE", "Do it again, I dare you.", 
     "^ this guy likes boys", "you have severe brain damage.", "shutup and smd", 
