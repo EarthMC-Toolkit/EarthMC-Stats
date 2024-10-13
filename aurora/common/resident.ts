@@ -28,6 +28,8 @@ const buildSkinURL = (opts: SkinOpts) => {
     return `${domain}${opts.view}/${opts.subject}.png${params}`
 }
 
+const defaultAbout = "/res set about [msg]"
+
 class ResidentHelper extends BaseHelper {
     dbResident: DBResident | Resident = null
     
@@ -65,6 +67,7 @@ class ResidentHelper extends BaseHelper {
 
         let res: V3Player
         try {
+            // This is currently necessary bc the return type from EMC-NPM is not accurate.
             const arr = await OfficialAPI.V3.players(arg1) as unknown as V3Player[]
             res = arr[0]
         } catch (e) {
@@ -110,7 +113,7 @@ class ResidentHelper extends BaseHelper {
 
         this.embed.setTitle(`Resident Info | \`${res.name}\``)
 
-        if (res.about) {
+        if (res.about && res.about != defaultAbout) {
             this.embed.setDescription(`*${res.about}*`)
         }
 
