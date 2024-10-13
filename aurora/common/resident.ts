@@ -20,7 +20,6 @@ import {
 
 import { secToMs } from "../../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
-import { request } from "undici"
 
 const buildSkinURL = (opts: SkinOpts) => {
     const domain = "https://visage.surgeplay.com/"
@@ -66,7 +65,7 @@ class ResidentHelper extends BaseHelper {
 
         let res: V3Player
         try {
-            const arr = await request(`https://api.earthmc.net/v3/aurora/players?query=${arg1}`).then(res => res.body.json()) as V3Player[]
+            const arr = await OfficialAPI.V3.players(arg1) as unknown as V3Player[]
             res = arr[0]
         } catch (e) {
             console.log(e)
