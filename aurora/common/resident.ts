@@ -65,15 +65,10 @@ class ResidentHelper extends BaseHelper {
         const searchName = !this.dbResident ? arg1 : resName
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
-        let res: V3Player
-        try {
-            // This is currently necessary bc the return type from EMC-NPM is not accurate.
-            const arr = await OfficialAPI.V3.players(arg1) as unknown as V3Player[]
-            res = arr[0]
-        } catch (e) {
-            console.log(e)
+        const res = await OfficialAPI.V3.players().then(arr => arr[0]).catch(e => {
+            console.error(e)
             return false
-        }
+        })
 
         if (res.town?.uuid) {
             const resTown = await OfficialAPI.V2.town(res.town.name.toLowerCase())
