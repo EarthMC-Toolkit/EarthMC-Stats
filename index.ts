@@ -87,7 +87,11 @@ for (const file of eventFiles) {
 
 //#region Error Handling
 client.on('error', (err: ErrorWithCode) => {
-    if (err.code != 50013) console.log(err)
+    const missingAccess = 50001
+    const missingPerms = 50013
+
+    if (missingPerms || missingAccess) return
+    console.error(err)
 })
 
 process.on('unhandledRejection', (err: ErrorWithCode) => console.error('Unhandled promise rejection: ', err))

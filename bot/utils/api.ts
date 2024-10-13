@@ -27,13 +27,16 @@ const replaceWithUnix = (arr: DBPlayer[], map: 'nova' | 'aurora') => arr.filter(
 
 const sendNews = async (client: Client, map: 'aurora' | 'nova') => {
     const channel = await client.channels.fetch(map == 'nova' ? NOVA.newsChannel : AURORA.newsChannel) as TextChannel
-    const msgArr = await channel.messages.fetch().then(msgs => msgs.filter(m => 
-        m.content != "[Original Message Deleted]" && 
-        !m.content.startsWith("/")
-    )).catch(e => { console.error(e); return null })
 
-    if (!msgArr) return
-    return sendNewsReq(msgArr, map)
+    try {
+        const msgs = await channel.messages.fetch()
+        return sendNewsReq(msgs.filter(m => 
+            m.content != "[Original Message Deleted]" && 
+            !m.content.startsWith("/")
+        ), map)
+    } catch(_) {
+        return
+    }
 }
 
 async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora' | 'nova') {
