@@ -132,7 +132,7 @@ export default {
         }
         else if (subCmdName == "activity") {  
             const nameArg = interaction.options.getString("name", true)
-            
+
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
             if (!town) return interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid town name!")
@@ -258,7 +258,7 @@ export default {
                 )
             } else {
                 const claimBonus = Math.min(multiplier, maxTownSize)
-                townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}`, true))
+                townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}\``, true))
             }
 
             if (town.wealth) {
