@@ -52,7 +52,6 @@ export default {
             .then(m => setTimeout(() => m.delete(), 10000))
 
         const townEmbed = new EmbedBuilder()
-        const nameArg = interaction.options.getString("name", true)
 
         const subCmdName = interaction.options.getSubcommand().toLowerCase()
         if (subCmdName == "list") {
@@ -132,6 +131,8 @@ export default {
             }
         }
         else if (subCmdName == "activity") {  
+            const nameArg = interaction.options.getString("name", true)
+            
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
             if (!town) return interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid town name!")
@@ -177,6 +178,8 @@ export default {
                 .editInteraction(interaction)
         }
         else if (subCmdName == "lookup") { // /t <town>
+            const nameArg = interaction.options.getString("name", true)
+
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
             if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid Town!")

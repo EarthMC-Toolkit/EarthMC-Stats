@@ -141,6 +141,7 @@ export const paginator = async(
     msg: Message, 
     embeds: EmbedBuilder[], 
     currentPage: number,
+    // TODO: Implement this
     _forwardCallback?: (
         interaction: ButtonInteraction, 
         msg: Message, embeds: EmbedBuilder[]

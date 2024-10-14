@@ -67,7 +67,7 @@ class ResidentHelper extends BaseHelper {
 
         let resident: V3Player
         try {
-            const players = await OfficialAPI.V3.players()
+            const players = await OfficialAPI.V3.players(arg1)
             resident = players[0] as V3Player
         } catch(e: any) {
             console.error(e)
