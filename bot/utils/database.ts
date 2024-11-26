@@ -48,7 +48,7 @@ async function setPlayers(players: DBPlayer[]) {
     cache.set('players', players, { ttl: 298 * 1000 })
 
     let counter = 0
-    const dividedPlayerArray = divideArray(players, 5)
+    const dividedPlayerArray = divideArray(players, 6)
 
     const batch = db.batch()
     

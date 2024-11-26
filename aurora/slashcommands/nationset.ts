@@ -40,7 +40,7 @@ export default {
         const userID = interaction.user.id
         const linkedPlayer = await getLinkedPlayer(userID)
 
-        const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer.name.toLowerCase()
+        const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer?.name.toLowerCase()
         if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
             new EmbedBuilder()
             .setDescription("You must be linked and be the owner of this nation in order to edit it.")
@@ -85,25 +85,31 @@ export default {
 
                     nation.discord = value
                 }
-
-                const embed = new EmbedBuilder()
+                
+                await interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle("Nation Updated | " + nation.name)
                     .setDescription(`The nation's discord invite has been ${cleared ? "cleared" : "set to `" + value + "`"}.`) 
                     .setColor(Colors.Aqua)
                     .setTimestamp()
+                ]})
 
-                await interaction.editReply({ embeds: [embed] })
                 return save(nation)
             }
             case "flag": {
                 if (cleared) nation.flag = ""
                 else {
-                    const imageRegex = new RegExp("(https?://.*.(?:png|jpg|jpeg))")
+                    const imageRegex = new RegExp("(https?://(?:[^/.]+)(?:\.[^/.]+)+/[^/]*\.(?:png|jpg|jpeg))")
                     if (!imageRegex.test(value)) return interaction.editReply({embeds: [
                         new EmbedBuilder()
-                            .setDescription(`${value} is not a valid image link, please try again.`)
-                            .setColor(Colors.Red)
-                            .setTimestamp()
+                        .setDescription(`
+                            ${value} is not a valid image link, please try again following these rules:\n\n
+                            - Must begin with \`https://\`.
+                            - Must be a \`PNG\`, \`JPG\` or \`JPEG\`.
+                            - Must be the source image itself and **NOT** the host domain (use 'Open image in new tab').
+                            - The image must live on a valid domain without a region lock, paywall, authorization etc.
+                        `)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
                     ]})
                     
                     nation.flag = value

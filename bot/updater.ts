@@ -1,9 +1,7 @@
 //#region Imports
-//import Queue from "./objects/Queue.js"
-
 import * as api from "../bot/utils/api.js"
 import * as database from "../bot/utils/database.js"
-import * as fn from "../bot/utils/fn.js"
+//import * as fn from "../bot/utils/fn.js"
 
 import { 
     formatString,
@@ -49,7 +47,6 @@ export async function initUpdates(prod = false) {
         await sendEmptyAllianceNotif(AURORA)
 
         await api.sendAuroraAlliances()
-        await api.sendNovaAlliances()
 
         await updateNews()
     }
@@ -281,15 +278,15 @@ async function updateLastSeen() {
     if (!ops) return console.warn(`[AURORA] Error updating last seen, bad response getting online players!`)
 
     const now = Date.now()
-
-    for (const op of ops) {
+    
+    ops.forEach(op => {
         const seen = lastSeenPlayers.get(op.name)
 
         op['timesVanished'] = seen ? seen.timesVanished : 0
         op['timestamp'] = now
 
         lastSeenPlayers.set(op.name, op as SeenPlayer) 
-    }
+    })
 
     const opNames = new Set(ops.map(op => op.name))
     for (const p of lastSeenPlayers.values()) {
@@ -586,53 +583,51 @@ async function updateLastSeen() {
 //#endregion
 
 //#region Helper Methods
-const purged = (timestamp: { seconds: number }, now: Date) => {
-    const loDate = new Date(timestamp.seconds * 1000)
-    const days = fn.daysBetween(loDate, now)
+// const purged = (timestamp: { seconds: number }, now: Date) => {
+//     const loDate = new Date(timestamp.seconds * 1000)
+//     const days = fn.daysBetween(loDate, now)
 
-    return days > 35
-}
+//     return days > 35
+// }
 
 const latinize = (str: string) => formatString(str, true)
 
-async function _purgeInactive(players: DBPlayer[]) {
-    const now = new Date()
-    const len = players.length
+// async function purgeInactive(players: DBPlayer[]) {
+//     const now = new Date()
+//     const len = players.length
 
-    let i = 0, purgedAmt = 0
+//     let i = 0, purgedAmt = 0
 
-    //#region Purge loop
-    for (i; i < len; i++) {
-        const player = players[i]
-        const lo = player?.lastOnline
+//     //#region Purge loop
+//     for (i; i < len; i++) {
+//         const player = players[i]
+//         const lo = player?.lastOnline
 
-        if (!lo) {
-            players.splice(i, 1)
-            purgedAmt++
+//         if (!lo) {
+//             players.splice(i, 1)
+//             purgedAmt++
 
-            continue
-        }
+//             continue
+//         }
 
-        // Player's discord is null or empty, delete it.
-        // If not, don't purge them.
-        if (!player?.linkedID) delete player.linkedID
-        else continue
+//         // Player's discord is null or empty, delete it.
+//         if (!player.linkedID) delete player.linkedID
+//         else continue
 
-        //#region Purge if inactive on both maps.
-        if (lo.aurora && !purged(lo.aurora, now)) continue
-        if (lo.nova && !purged(lo.nova, now)) continue
+//         //#region Purge if inactive on active maps.
+//         if (lo.aurora && !purged(lo.aurora, now)) continue
 
-        players.splice(i, 1)
-        purgedAmt++
-        //#endregion
-    }
-    //#endregion
+//         players.splice(i, 1)
+//         purgedAmt++
+//         //#endregion
+//     }
+//     //#endregion
 
-    if (purgedAmt > 0) {
-        console.log(`Purged ${purgedAmt} inactive/corrupted players.`)
-        await database.setPlayers(players)
-    }
+//     if (purgedAmt > 0) {
+//         console.log(`Purged ${purgedAmt} inactive/corrupted players.`)
+//         await database.setPlayers(players)
+//     }
 
-    return players
-}
+//     return players
+// }
 //#endregion
