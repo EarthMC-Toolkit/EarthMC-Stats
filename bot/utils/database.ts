@@ -50,16 +50,17 @@ async function setPlayers(players: DBPlayer[]) {
     let counter = 0
     const dividedPlayerArray = divideArray(players, 6)
 
-    const batch = db.batch()
+    //const batch = db.batch()
     
     for (const array of dividedPlayerArray) {      
         counter++
 
         const playerRef = db.collection("players").doc(`playerArray${counter}`)
-        batch.set(playerRef, { playerArray: array })
+        playerRef.set({ playerArray: array })
+        //batch.set(playerRef, { playerArray: array })
     }
 
-    await batch.commit()
+    //await batch.commit()
 }
 
 export {
