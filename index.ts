@@ -5,7 +5,8 @@ dotenv.config()
 import { 
     Client, 
     IntentsBitField,
-    Collection
+    Collection,
+    MessageType
 } from "discord.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
@@ -104,15 +105,19 @@ process.on('uncaughtException', (err: ErrorWithCode) => {
 const replies = [
     "no.", "be fucking patient moron", "I DO NOT CARE", "Do it again, I dare you.", 
     "^ this guy likes boys", "you have severe brain damage.", "shutup and smd", 
-    "You have been automatically reported to Discord.", "Please hold. Currently doing your mother."
+    "You have been automatically reported to Discord.", "Please hold. Currently doing your mother.",
+    "imagine being this impatient", "suck. a. dick.", "☝ everyone laugh at this dipshit",
+    "want something? wait nicely like a good dog", "emc is not that important brother"
 ]
 
 client.on('messageCreate', async msg => {
     const { guild, member, mentions } = msg
 
+    if (msg.type == MessageType.Reply) return // Ensure ping and not just replying.
+
     if (guild.id != "966271635894190090") return // Ensure toolkit discord
-    if (member.roles.cache.has("966359842417705020")) return // Ensure not editor
     if (!mentions.has("263377802647175170")) return // Ensure mention is me
+    if (member.roles.cache.has("966359842417705020")) return // Ensure not editor
 
     await msg.reply(replies[Math.floor(Math.random() * replies.length)])
     member.timeout(10 * 60 * 1000)

@@ -11,8 +11,6 @@ import * as emc from "earthmc"
 import * as fn from '../../bot/utils/fn.js'
 import * as database from "../../bot/utils/database.js"
 
-import { getLinkedPlayer } from "../../bot/utils/linking.js"
-
 const desc = "Used by the nation leader to set custom nation options. (Discord, Flag, Prefix)"
 
 export default {
@@ -38,12 +36,16 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const userID = interaction.user.id
-        const linkedPlayer = await getLinkedPlayer(userID)
+        const linkedPlayer = await emc.OfficialAPI.V3.uuidFromDiscord(userID).then(arr => arr[0])
 
         const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer?.name.toLowerCase()
         if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
             new EmbedBuilder()
-            .setDescription("You must be linked and be the owner of this nation in order to edit it.")
+            .setDescription(`
+                In order to edit it this nation's info, you must:\n
+                - Be the owner of this nation (NOT a representative).\n
+                - Have your Discord linked to your in-game name.
+            `)
             .setColor(Colors.Red)
             .setTimestamp()
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
@@ -51,7 +53,7 @@ export default {
         const value = interaction.options.getString("value")
         const cleared = value.toLowerCase() == "none" || value.toLowerCase() == "clear"
 
-        const save = (n: any) => {
+        const save = (n: database.DBSquaremapNation) => {
             nations[nationIndex] = n
             database.Aurora.setNations(nations)
         }
@@ -102,10 +104,10 @@ export default {
                     if (!imageRegex.test(value)) return interaction.editReply({embeds: [
                         new EmbedBuilder()
                         .setDescription(`
-                            ${value} is not a valid image link, please try again following these rules:\n\n
-                            - Must begin with \`https://\`.
-                            - Must be a \`PNG\`, \`JPG\` or \`JPEG\`.
-                            - Must be the source image itself and **NOT** the host domain (use 'Open image in new tab').
+                            ${value} is not a valid image link, please try again following these rules:\n
+                            - Must begin with \`https://\`.\n
+                            - Must be a \`PNG\`, \`JPG\` or \`JPEG\`.\n
+                            - Must be the source image itself and **NOT** the host domain (use 'Open image in new tab').\n
                             - The image must live on a valid domain without a region lock, paywall, authorization etc.
                         `)
                         .setColor(Colors.Red)

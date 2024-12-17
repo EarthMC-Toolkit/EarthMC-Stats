@@ -65,6 +65,14 @@ const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], a
     }
 }
 
+const SCORE_WEIGHTS = {
+    nations: 0.35,
+    towns: 0.3,
+    residents: 0.2,
+    area: 0.15
+    //wealth: 0.1
+}
+
 export default {
     name: "alliance",
     aliases: ["pacts", "submeganations", "meganations", "alliances", "a"],
@@ -101,69 +109,119 @@ export default {
             return sendAllianceList(message, m, args, 'all') // Includes all types.
         
         // /alliance <allianceName>
-        if (args.length == 1 && arg1Lower != "list" && arg1Lower != "wizard") {
+        if (args.length == 1 && arg1Lower != "list" && arg1Lower != "wizard" && arg1Lower != "score") {
             return sendSingleAlliance(client, message, m, args)
         }
         
         if (args.length > 1) {
             // There is an argument, but not a dev one.
             if (arg1Lower && !devArgs.includes(arg1Lower)) {
-                if (arg1Lower != "online") return
+                if (arg1Lower == "online") {
+                    // TODO: Do this in getAlliance() so we dont req ops twice. 
+                    const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
+                    if (!ops) return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle(`Error fetching online players`)
+                        .setDescription("")
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                // TODO: Do this in getAlliance() so we dont req ops twice. 
-                const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
-                if (!ops) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle(`Error fetching online players`)
-                    .setDescription("")
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                    const foundAlliance = await database.Aurora.getAlliance(args[1])
+                    if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle("Error fetching alliance")
+                        .setDescription("That alliance does not exist! Please try again.")
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                        .setAuthor({
+                            name: message.author.username, 
+                            iconURL: message.author.displayAvatarURL()
+                        })
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const foundAlliance = await database.Aurora.getAlliance(args[1])
-                if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle("Error fetching alliance")
-                    .setDescription("That alliance does not exist! Please try again.")
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setAuthor({
-                        name: message.author.username, 
-                        iconURL: message.author.displayAvatarURL()
-                    })
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                    const name = getName(foundAlliance)
+                    
+                    const allianceOps = ops.filter(op => foundAlliance.online.find(p => p == op.name)) ?? []
+                    if (allianceOps.length < 1) return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle(`Online in ${name} [0]`)
+                        .setDescription("No players are online in this alliance :(")
+                        .setColor(Colors.DarkBlue)
+                        .setTimestamp()
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const name = getName(foundAlliance)
+                    const embeds: EmbedBuilder[] = []
+                    const allData = allianceOps
+                        .map(res => res.name + " - " + res.town + " | " + res.rank)
+                        .join('\n').match(/(?:^.*$\n?){1,10}/mg)
                 
-                const allianceOps = ops.filter(op => foundAlliance.online.find(p => p == op.name)) ?? []
-                if (allianceOps.length < 1) return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle(`Online in ${name} [0]`)
-                    .setDescription("No players are online in this alliance :(")
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                    const len = allData.length
+                    for (let i = 0; i < len; i++) {
+                        embeds[i] = new EmbedBuilder()
+                        .setTitle(`Online in ${name} [${allianceOps.length}]`)
+                        .setDescription("```" + allData[i] + "```")
+                        .setColor(Colors.DarkBlue)
+                        .setTimestamp()
+                        .setAuthor({ 
+                            name: message.author.username, 
+                            iconURL: message.author.displayAvatarURL() 
+                        })
+                        .setFooter({ 
+                            text: `Page ${i+1}/${allData.length}`, 
+                            iconURL: client.user.avatarURL() 
+                        })
+                    }
 
-                const embeds: EmbedBuilder[] = []
-                const allData = allianceOps
-                    .map(res => res.name + " - " + res.town + " | " + res.rank)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
-            
-                const len = allData.length
-                for (let i = 0; i < len; i++) {
-                    embeds[i] = new EmbedBuilder()
-                    .setTitle(`Online in ${name} [${allianceOps.length}]`)
-                    .setDescription("```" + allData[i] + "```")
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
-                    .setAuthor({ 
-                        name: message.author.username, 
-                        iconURL: message.author.displayAvatarURL() 
-                    })
-                    .setFooter({ 
-                        text: `Page ${i+1}/${allData.length}`, 
-                        iconURL: client.user.avatarURL() 
-                    })
+                    return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
                 }
 
-                return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
+                if (arg1Lower == "score") {
+                    const foundAlliance = await database.Aurora.getAlliance(args[1])
+                    if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle("Error fetching alliance")
+                        .setDescription("That alliance does not exist! Please try again.")
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                        .setAuthor({
+                            name: message.author.username, 
+                            iconURL: message.author.displayAvatarURL()
+                        })
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+                    const scores = {
+                        nations: foundAlliance.nations.length * SCORE_WEIGHTS.nations,
+                        towns: foundAlliance.towns * SCORE_WEIGHTS.towns,
+                        residents: foundAlliance.residents * SCORE_WEIGHTS.residents,
+                        area: foundAlliance.area * SCORE_WEIGHTS.area
+                        //economy: (foundAlliance.economy / 10000) * weights.economy, // Economy scaled down for readability
+                    }
+                    
+                    const nationsCalcStr = `**Nations**: ${foundAlliance.nations.length} * 35% = ${scores.nations.toFixed(1)}`
+                    const townsCalcStr = `**Towns**: ${foundAlliance.towns} * 30% = ${scores.towns.toFixed(1)}`
+                    const residentsCalcStr = `**Residents**: ${foundAlliance.residents} * 20% = ${scores.residents.toFixed(1)}`
+                    const areaCalcStr = `**Area**: ${foundAlliance.area} * 15% = ${scores.area.toFixed(1)}`
+                    //const wealthCalcStr = `${foundAlliance.wealth} × 10% = ${scores.economy.toFixed(1)}`
+
+                    const totalScore = (scores.nations + scores.towns + scores.residents + scores.area).toFixed(0)
+
+                    const embed = new EmbedBuilder()
+                        .setTitle(`EMCS Score | ${getName(foundAlliance)}`)
+                        .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
+                        .setColor(foundAlliance.colours 
+                            ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
+                            : Colors.DarkBlue
+                        )
+                        .setDescription(`
+                            ${nationsCalcStr}
+                            ${townsCalcStr}
+                            ${residentsCalcStr}
+                            ${areaCalcStr}\n
+                            **Total**: ${totalScore}
+                        `)
+                            
+                    return await m.edit({ 
+                        embeds: [embed],
+                        files: foundAlliance.imageURL ? [] : [AURORA.thumbnail]
+                    })
+                }
             }
 
             //#region Alliance editing
