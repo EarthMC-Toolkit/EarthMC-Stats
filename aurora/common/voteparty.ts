@@ -9,9 +9,13 @@ export class VPHelper extends BaseHelper {
         return this.#target
     }
     
-    #current: number
+    #remaining: number
+    get remaining() {
+        return this.#remaining
+    }
+
     get current() {
-        return this.#current
+        return this.target - this.#remaining
     }
 
     constructor(client: Client) {
@@ -24,10 +28,11 @@ export class VPHelper extends BaseHelper {
             const info = await OfficialAPI.V3.serverInfo()
         
             this.#target = info.voteParty.target
-            this.#current = info.voteParty.numRemaining // Why tf is it named 'remaining' ??
+            this.#remaining = info.voteParty.numRemaining
 
             return true
-        } catch(_) {
+        } catch (err) {
+            console.error("Failed to initialize VPHelper:", err)
             return false
         }
     }
@@ -37,8 +42,8 @@ export class VPHelper extends BaseHelper {
         this.embed.setThumbnail('attachment://aurora.png')
 
         this.addField("Target", `\`${this.target.toString()}\``, true)
-        this.addField("Current", `\`${this.#current.toString()}\``, true)
-        this.addField("Remaining", `\`${(this.target - this.current).toString()}\``)
+        this.addField("Current", `\`${this.current.toString()}\``, true)
+        this.addField("Remaining", `\`${this.remaining.toString()}\``)
 
         return this.embed
     }
