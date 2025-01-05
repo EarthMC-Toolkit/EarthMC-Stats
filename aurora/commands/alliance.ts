@@ -11,9 +11,11 @@ import * as database from "../../bot/utils/database.js"
 import type { AllianceType, DBAlliance } from "../../bot/types.js"
 
 import { 
-    argsHelper, AURORA, backtick, botDevs, 
+    ArgsHelper,
+    AURORA, backtick, botDevs, 
     defaultSortAlliance, embedField, 
     fastMerge, 
+    isNumeric, 
     jsonReq, paginator 
 } from "../../bot/utils/fn.js"
 
@@ -216,7 +218,7 @@ export default {
                             ${areaCalcStr}\n
                             **Total**: ${totalScore}
                         `)
-                            
+                        
                     return await m.edit({ 
                         embeds: [embed],
                         files: foundAlliance.imageURL ? [] : [AURORA.thumbnail]
@@ -250,9 +252,9 @@ export default {
             // Creating an alliance
             if (arg1 == "create" || arg1 == "new") {   
                 const allianceName = args[1]
-                const leaderName = !args[2] ? "None" : argsHelper(args, 2).asString()
+                const leaderName = !args[2] ? "None" : new ArgsHelper(args, 2).asString()
                 
-                if (typeof(allianceName) == "number") {
+                if (isNumeric(allianceName)) {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error creating alliance")
                         .setDescription("Alliance names cannot be numbers! Please try again.")
@@ -525,7 +527,7 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                 // Remove first 2 args, then remove commas from every other argument.
-                const formattedArgs = argsHelper(args, 2)
+                const formattedArgs = new ArgsHelper(args, 2)
                 let nationsToAdd = formattedArgs.asArray() as string[]
 
                 if (!nationsToAdd) return // TODO: Evaluate if this is even necessary.
@@ -604,8 +606,8 @@ export default {
                     })
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-                const formattedArgs = argsHelper(args, 2)
-                const nationsToRemove = formattedArgs.asArray() as any[]
+                const formattedArgs = new ArgsHelper(args, 2)
+                const nationsToRemove = formattedArgs.asArray()
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 
                 if (!nationsToRemove) {
@@ -613,17 +615,16 @@ export default {
                     return
                 }
 
-                console.log(nationsToRemove.toString())
+                //console.log(nationsToRemove.toString())
+
                 const len = nationsToRemove.length
-                
                 for (let i = 0; i < len; i++) {
                     const cur = nationsToRemove[i]
                     
-                    // If a nation is a number, return an error message.
-                    if (typeof(cur) == "number") {
+                    if (isNumeric(cur)) {
                         return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error updating alliance")
-                            .setDescription("Cannot use a number as an alliance nation! Please try again.")
+                            .setDescription("Cannot use a number as an nation input! Please try again.")
                             .setColor(Colors.Red)
                             .setTimestamp()
                             .setAuthor({ 
@@ -694,7 +695,7 @@ export default {
                         })
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                     
-                    foundAlliance.leaderName = argsHelper(args, 3).asString()
+                    foundAlliance.leaderName = new ArgsHelper(args, 3).asString()
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                     alliances[allianceIndex] = foundAlliance
@@ -1063,9 +1064,9 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
             return acc
         }, { residents: 0, area: 0, towns: 0 })
 
-        alliance["residents"] = accumulator.residents
-        alliance["area"] = accumulator.area
-        alliance["towns"] = accumulator.towns
+        alliance.residents = accumulator.residents
+        alliance.area = accumulator.area
+        alliance.towns = accumulator.towns
     }
 
     let foundAlliances: DBAlliance[] = []
@@ -1191,7 +1192,8 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
         })
     }
 
-    return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
+    return await m.edit({ embeds: [embeds[0]] })
+        .then(msg => paginator(message.author.id, msg, embeds, 0))
     //#endregion
 }
 

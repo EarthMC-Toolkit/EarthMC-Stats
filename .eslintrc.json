@@ -20,6 +20,7 @@
         "comma-style": 2,
         "comma-dangle": ["error", "never"],
         "camelcase": 2,
+        "no-empty": "off",
         "no-console": "off",
         "no-useless-escape": "off",
         "no-unused-vars": "off",

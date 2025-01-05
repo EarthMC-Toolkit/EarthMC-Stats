@@ -11,7 +11,7 @@ import {
 
 import TTLCache from '@isaacs/ttlcache'
 
-let prod: boolean = false
+let prod = false
 const setProduction = (val: boolean) => prod = val
 
 let client: Client = null
@@ -29,11 +29,6 @@ const setDatabase = (instance: Firestore) => {
     townlessSubbedChannels = subsCollection.doc("townless")
 }
 
-// const NOVA: MapInstance = { 
-//     emc: Nova,
-//     db: NovaDB
-// }
-
 const AURORA: MapInstance = { 
     emc: Aurora,
     db: AuroraDB
@@ -50,6 +45,5 @@ export {
     cache, db, setDatabase,
     townlessSubbedChannels,
     queueSubbedChannels,
-    //NOVA, 
     AURORA
 }

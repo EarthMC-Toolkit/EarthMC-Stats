@@ -397,17 +397,24 @@ export const readTsFiles = (str: string) => {
     return fs.readdirSync(fullPath).filter(file => file.endsWith('.ts'))
 }
 
-export function argsHelper(args: string[], spliceAmt: number) {
-    return {
-        original: args,
-        spliced: [] as string[],
-        format: function() { 
-            this.spliced = this.original.splice(spliceAmt).map((e: string) => e.replace(/,/g, ''))
-            return this.spliced
-        },
-        asArray: function() { return this.spliced?.length < 1 ? this.format() : this.spliced },
-        asString: function(delimiter = ", ") { return this.asArray().join(delimiter) }
+export class ArgsHelper<T extends string> {
+    original: T[]
+    spliced: string[]
+    
+    spliceAmt: number
+
+    constructor(args: T[], spliceAmt: number) {
+        this.original = args
+        this.spliceAmt = spliceAmt
     }
+
+    format = () => { 
+        this.spliced = this.original.splice(this.spliceAmt).map((e: string) => e.replace(/,/g, ''))
+        return this.spliced
+    }
+
+    asArray = () => this.spliced?.length < 1 ? this.format() : this.spliced
+    asString = (delimiter = ", "): string => this.asArray().join(delimiter)
 }
 
 export const inWorldBorder = (x: number, z: number) => {
@@ -435,3 +442,7 @@ export const fastMergeByKey = <T>(original: T[], arr: any[], key: string) => {
 
     return original
 }
+
+// The unary plus operator here coerces the value into a number.
+// This apparentely mitigates some pitfalls of `isNaN()` and should be more reliable.
+export const isNumeric = <T>(val: T) => Number.isFinite(+val)

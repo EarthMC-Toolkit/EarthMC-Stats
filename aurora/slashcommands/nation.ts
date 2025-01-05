@@ -112,7 +112,7 @@ export default {
                         .map(nation => nation.name + " - " + nation.onlineResidents.length)                                     
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                    new CustomEmbed(client, `Nation Info | Online Residents`)
+                    return new CustomEmbed(client, `List of Nations | Online Residents`)
                         .setType(EntityType.Nation)
                         .paginate(allData, "```", "```")
                         .editInteraction(interaction)
@@ -137,7 +137,7 @@ export default {
                         .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-                    new CustomEmbed(client, `Nation Info | Nation List`)
+                    return new CustomEmbed(client, `List of Nations`)
                         .setType(EntityType.Nation)
                         .paginate(allData, "```", "```")
                         .editInteraction(interaction)
@@ -150,25 +150,23 @@ export default {
                     .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
                     .join('\n').match(/(?:^.*$\n?){1,15}/mg)
 
-                new CustomEmbed(client, `Nation Info | Nation List`)
+                return new CustomEmbed(client, `List of Nations`)
                     .setType(EntityType.Nation)
                     .paginate(allData, "```", "```")
                     .editInteraction(interaction)
             }
         } else {
             const nameArg = interaction.options.getString("name", true)
+            const nation = nations.find(n => n.name.toLowerCase() == nameArg.toLowerCase())
+            if (!nation) {
+                nationEmbed.setTitle("Invalid Nation!")
+                nationEmbed.setDescription(`No nation with name \`${nameArg}\` exists.`)
+                nationEmbed.setColor(Colors.Red)
+
+                return interaction.editReply({ embeds: [nationEmbed] })
+            }
 
             if (subCmd == "activity") {
-                const nation = nations.find(n => n.name.toLowerCase() == nameArg.toLowerCase())
-    
-                if (!nation) {
-                    nationEmbed.setTitle("Invalid Nation!")
-                    nationEmbed.setDescription(`No nation with name \`${nameArg}\` exists.`)
-                    nationEmbed.setColor(Colors.Red)
-    
-                    return interaction.editReply({ embeds: [nationEmbed] })
-                }
-    
                 const players = await database.getPlayers()
                 if (!players) return await interaction.editReply({ embeds: [databaseError] })
                     .then(() => setTimeout(() => interaction.deleteReply(), 10000))
@@ -204,13 +202,15 @@ export default {
                 const allData = nation.residents.map(resident => {
                     const residentInPlayers = players.find(p => p.name == resident)
     
-                    if (residentInPlayers && residentInPlayers.lastOnline != null)
-                        return "``" + resident + "`` - " + `<t:${unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
+                    let date: number | null = null
+                    if (residentInPlayers && residentInPlayers.lastOnline?.aurora != null) {
+                        date = unixFromDate(residentInPlayers.lastOnline.aurora)
+                    }
     
-                    return "" + resident + " | Unknown"
+                    return `**$${resident}** - ${date ? `<t:${date}:R>` : `Unknown`}`
                 }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
     
-                return new CustomEmbed(client, `Nation Info | Activity in ${nation.name}`)
+                return new CustomEmbed(client, `Nation Info | Activity in ${backtick(nation.name)}`)
                     .setType(EntityType.Nation)
                     .paginate(allData)
                     .editInteraction(interaction)
@@ -218,15 +218,6 @@ export default {
 
             // /n <nation>
             if (subCmd == "lookup") {
-                const nation = nations.find(n => n.name.toLowerCase() == nameArg.toLowerCase())
-                if (!nation) {
-                    nationEmbed.setTitle("Invalid Nation!")
-                    nationEmbed.setDescription(`No nation with name \`${nameArg}\` exists.`)
-                    nationEmbed.setColor(Colors.Red)
-    
-                    return interaction.editReply({ embeds: [nationEmbed] })
-                }
-                
                 const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: SquaremapTown) => {
                     return t instanceof NotFoundError ? null : t.colours
                 })
@@ -264,7 +255,11 @@ export default {
                 //const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
                 
                 const area = Math.round(nation.area)
-                const worth = Math.round(nation.area * 16)
+                const chunksStr = `<:chunk:1318944677562679398> \`${area.toString()}\` Chunks`
+
+                // TODO: Implement as `/nation worth <nation` instead.
+                //const worth = Math.round(nation.area * 16)
+                //const goldStr = `<:gold:1318944918118600764> \`${worth}\`G`
 
                 nationEmbed.setTitle(`Nation Info | ${backtick(nationLabel)} | #${nationRank}`)
                     .setThumbnail(nation.flag || 'attachment://aurora.png')
@@ -273,7 +268,7 @@ export default {
                         embedField("King", backtick(nation.king, { prefix: kingPrefix }), true),
                         embedField("Capital", backtick(nation.capital.name), true), 
                         embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
-                        embedField("Size/Worth", `Chunks: \`${area.toString()}\`\nGold: \`${worth}\``, true),
+                        embedField("Size", chunksStr, true),
                         embedField("Residents", `\`${nationResLength.toString()}\``, true),
                         embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                     )
@@ -351,18 +346,24 @@ export default {
                 }
     
                 const thumbnail = nation.flag ? [] : [AURORA.thumbnail] 
-                nationEmbed.setFiles(thumbnail)
-                nationEmbed.editInteraction(interaction)
+                return nationEmbed
+                    .setFiles(thumbnail)
+                    .editInteraction(interaction)
+            }
+
+            if (subCmd == "worth") {
+                nationEmbed.setTitle(`Nation Worth | ${backtick(nation.name)}`)
+                return nationEmbed.editInteraction(interaction)
             }
         }
     }, data: new SlashCommandBuilder()
         .setName("nation")
         .setDescription("Displays info for a nation.")
         .addSubcommand(subCmd => subCmd.setName('lookup')
-            .setDescription('Get detailed information for a nation')
+            .setDescription('Get detailed information for a nation.')
             .addStringOption(option => option
                 .setName("name")
-                .setDescription("The name of the nation to lookup.")
+                .setDescription("The name of the nation.")
                 .setRequired(true)
             )
         )
@@ -370,7 +371,7 @@ export default {
             .setDescription('Gets activity data for members of a nation.')
             .addStringOption(option => option
                 .setName("name")
-                .setDescription("The name of the nation to get activity data for.")
+                .setDescription("The name of the nation.")
                 .setRequired(true)
             )
         )
@@ -379,6 +380,14 @@ export default {
             .addStringOption(option => option
                 .setName("comparator")
                 .setDescription("The comparator to use. Available: online, residents, chunks & name.")
+            )
+        )
+        .addSubcommand(subCmd => subCmd.setName('worth')
+            .setDescription('Displays a full breakdown of .')
+            .addStringOption(option => option
+                .setName("name")
+                .setDescription("The name of the nation.")
+                .setRequired(true)
             )
         )
 }

@@ -1,7 +1,6 @@
 //#region Imports
 import * as api from "../bot/utils/api.js"
 import * as database from "../bot/utils/database.js"
-//import * as fn from "../bot/utils/fn.js"
 
 import { 
     formatString,

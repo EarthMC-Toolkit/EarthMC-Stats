@@ -21,8 +21,7 @@ const embed = (len: number, desc: string, footer?: { text: string, iconURL?: str
 }
 
 const townlessLastSeen = async () => {
-    //#region Cache these
-    // TODO
+    //#region
     const residents = await getResidents()
     if (!residents) {
         console.warn(`[AURORA] Error getting townless, could not get residents!`)
