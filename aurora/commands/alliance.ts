@@ -12,10 +12,10 @@ import type { AllianceType, DBAlliance } from "../../bot/types.js"
 
 import { 
     ArgsHelper,
-    AURORA, backtick, botDevs, 
+    AURORA, botDevs, 
     defaultSortAlliance, embedField, 
-    fastMerge, 
-    isNumeric, 
+    fastMerge, isNumeric,
+    backtick, backticks,
     jsonReq, paginator 
 } from "../../bot/utils/fn.js"
 
@@ -460,7 +460,8 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
+                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName)
+                const oldName = foundAlliance.allianceName
 
                 foundAlliance.allianceName = args[2]
                 alliances[allianceIndex] = foundAlliance
@@ -469,7 +470,7 @@ export default {
 
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Alliance Renamed")
-                    .setDescription("The alliance ```" + foundAlliance.allianceName + "``` has been renamed to ```" + args[2] + "```")
+                    .setDescription(`The alliance ${backticks(oldName)} has been renamed to ${backticks(args[2])}`)
                     .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()

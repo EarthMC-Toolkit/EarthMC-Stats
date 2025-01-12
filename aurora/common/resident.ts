@@ -75,9 +75,9 @@ class ResidentHelper extends BaseHelper {
         }
 
         if (resident.town?.uuid) {
-            const resTown = await OfficialAPI.V2.town(resident.town.name.toLowerCase())
+            const resTown = await OfficialAPI.V3.towns(resident.town.name.toLowerCase()).then(arr => arr[0])
 
-            let rank = resTown.mayor == resident.name ? "Mayor" : "Resident"
+            let rank = resTown.mayor.name == resident.name ? "Mayor" : "Resident"
             if (rank == "Mayor" && resTown.status.isCapital) 
                 rank = "Nation Leader" 
 

@@ -261,9 +261,9 @@ export default {
                 townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}\``, true))
             }
 
-            if (town.wealth) {
-                townEmbed.addFields(embedField("Wealth", `\`${town.wealth}\`G`, true))
-            }
+            // if (town.wealth) {
+            //     townEmbed.addFields(embedField("Wealth", `\`${town.wealth}\`G`, true))
+            // }
 
             townEmbed.addFields(embedField(
                 "Location",
@@ -376,7 +376,7 @@ interface ExtractedTown {
     nation: string
     residentNames: string[]
     area: number
-    wealth: number
+    //wealth: number
 }
 
 const extractTownData = (towns: DBSquaremapTown[]) => {
@@ -392,8 +392,8 @@ const extractTownData = (towns: DBSquaremapTown[]) => {
             name: cur.name,
             nation: cur.nation,
             residentNames: cur.residents,
-            area: cur.area,
-            wealth: cur.wealth
+            area: cur.area
+            //wealth: cur.wealth
         }) 
     }
 

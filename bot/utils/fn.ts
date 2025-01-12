@@ -446,3 +446,10 @@ export const fastMergeByKey = <T>(original: T[], arr: any[], key: string) => {
 // The unary plus operator here coerces the value into a number.
 // This apparentely mitigates some pitfalls of `isNaN()` and should be more reliable.
 export const isNumeric = <T>(val: T) => Number.isFinite(+val)
+
+/**
+ * Inserts three backticks on either end of a string.\
+ * Shortform for "\`\`\`someString\`\`\`" in Discord, but avoids us escaping them for JS every time.
+ * @param value 
+ */
+export const backticks = <T extends string>(value: T): `\`\`\`${T}\`\`\`` => `\`\`\`${value}\`\`\``
