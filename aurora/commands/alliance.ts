@@ -2,7 +2,8 @@ import {
     type Client,
     type Message, 
     type TextChannel, 
-    ButtonStyle, EmbedBuilder, Colors
+    ButtonStyle, EmbedBuilder, Colors,
+    ChannelType
 } from "discord.js"
 
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
@@ -227,7 +228,10 @@ export default {
             }
 
             //#region Alliance editing
-            if (!allowedChannels.includes(message.channel.id)) {
+            const botDev = botDevs.includes(message.author.id)
+            const isThread = message.channel.type != ChannelType.PublicThread
+
+            if (!allowedChannels.includes(message.channel.id) && !isThread) {
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error running command")
                     .setDescription("Alliance commands are not allowed in this channel!")
@@ -242,7 +246,7 @@ export default {
 
             // Correct channel, but not an editor or dev.
             const isEditor = message.member.roles.cache.has(editorID)
-            if (!botDevs.includes(message.author.id) && !isEditor) return sendDevsOnly(m)
+            if (!botDev && !isEditor) return sendDevsOnly(m)
 
             const seniorEditor = message.member.roles.cache.has(seniorEditorID)
 
@@ -512,9 +516,7 @@ export default {
             
             if (arg1 == "add") { // Adding nation(s) to an alliance      
                 const alliances = await database.Aurora.getAlliances()
-
-                const allianceName = arg2
-                const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 
                 if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error updating alliance")
@@ -571,9 +573,10 @@ export default {
                     }
                 }
 
-                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
+                // We can just send the embed without waiting for this.
                 database.Aurora.setAlliances(alliances)
 
                 const name = getName(foundAlliance)

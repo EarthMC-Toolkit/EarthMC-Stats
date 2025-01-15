@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
-    "discord.js": "14.13.0",
-    "dotenv": "^16.4.5",
+    "discord.js": "14.15.0",
+    "dotenv": "^16.4.7",
     "earthmc": "^10.0.0",
     "firebase": "10.12.4",
     "firebase-admin": "12.2.0",

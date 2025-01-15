@@ -5,8 +5,7 @@ dotenv.config()
 import { 
     Client, 
     IntentsBitField,
-    Collection,
-    MessageType
+    Collection
 } from "discord.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
@@ -110,14 +109,21 @@ const replies = [
     "want something? wait nicely like a good dog", "emc is not that important brother"
 ]
 
+const myID = "263377802647175170"
+const editorID = "263377802647175170"
+
 client.on('messageCreate', async msg => {
     const { guild, member, mentions } = msg
 
-    if (msg.type == MessageType.Reply) return // Ensure ping and not just replying.
-
     if (guild.id != "966271635894190090") return // Ensure toolkit discord
-    if (!mentions.has("263377802647175170")) return // Ensure mention is me
-    if (member.roles.cache.has("966359842417705020")) return // Ensure not editor
+    if (member.roles.cache.has(editorID)) return // Ensure not editor
+    
+    // Mentioned me (@ or reply with @ on)
+    const mentioned = !mentions.has(myID)
+    if (!mentioned) return
+
+    // Allow mention if its a reply to me.
+    if (mentions.repliedUser?.id == myID) return
 
     await msg.reply(replies[Math.floor(Math.random() * replies.length)])
     member.timeout(10 * 60 * 1000)
