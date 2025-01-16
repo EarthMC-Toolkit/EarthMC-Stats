@@ -4,7 +4,7 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from 'discord.js'
 
-import { devsFooter } from '../../bot/utils/fn.js'
+import { devsFooter, isNumeric } from '../../bot/utils/fn.js'
 
 const formatCoord = (coord: number) => coord.toString().replace(/[, ]/g, " ")
 const convertToOverworld = (coord: number) => Math.floor(coord / 8).toString()
@@ -19,9 +19,8 @@ export default {
             .setTimestamp()
             .setFooter(devsFooter(client))
 
-        const x = interaction.options.getInteger("x"),
-              z = interaction.options.getInteger("z")
-
+        const x = interaction.options.getInteger("x")
+        const z = interaction.options.getInteger("z")
         if (!x || !z) return interaction.reply({ embeds: [errorEmbed], ephemeral: true })
 
         const replacedArgs = [formatCoord(x), z.toString().replace(/[, ]/g, " ")]
@@ -29,8 +28,9 @@ export default {
         const arg0 = Number(replacedArgs[0])
         const arg1 = Number(replacedArgs[1])
 
-        if (isNaN(arg0) || isNaN(arg1))
+        if (!isNumeric(arg0) || !isNumeric(arg1)) {
             return interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+        }
 
         return interaction.reply({embeds: [new EmbedBuilder()
             .setTitle(`Nether coords for ${replacedArgs.join(", ").toString().replace(/ , /g, ", ")}`)

@@ -4,21 +4,17 @@ import striptags from 'striptags'
 import * as MC from '../../bot/utils/minecraft.js'
 import * as database from '../../bot/utils/database.js'
 
-import {
-    OfficialAPI, 
-    Aurora,
-    type Resident
-} from 'earthmc'
+import type { Resident, RawPlayerV3 } from 'earthmc'
+import { OfficialAPI, Aurora } from 'earthmc'
 
 import { 
-    type V3Player,
     type DBResident,
     type MCSessionProfile,
     type SkinOpts,
     SkinType3D
 } from "../../bot/types.js"
 
-import { secToMs } from "../../bot/utils/fn.js"
+import { backtick, secToMs } from "../../bot/utils/fn.js"
 import { BaseHelper } from "./base.js"
 
 const buildSkinURL = (opts: SkinOpts) => {
@@ -33,7 +29,7 @@ const defaultAbout = "/res set about [msg]"
 class ResidentHelper extends BaseHelper {
     dbResident: DBResident | Resident = null
     
-    #apiResident: V3Player = null
+    #apiResident: RawPlayerV3 = null
     get apiResident() { return this.#apiResident }
 
     onlinePlayer: { name: string } = null
@@ -65,10 +61,12 @@ class ResidentHelper extends BaseHelper {
         const searchName = !this.dbResident ? arg1 : resName
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
 
-        let resident: V3Player
+        let resident: RawPlayerV3 = null
         try {
             const players = await OfficialAPI.V3.players(arg1)
-            resident = players[0] as V3Player
+            resident = players[0]
+
+            if (!resident) throw new Error(`Official API could not find resident: ${arg1}`)
         } catch(e: any) {
             console.error(e)
             return false
@@ -185,14 +183,17 @@ class ResidentHelper extends BaseHelper {
         }
     }
 
-    addBalance = (bal: string | number) => this.addField("Balance", `\`${bal ?? 0}\`G`, true)
+    addBalance = (bal: string | number) => {
+        this.addField("Balance", `<:gold:1318944918118600764> ${backtick(bal ?? 0)}G`, true)
+    }
 
     addLinkedAcc = () => {
         if (!this.mcProfile?.name) return
 
         const disc = this.pInfo?.discord
-        if (disc && disc != "")
+        if (disc && disc != "") {
             this.addField("Linked Account", `<@${disc}>`)
+        }
     }
 }
 

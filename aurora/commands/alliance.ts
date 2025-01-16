@@ -341,9 +341,9 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-                if (!isNaN(Number(allianceName))) return m.edit({embeds: [new EmbedBuilder()
+                if (isNumeric(allianceName)) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
-                    .setDescription("Wrong alliance name! Alliance names must be alphanumeric.")
+                    .setDescription("Wrong alliance name! Alliance names cannot be only numeric.")
                     .setAuthor({
                         name: message.author.username,
                         iconURL: message.author.displayAvatarURL()
@@ -454,7 +454,7 @@ export default {
                 const alliances = await database.Aurora.getAlliances()
 
                 const allianceName = arg2
-                const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName)
+                const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
 
                 if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error renaming alliance")
@@ -487,7 +487,7 @@ export default {
                 const alliances = await database.Aurora.getAlliances()
 
                 const allianceName = arg2
-                const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName)
+                const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
 
                 if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error disbanding alliance")
@@ -968,7 +968,7 @@ export default {
                     const allianceToMerge = alliancesToMerge[i]
                     
                     // If an alliance is a number, return an error message.
-                    if (!isNaN(Number(allianceToMerge))) {
+                    if (isNumeric(allianceToMerge)) {
                         return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error updating alliance")
                             .setDescription("Cannot use a number as an alliance name! Please try again.")

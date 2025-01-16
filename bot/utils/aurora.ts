@@ -138,7 +138,7 @@ async function getAlliance(name: string) {
 
     // Only get rank if 2 or more alliances exist.
     const alliancesLen = alliances.length
-    if (alliancesLen >= 1) {
+    if (alliancesLen > 1) {
         for (let i = 0; i < alliancesLen; i++) {
             const alliance = alliances[i]
 
