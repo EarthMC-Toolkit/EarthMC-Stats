@@ -1207,15 +1207,6 @@ async function sendSingleAlliance(
     m: Message, 
     args: string[]
 ) {
-    let players = await database.getPlayers()
-    if (!players) return m.edit({embeds: [new EmbedBuilder()
-        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-        .setTitle("Database error occurred")
-        .setDescription("Failed to fetch players needed for this command to work.")
-        .setColor(Colors.Red)
-        .setTimestamp()
-    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-
     const foundAlliance = await database.Aurora.getAlliance(args[0])
     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
@@ -1225,25 +1216,34 @@ async function sendSingleAlliance(
         .setTimestamp()
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
+    const players = await database.getPlayers()
+    if (!players) return m.edit({embeds: [new EmbedBuilder()
+        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+        .setTitle("Database error occurred")
+        .setDescription("Failed to fetch players needed for this command to work.")
+        .setColor(Colors.Red)
+        .setTimestamp()
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+
     const leaderNames = foundAlliance.leaderName.split(', ')
-    players = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase()))
+    const leaderPlayers = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase()))
 
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
     const allianceType = 
         typeString == 'sub' ? "Sub-Meganation" : 
         typeString == 'mega' ? "Meganation" : "Normal/Pact"
     
-    const playersLen = players.length
     const leaderSet = new Set<string>()
+    const len = leaderPlayers.length
 
-    for (let i = 0; i < playersLen; i++) {
+    for (let i = 0; i < len; i++) {
         const leader = players[i]
         const leaderID = leader.linkedID
 
         if (leaderID) {
-            const members = (message.channel as TextChannel).members
-            if (members.get(leaderID.toString())) {
-                // Leader can view channel where command was issued, use mention.
+            const chan = message.channel as TextChannel
+            if (chan.members.get(leaderID.toString())) {
+                // Use mention instead if leader can view channel where command was issued.
                 leaderSet.add(`<@${leaderID}>`)
                 continue
             }
@@ -1275,15 +1275,16 @@ async function sendSingleAlliance(
         .setDefaultAuthor(message)
         .setTimestamp()
 
-    if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") 
+    if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
         allianceEmbed.setURL(foundAlliance.discordInvite)
+    }
     
     const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
     const nationsString = foundAlliance.nations.join(", ")
 
     const allianceNationsLen = foundAlliance.nations.length
     if (nationsString.length < 1024) {
-        if (allianceNationsLen <= 0) {
+        if (allianceNationsLen < 1) {
             allianceEmbed.addFields(embedField("Nations [0]", "There are no nations in this alliance."))
         }
         else allianceEmbed.addFields(embedField(

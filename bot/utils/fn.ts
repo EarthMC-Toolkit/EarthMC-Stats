@@ -399,7 +399,7 @@ export const readTsFiles = (str: string) => {
 
 export class ArgsHelper<T extends string> {
     original: T[]
-    spliced: string[]
+    spliced: string[] = []
     
     spliceAmt: number
 

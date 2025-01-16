@@ -119,7 +119,7 @@ export interface DBPlayer {
     linkedID?: string | number
     lastOnline: {
         aurora?: Timestamp
-        nova?: Timestamp
+        //nova?: Timestamp
     }
 }
 
