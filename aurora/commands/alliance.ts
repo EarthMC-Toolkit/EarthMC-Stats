@@ -229,7 +229,7 @@ export default {
 
             //#region Alliance editing
             const botDev = botDevs.includes(message.author.id)
-            const isThread = message.channel.type != ChannelType.PublicThread
+            const isThread = message.channel.type == ChannelType.PublicThread
 
             if (!allowedChannels.includes(message.channel.id) && !isThread) {
                 return m.edit({embeds: [new EmbedBuilder()

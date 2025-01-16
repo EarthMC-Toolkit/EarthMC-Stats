@@ -105,7 +105,7 @@ const replies = [
     "no.", "be fucking patient moron", "I DO NOT CARE", "Do it again, I dare you.", 
     "^ this guy likes boys", "you have severe brain damage.", "shutup and smd", 
     "You have been automatically reported to Discord.", "Please hold. Currently doing your mother.",
-    "imagine being this impatient", "suck. a. dick.", "☝ everyone laugh at this dipshit",
+    "imagine being this impatient", "suck a dick.", "☝ everyone laugh at this dipshit",
     "want something? wait nicely like a good dog", "emc is not that important brother"
 ]
 
@@ -114,6 +114,8 @@ const editorID = "263377802647175170"
 
 client.on('messageCreate', async msg => {
     const { guild, member, mentions } = msg
+
+    if (msg.author.bot) return
 
     if (guild.id != "966271635894190090") return // Ensure toolkit discord
     if (member.roles.cache.has(editorID)) return // Ensure not editor
