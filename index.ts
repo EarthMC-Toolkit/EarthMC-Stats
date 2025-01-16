@@ -120,9 +120,8 @@ client.on('messageCreate', async msg => {
     if (guild.id != "966271635894190090") return // Ensure toolkit discord
     if (member.roles.cache.has(editorID)) return // Ensure not editor
     
-    // Mentioned me (@ or reply with @ on)
-    const mentioned = !mentions.has(myID)
-    if (!mentioned) return
+    // Hasn't mentioned me (@ or reply with @ on)
+    if (!mentions.has(myID)) return
 
     // Allow mention if its a reply to me.
     if (mentions.repliedUser?.id == myID) return
