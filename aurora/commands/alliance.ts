@@ -595,9 +595,7 @@ export default {
             
             if (arg1 == "remove") {
                 const alliances = await database.Aurora.getAlliances()
-
-                const allianceName = arg2
-                const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 
                 if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error updating alliance")
@@ -612,7 +610,7 @@ export default {
 
                 const formattedArgs = new ArgsHelper(args, 2)
                 const nationsToRemove = formattedArgs.asArray()
-                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 
                 if (!nationsToRemove) {
                     console.log(`Failed to remove nations from ${getName(foundAlliance)}`)
@@ -1201,12 +1199,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
     //#endregion
 }
 
-async function sendSingleAlliance(
-    client: Client, 
-    message: Message, 
-    m: Message, 
-    args: string[]
-) {
+async function sendSingleAlliance(client: Client, message: Message, m: Message, args: string[]) {
     const foundAlliance = await database.Aurora.getAlliance(args[0])
     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
@@ -1214,7 +1207,7 @@ async function sendSingleAlliance(
         .setDescription("That alliance does not exist! Please try again.")
         .setColor(Colors.Red)
         .setTimestamp()
-    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
     const players = await database.getPlayers()
     if (!players) return m.edit({embeds: [new EmbedBuilder()
@@ -1228,16 +1221,11 @@ async function sendSingleAlliance(
     const leaderNames = foundAlliance.leaderName.split(', ')
     const leaderPlayers = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase()))
 
-    const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
-    const allianceType = 
-        typeString == 'sub' ? "Sub-Meganation" : 
-        typeString == 'mega' ? "Meganation" : "Normal/Pact"
-    
     const leaderSet = new Set<string>()
     const len = leaderPlayers.length
 
     for (let i = 0; i < len; i++) {
-        const leader = players[i]
+        const leader = leaderPlayers[i]
         const leaderID = leader.linkedID
 
         if (leaderID) {
@@ -1252,10 +1240,15 @@ async function sendSingleAlliance(
         leaderSet.add(backtick(leader.name))
     }
     
-    const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
-
     const leaders = [...leaderSet]
     const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
+
+    const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
+    const allianceType = 
+        typeString == 'sub' ? "Sub-Meganation" : 
+        typeString == 'mega' ? "Meganation" : "Normal/Pact"
+
+    const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
 
     const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getName(foundAlliance)}${rank}`)
         .addFields(
