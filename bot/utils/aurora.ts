@@ -1,9 +1,10 @@
 import { cache } from '../constants.js'
 import { request } from "undici"
 
-import type { 
-    SquaremapMapResponse, 
-    SquaremapPlayersResponse
+import  { 
+    endpoint,
+    type SquaremapMapResponse, 
+    type SquaremapPlayersResponse
 } from "earthmc"
 
 import type { 
@@ -28,21 +29,14 @@ const allianceCollection = () => auroraDoc().collection("alliances").doc("allian
 
 const auroraUrl = 'https://map.earthmc.net'
 
-const getTownyData = async () => {
-    const res = await request(`${auroraUrl}/tiles/minecraft_overworld/markers.json`)
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-        return null
-    }
+export const getMapData = () => endpoint.mapData<SquaremapMapResponse>('aurora')
 
-    return await res.body.json() as SquaremapMapResponse
-}
-
-const getOnlinePlayerData = async () => {
+export const getOnlinePlayerData = async () => {
     const res = await request(`${auroraUrl}/tiles/players.json`)
     return await res.body.json() as SquaremapPlayersResponse
 }
 
-async function getResidents(): Promise<DBResident[]> {
+export async function getResidents(): Promise<DBResident[]> {
     const cachedResidents = cache.get('aurora_residents')
     if (cachedResidents) return cachedResidents
 
@@ -50,7 +44,7 @@ async function getResidents(): Promise<DBResident[]> {
     return snapshot.docs.flatMap(doc => doc.data().residentArray)
 }
 
-async function setResidents(residents: DBResident[]) {
+export async function setResidents(residents: DBResident[]) {
     cache.set('aurora_residents', residents)
 
     const dividedResidentsArray = divideArray(residents, 3)
@@ -68,16 +62,16 @@ async function setResidents(residents: DBResident[]) {
     await batch.commit()
 }
 
-const getNations = async (): Promise<DBSquaremapNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
+export const getNations = async (): Promise<DBSquaremapNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
     return snapshot.docs.flatMap(doc => doc.data().nationArray)
 })
 
-const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations().then(arr => { 
+export const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations().then(arr => { 
     const nation = arr.find(n => n.name.toLowerCase() == nationName.toLowerCase())
     return nation ?? null
 })
 
-async function setNations(nations: DBSquaremapNation[]) {
+export async function setNations(nations: DBSquaremapNation[]) {
     cache.set('aurora_nations', nations)
 
     //const dividedNationsArray = divideArray(nations, 2)
@@ -88,10 +82,10 @@ async function setNations(nations: DBSquaremapNation[]) {
         .set({ nationArray: nations })
 }
 
-const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
+export const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
     .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
 
-async function setTowns(towns: DBSquaremapTown[]) {
+export async function setTowns(towns: DBSquaremapTown[]) {
     cache.set('aurora_towns', towns)
 
     const dividedTownsArray = divideArray(towns, 6)
@@ -109,7 +103,9 @@ async function setTowns(towns: DBSquaremapTown[]) {
     await batch.commit()
 }
 
-async function getAlliance(name: string) {
+const length = (x: unknown[]) => x.length
+
+export async function getAlliance(name: string) {
     const alliances = await getAlliances() as DBAlliance[]
     if (!alliances) return null
 
@@ -119,7 +115,7 @@ async function getAlliance(name: string) {
     const nations = await getNations()
     if (!nations) return null
 
-    const data = await getOnlinePlayerData()
+    const opData = await getOnlinePlayerData()
 
     // Get nations that are in the inputted alliance.
     const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
@@ -130,10 +126,10 @@ async function getAlliance(name: string) {
 
         foundAlliance.wealth += n.wealth
 
-        if (data) {
-            const onlineInNation = n.residents.filter(res => data.players.find(op => op.name == res))
-            foundAlliance.online = fastMerge([], onlineInNation)
-        }
+        if (!opData) continue
+
+        const onlineInNation = n.residents.filter(res => opData.players.find(op => op.name == res))
+        foundAlliance.online = fastMerge([], onlineInNation)
     }
 
     // Only get rank if 2 or more alliances exist.
@@ -178,7 +174,7 @@ async function getAlliance(name: string) {
     return foundAlliance
 }
 
-async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
+export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
     const cached: DBAlliance[] = cache.get('aurora_alliances')
     const skip = !skipCache ? cached : null
 
@@ -187,17 +183,7 @@ async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
     }).catch(() => null)
 }
 
-async function setAlliances(alliances: DBAlliance[]) {
+export async function setAlliances(alliances: DBAlliance[]) {
     cache.set('aurora_alliances', alliances)
     return allianceCollection().set({ allianceArray: alliances })
-}
-
-const length = (x: unknown[]) => x.length
-
-export {
-    getResidents, setResidents,
-    getNation, getNations, setNations, 
-    getTownyData, getOnlinePlayerData, 
-    getTowns, setTowns,
-    getAlliance, getAlliances, setAlliances
 }

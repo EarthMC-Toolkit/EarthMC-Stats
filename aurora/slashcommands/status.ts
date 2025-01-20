@@ -23,11 +23,12 @@ export default {
             .setFooter(devsFooter(client))
             .setTimestamp()
 
-        const serverData = await MojangLib.servers.get("play.earthmc.net")
-        const auroraData = await database.Aurora.getTownyData()
+        const serverData = await MojangLib.servers.get("vercel.earthmc.net")
+        const auroraData = await database.Aurora.getMapData()
 
-        if (serverData && !auroraData)
+        if (serverData && !auroraData) {
             embed.setDescription("The server seems to be up, but the map is unavailable!")
+        }
         
         embed.addFields(
             embedField("Server", `${status(serverData)}`, true),

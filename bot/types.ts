@@ -182,54 +182,6 @@ export interface NationItem {
     chunks: number
 }
 
-export interface Entity {
-    name: string
-    uuid: string
-}
-
-export interface V3Player extends Entity {
-    title: string
-    surname: string
-    formattedName: string
-    about: string
-    town: Partial<Entity>
-    nation: Partial<Entity>
-    timestamps: {
-      registered: number
-      joinedTownAt?: number
-      lastOnline: number
-    }
-    status: {
-      isOnline: boolean
-      isNPC: boolean
-      isMayor: boolean
-      isKing: boolean
-      hasTown: boolean
-      hasNation: boolean
-    }
-    stats: {
-      balance: number
-      numFriends: number
-    }
-    perms: {
-      build: [boolean, boolean, boolean, boolean]
-      destroy: [boolean, boolean, boolean, boolean]
-      switch: [boolean, boolean, boolean, boolean]
-      itemUse: [boolean, boolean, boolean, boolean]
-      flags: {
-        pvp: boolean
-        explosion: boolean
-        fire: boolean
-        mobs: boolean
-      }
-    }
-    ranks?: {
-      townRanks?: string[]
-      nationRanks?: string[]
-    }
-    friends: Entity[]
-}
-
 export interface SeenPlayer extends SquaremapOnlinePlayer {
     timesVanished: number
     online: boolean

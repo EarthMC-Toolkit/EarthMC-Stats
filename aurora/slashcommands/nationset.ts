@@ -7,20 +7,46 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import * as emc from "earthmc"
+import { 
+    formatString,
+    OfficialAPI
+} from "earthmc"
+
 import * as fn from '../../bot/utils/fn.js'
-import * as database from "../../bot/utils/database.js"
+import * as db from "../../bot/utils/database.js"
+
+import type { SlashCommand } from "../../../bot/types.js"
 
 const desc = "Used by the nation leader to set custom nation options. (Discord, Flag, Prefix)"
+const cmdData = new SlashCommandBuilder()
+    .setName("nationset")
+    .setDescription(desc)
+    .addStringOption(option => option.setName("name")
+        .setDescription("The name of your nation.")
+        .setRequired(true)
+    )
+    .addStringOption(option => option.setName("type")
+        .setDescription("The type of data to set.").setRequired(true)
+        .addChoices(
+            { name: "King Prefix", value: "prefix" }, 
+            { name: "Discord Invite", value: "discord" },
+            { name: "Flag", value: "flag" }
+        )
+    )
+    .addStringOption(option => option.setName("value")
+        .setDescription("The value of the type specified.")
+        .setRequired(true)
+    )
 
-export default {
+const nationSetCmd: SlashCommand<typeof cmdData> = {
     name: "nationset",
     description: desc,
+    data: cmdData,
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const nations = await database.Aurora.getNations().then(arr => arr.map(n => {
-            n.name = emc.formatString(n.name, true)
+        const nations = await db.Aurora.getNations().then(arr => arr.map(n => {
+            n.name = formatString(n.name, true)
             return n
         }))
 
@@ -36,7 +62,7 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const userID = interaction.user.id
-        const linkedPlayer = await emc.OfficialAPI.V3.uuidFromDiscord(userID).then(arr => arr[0])
+        const linkedPlayer = await OfficialAPI.V3.uuidFromDiscord(userID).then(arr => arr[0])
 
         const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer?.name.toLowerCase()
         if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
@@ -53,9 +79,9 @@ export default {
         const value = interaction.options.getString("value")
         const cleared = value.toLowerCase() == "none" || value.toLowerCase() == "clear"
 
-        const save = (n: database.DBSquaremapNation) => {
+        const save = (n: db.DBSquaremapNation) => {
             nations[nationIndex] = n
-            database.Aurora.setNations(nations)
+            db.Aurora.setNations(nations)
         }
 
         switch (interaction.options.getString("type").toLowerCase()) {
@@ -133,22 +159,7 @@ export default {
                 .setColor(Colors.Red)
             ]}).then((m: Message) => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
-    }, data: new SlashCommandBuilder().setName("nationset")
-        .setDescription(desc)
-        .addStringOption(option => option.setName("name")
-            .setDescription("The name of your nation.")
-            .setRequired(true)
-        )
-        .addStringOption(option => option.setName("type")
-            .setDescription("The type of data to set.").setRequired(true)
-            .addChoices(
-                { name: "King Prefix", value: "prefix" }, 
-                { name: "Discord Invite", value: "discord" },
-                { name: "Flag", value: "flag" }
-            )
-        )
-        .addStringOption(option => option.setName("value")
-            .setDescription("The value of the type specified.")
-            .setRequired(true)
-        )
+    }
 }
+
+export default nationSetCmd

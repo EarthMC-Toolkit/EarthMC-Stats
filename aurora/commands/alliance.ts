@@ -108,8 +108,9 @@ export default {
         const arg1Lower = args[0]?.toLowerCase()
 
         // /alliances or /alliance list
-        if (commandName == "/alliances" || commandName == "alliances" || arg1Lower == "list")
+        if (commandName == "/alliances" || commandName == "alliances" || arg1Lower == "list") {
             return sendAllianceList(message, m, args, 'all') // Includes all types.
+        }
         
         // /alliance <allianceName>
         if (args.length == 1 && arg1Lower != "list" && arg1Lower != "wizard" && arg1Lower != "score") {
@@ -255,9 +256,7 @@ export default {
 
             // Creating an alliance
             if (arg1 == "create" || arg1 == "new") {   
-                const allianceName = args[1]
-                const leaderName = !args[2] ? "None" : new ArgsHelper(args, 2).asString()
-                
+                const allianceName = args[1] 
                 if (isNumeric(allianceName)) {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error creating alliance")
@@ -279,6 +278,7 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                 
+                const leaderName = !args[2] ? "None" : new ArgsHelper(args, 2).asString()
                 const alliance = {
                     allianceName: allianceName,
                     leaderName: leaderName,

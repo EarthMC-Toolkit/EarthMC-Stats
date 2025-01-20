@@ -5,11 +5,11 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import * as database from '../../bot/utils/database.js'
-import { botDevs } from '../../bot/utils/fn.js'
+import * as database from '../../../bot/utils/database.js'
+import { botDevs } from '../../../bot/utils/fn.js'
 
-import AllianceModal from '../../bot/objects/AllianceModal.js'
-import type { SlashCommand } from "../../bot/types.js"
+import AllianceModal from '../../../bot/objects/AllianceModal.js'
+import type { SlashCommand } from "../../../bot/types.js"
 
 const editingChannels = ["971408026516979813"]
 const editorRole = "966359842417705020"

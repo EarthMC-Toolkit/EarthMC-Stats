@@ -372,7 +372,7 @@ async function updateLastSeen() {
 // }
 
 // async function liveQueue() {              
-//     const server = await MojangLib.servers.get("play.earthmc.net").catch(() => {})
+//     const server = await MojangLib.servers.get("vercel.earthmc.net").catch(() => {})
 //     const aurora = server ? await database.Aurora.getOnlinePlayerData() : null
 //     //const nova   = server ? await database.Nova.getOnlinePlayerData() : null
 

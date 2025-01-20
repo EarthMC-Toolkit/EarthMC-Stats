@@ -13,7 +13,7 @@ import { getFirestore } from 'firebase-admin/firestore'
 
 import { 
     setClient, 
-    setProduction, 
+    prod, setProduction, 
     setDatabase 
 } from "./bot/constants.js"
 
@@ -22,9 +22,7 @@ import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
 //#region Check production
-const prod = process.env.PROD == "true"
-setProduction(prod)
-
+setProduction(process.env.PROD == "true")
 console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
 //#endregion
 

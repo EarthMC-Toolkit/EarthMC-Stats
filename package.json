@@ -27,7 +27,7 @@
     "striptags": "^3.2.0",
     "tslib": "latest",
     "tsx": "latest",
-    "undici": "^5"
+    "undici": "^7"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",
