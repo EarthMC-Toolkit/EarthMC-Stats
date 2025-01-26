@@ -40,7 +40,7 @@ const rdyEvent: DJSEvent = {
             `${client.guilds.cache.size} Servers`, 'towns being created.',
             'emctoolkit.vercel.app', 'for Dynmap updates', 'for /help', 
             'nations die', 'Wales boat sink', 'towns fall', 'players travel',
-            'admins sleep', 'alliances forming', 'the queue grow'
+            'admin abuse', 'alliances form', 'the queue grow', 'Fix sleep'
         ]
     
         await initUpdates(prod)
