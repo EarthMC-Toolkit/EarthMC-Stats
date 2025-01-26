@@ -73,7 +73,6 @@ setDatabase(db)
 
 //#region Event Handler
 const eventFiles = readTsFiles(`bot/events`)
-
 for (const file of eventFiles) {
     const eventFile = await import(`./bot/events/${file}`)
     const event = eventFile.default as DJSEvent

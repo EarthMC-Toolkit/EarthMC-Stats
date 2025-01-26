@@ -229,9 +229,7 @@ export default {
             }
 
             //#region Alliance editing
-            const botDev = botDevs.includes(message.author.id)
             const isThread = message.channel.type == ChannelType.PublicThread
-
             if (!allowedChannels.includes(message.channel.id) && !isThread) {
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error running command")
@@ -246,10 +244,12 @@ export default {
             }
 
             // Correct channel, but not an editor or dev.
+            const botDev = botDevs.includes(message.author.id)
             const isEditor = message.member.roles.cache.has(editorID)
             if (!botDev && !isEditor) return sendDevsOnly(m)
 
             const seniorEditor = message.member.roles.cache.has(seniorEditorID)
+            const devOrSnr = botDev || seniorEditor
 
             const arg1 = args[0]?.toLowerCase()
             const arg2 = args[1]?.toLowerCase()
@@ -510,20 +510,17 @@ export default {
             }
             
             if (arg1 == "delete" || arg1 == "disband") {
-                if (!seniorEditor) {
-                    if (isEditor) return m.edit({embeds: [new EmbedBuilder()
-                        .setTitle("Silly editor!")
-                        .setDescription("Only senior editors have permissions to delete alliances.")
-                        .setColor(Colors.Orange)
-                        .setTimestamp()
-                        .setAuthor({
-                            name: message.author.tag, 
-                            iconURL: message.author.displayAvatarURL()
-                        })
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                    return sendDevsOnly(m)
-                }
+                if (!devOrSnr) return sendDevsOnly(m)
+                if (isEditor) return m.edit({embeds: [new EmbedBuilder()
+                    .setTitle("Silly editor!")
+                    .setDescription("Only senior editors have permissions to delete alliances.")
+                    .setColor(Colors.Orange)
+                    .setTimestamp()
+                    .setAuthor({
+                        name: message.author.tag, 
+                        iconURL: message.author.displayAvatarURL()
+                    })
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                 const alliances = await database.Aurora.getAlliances()
 

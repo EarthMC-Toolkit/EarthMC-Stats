@@ -12,13 +12,15 @@ import {
 } from "../constants.js"
 
 import { 
-    type Client,
     ActivityType,
     ContextMenuCommandBuilder,
-    Collection
+    Collection,
+    type Client,
+    type SlashCommandBuilder,
+    type ApplicationCommandDataResolvable
 } from "discord.js"
 
-import type { Button, DJSEvent, ExtendedClient } from "../types.js"
+import type { BaseCommand, Button, DJSEvent, ExtendedClient, SlashCommand } from "../types.js"
 //#endregion
 
 let lastActivity = -1
@@ -71,18 +73,15 @@ const rdyEvent: DJSEvent = {
 }
 
 async function registerCommands(client: ExtendedClient) {
-    const slashCommands = fn.readTsFiles(`aurora/slashcommands`)
     const auroraCmds = fn.readTsFiles(`aurora/commands`)
     //const novaCmds = fn.readTsFiles(`nova/commands`)
 
-    const data = []
-
     for (const file of auroraCmds) {
         const commandFile = await import(`../../aurora/commands/${file}`)
-        const command = commandFile.default
+        const cmd = commandFile.default as BaseCommand
 
-        if (!command.disabled) 
-            client.auroraCommands.set(command.name, command)
+        if (cmd.disabled) continue
+        client.auroraCommands.set(cmd.name, cmd)
     }
 
     // for (const file of novaCmds) {
@@ -93,30 +92,38 @@ async function registerCommands(client: ExtendedClient) {
     //         client['novaCommands'].set(command.name, command)
     // }
 
-    for (const file of slashCommands) {
+    const slashCmds = fn.readTsFiles(`aurora/slashcommands`)
+    const data: ApplicationCommandDataResolvable[] = []
+
+    for (const file of slashCmds) {
         const commandFile = await import(`../../aurora/slashcommands/${file}`)
-        const command = commandFile.default
+        const slashCmd = commandFile.default as SlashCommand<SlashCommandBuilder>
 
-        if (command.disabled) continue
-    
-        client.slashCommands.set(command.name, command)
+        if (slashCmd.disabled) continue
+        client.slashCommands.set(slashCmd.name, slashCmd)
 
-        if (command.data) data.push(command.data.toJSON())
-        else data.push({
-            name: command.name,
-            description: command.description
+        if (slashCmd.data) {
+            data.push(slashCmd.data.toJSON())
+            continue
+        }
+        
+        data.push({
+            name: slashCmd.name,
+            description: slashCmd.description
         })
     }
 
-    const linkAction = new ContextMenuCommandBuilder().setName("Link User").setType(2) 
-    data.push(linkAction)
+    data.push(new ContextMenuCommandBuilder()
+        .setName("Link User")
+        .setType(2) // ApplicationCommandType.User
+    )
 
     if (prod) await client.application.commands.set(data)
-    else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
+    //else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
 
     console.log(`Commands registered.
         \nRegular: ${auroraCmds.length}
-        \nSlash: ${slashCommands.length}`
+        \nSlash: ${slashCmds.length}`
     )
 }
 

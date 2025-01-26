@@ -392,9 +392,13 @@ export function canViewAndSend(channel: Channel) {
 export const secToMs = (ts: number) => Math.round(ts / 1000)
 export const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
 
-export const readTsFiles = (str: string) => {
-    const fullPath = path.join(path.resolve(process.cwd(), `./${str}`))
-    return fs.readdirSync(fullPath).filter(file => file.endsWith('.ts'))
+/**
+ * Reads all TypeScript files (.ts) in the directory at the specified path starting from the project root (cwd).
+ * @param str 
+ */
+export const readTsFiles = (dirPath: string) => {
+    const absPath = path.resolve(process.cwd(), dirPath)
+    return fs.readdirSync(absPath).filter(file => file.endsWith('.ts'))
 }
 
 export class ArgsHelper<T extends string> {

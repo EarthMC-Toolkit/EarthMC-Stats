@@ -15,7 +15,7 @@ import {
 import * as fn from '../../bot/utils/fn.js'
 import * as db from "../../bot/utils/database.js"
 
-import type { SlashCommand } from "../../../bot/types.js"
+import type { SlashCommand } from "../../bot/types.js"
 
 const desc = "Used by the nation leader to set custom nation options. (Discord, Flag, Prefix)"
 const cmdData = new SlashCommandBuilder()
