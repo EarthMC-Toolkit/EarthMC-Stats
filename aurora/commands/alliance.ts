@@ -249,7 +249,6 @@ export default {
             if (!botDev && !isEditor) return sendDevsOnly(m)
 
             const seniorEditor = message.member.roles.cache.has(seniorEditorID)
-            const devOrSnr = botDev || seniorEditor
 
             const arg1 = args[0]?.toLowerCase()
             const arg2 = args[1]?.toLowerCase()
@@ -510,8 +509,8 @@ export default {
             }
             
             if (arg1 == "delete" || arg1 == "disband") {
-                if (!devOrSnr) return sendDevsOnly(m)
-                if (isEditor) return m.edit({embeds: [new EmbedBuilder()
+                if (!botDev && !isEditor) return sendDevsOnly(m)
+                if (isEditor && !seniorEditor) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Silly editor!")
                     .setDescription("Only senior editors have permissions to delete alliances.")
                     .setColor(Colors.Orange)
