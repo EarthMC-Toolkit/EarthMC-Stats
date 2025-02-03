@@ -23,7 +23,7 @@ export default {
             .setFooter(devsFooter(client))
             .setTimestamp()
 
-        const serverData = await MojangLib.servers.get("vercel.earthmc.net")
+        const serverData = await MojangLib.servers.get("join.earthmc.net")
         const auroraData = await database.Aurora.getMapData()
 
         if (serverData && !auroraData) {
