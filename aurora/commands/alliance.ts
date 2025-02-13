@@ -1302,29 +1302,29 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
     const leaderNames = foundAlliance.leaderName.split(', ')
-    const leaderPlayers = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase()))
+    // const leaderPlayers = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase()))
 
-    const leaderSet = new Set<string>()
-    const len = leaderPlayers.length
+    // const leaderSet = new Set<string>()
+    // const len = leaderPlayers.length
 
-    for (let i = 0; i < len; i++) {
-        const leader = leaderPlayers[i]
-        const leaderID = leader.linkedID
+    // for (let i = 0; i < len; i++) {
+    //     const leader = leaderPlayers[i]
+    //     const leaderID = leader.linkedID
 
-        if (leaderID) {
-            const chan = message.channel as TextChannel
-            if (chan.members.get(leaderID.toString())) {
-                // Use mention instead if leader can view channel where command was issued.
-                leaderSet.add(`<@${leaderID}>`)
-                continue
-            }
-        }
+    //     if (leaderID) {
+    //         const chan = message.channel as TextChannel
+    //         if (chan.members.get(leaderID.toString())) {
+    //             // Use mention instead if leader can view channel where command was issued.
+    //             leaderSet.add(`<@${leaderID}>`)
+    //             continue
+    //         }
+    //     }
 
-        leaderSet.add(backtick(leader.name))
-    }
+    //     leaderSet.add(backtick(leader.name))
+    // }
     
-    const leaders = [...leaderSet]
-    const leadersStr = leaders.length > 0 ? leaders.join(", ") : "None"
+    //const leaders = [...leaderSet]
+    const leadersStr = leaderNames.length > 0 ? leaderNames.map(name => backtick(name)).join(", ") : "None"
 
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
     const allianceType = 
