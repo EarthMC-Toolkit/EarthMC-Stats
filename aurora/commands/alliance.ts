@@ -1303,12 +1303,14 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
     const leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
+        const name = backtick(p.name)
+
         if (p.town.uuid) {
             if (p.nation.uuid) {
-                return `${p.name} of ${p.town.name} (${p.nation.name})`
+                return `${name} of ${p.town.name} (${p.nation.name})`
             }
 
-            return `${p.name} of ${p.town.name}`
+            return `${name} of ${p.town.name}`
         }
         
         return p.name
