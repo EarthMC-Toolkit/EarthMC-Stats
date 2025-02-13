@@ -1302,12 +1302,12 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .setTimestamp()
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-    const leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
+    let leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
         const name = backtick(p.name)
 
         if (p.town.uuid) {
             if (p.nation.uuid) {
-                return `${name} of ${p.town.name} (${p.nation.name})`
+                return `${name} of ${p.town.name} (**${p.nation.name}**)`
             }
 
             return `${name} of ${p.town.name}`
@@ -1315,6 +1315,11 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         
         return p.name
     }).join("\n") : "None"
+
+    // Too many characters to show leader affiliations, fall back to just names.
+    if (leadersStr.length > 1024) {
+        leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")
+    }
 
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
     const allianceType = 
