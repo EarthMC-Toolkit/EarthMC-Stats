@@ -266,8 +266,8 @@ export default {
                 }
                 
                 const alliances = await database.Aurora.getAlliances()
+
                 const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-                
                 if (foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription("The alliance you're trying to create already exists! Please use /alliance add.")
@@ -676,8 +676,6 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
 
-                //console.log(nationsToRemove.toString())
-
                 const len = nationsToRemove.length
                 for (let i = 0; i < len; i++) {
                     const cur = nationsToRemove[i]
@@ -743,10 +741,9 @@ export default {
                 //#region /a set leader
                 if (arg2 == "leader") {
                     const alliances = await database.Aurora.getAlliances()
-
                     const allianceName = args[2]
-                    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
+                    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error updating alliance")
                         .setDescription("Unable to update that alliance as it does not exist!")
@@ -766,7 +763,7 @@ export default {
                     
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                        .setDescription("The alliance leader has been set to: `" + foundAlliance.leaderName + "`")
+                        .setDescription(`The alliance leader has been set to: ${backtick(foundAlliance.leaderName)}`)
                         .setAuthor({
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL() 
@@ -781,8 +778,8 @@ export default {
                 if (arg2 == "discord" || arg2 == "invite") {
                     const alliances = await database.Aurora.getAlliances()
                     const allianceName = args[2]
-                    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
+                    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                     if (!foundAlliance) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle("Error updating alliance")
                         .setDescription("Unable to update that alliance as it does not exist!")
@@ -794,9 +791,13 @@ export default {
                         })
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     
+                    let removing = false
+
                     const inviteInput = args[3]
                     if (inviteInput.toLowerCase() == "none" || inviteInput.toLowerCase() == "null") {
                         foundAlliance.discordInvite = "No discord invite has been set for this alliance"
+
+                        removing = true
                     } else {
                         const inviteCode = inviteInput.split("/").pop() // Extract code from input (works if link or code)
 
@@ -813,7 +814,7 @@ export default {
                                 .setTimestamp()
                             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                         }
-    
+
                         foundAlliance.discordInvite = "https://discord.gg/" + inviteCode
                     }
 
@@ -824,12 +825,15 @@ export default {
 
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                        .setDescription("The alliance discord link has been set to: " + inviteInput)
+                        .setDescription(removing ? 
+                            "The discord invite for this alliance has been removed." :
+                            `The discord invite for this alliance has been set to: ${foundAlliance.discordInvite}`
+                        )
                         .setAuthor({
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL()
                         })
-                        .setColor(Colors.DarkBlue)
+                        .setColor(removing ? Colors.Orange : Colors.DarkBlue)
                         .setTimestamp()
                     ]})
                 }
