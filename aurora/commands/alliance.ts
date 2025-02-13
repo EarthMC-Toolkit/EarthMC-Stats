@@ -753,8 +753,9 @@ export default {
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL()
                         })
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     
+                    // TODO: Check players exist before setting leader.
                     foundAlliance.leaderName = new ArgsHelper(args, 3).asString()
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
@@ -764,12 +765,12 @@ export default {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                         .setDescription(`The alliance leader has been set to: ${backtick(foundAlliance.leaderName)}`)
+                        .setColor(Colors.DarkBlue)
+                        .setTimestamp()
                         .setAuthor({
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL() 
                         })
-                        .setColor(Colors.DarkBlue)
-                        .setTimestamp()
                     ]})
                 }
                 //#endregion
@@ -802,18 +803,16 @@ export default {
                         const inviteCode = inviteInput.split("/").pop() // Extract code from input (works if link or code)
 
                         const inviteRes = await fetch("https://discordapp.com/api/invite/" + inviteCode).then(res => res.json()) as any
-                        if (inviteRes.code == 10006) {
-                            return m.edit({embeds: [new EmbedBuilder()
-                                .setTitle("Error updating alliance")
-                                .setDescription("Given input was not an invite code or link. Please try again.")
-                                .setAuthor({
-                                    name: message.author.username,
-                                    iconURL: message.author.displayAvatarURL()
-                                })
-                                .setColor(Colors.Red)
-                                .setTimestamp()
-                            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-                        }
+                        if (inviteRes.code == 10006) return m.edit({embeds: [new EmbedBuilder()
+                            .setTitle("Error updating alliance")
+                            .setDescription("Given input was not an invite code or link. Please try again.")
+                            .setColor(Colors.Red)
+                            .setTimestamp()
+                            .setAuthor({
+                                name: message.author.username,
+                                iconURL: message.author.displayAvatarURL()
+                            })
+                        ]}).then(m => setTimeout(() => m.delete(), 15000)).catch(() => {})
 
                         foundAlliance.discordInvite = "https://discord.gg/" + inviteCode
                     }
@@ -825,6 +824,8 @@ export default {
 
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                        .setColor(removing ? Colors.Orange : Colors.DarkBlue)
+                        .setTimestamp()
                         .setDescription(removing ? 
                             "The discord invite for this alliance has been removed." :
                             `The discord invite for this alliance has been set to: ${foundAlliance.discordInvite}`
@@ -833,8 +834,6 @@ export default {
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL()
                         })
-                        .setColor(removing ? Colors.Orange : Colors.DarkBlue)
-                        .setTimestamp()
                     ]})
                 }
                 //#endregion
