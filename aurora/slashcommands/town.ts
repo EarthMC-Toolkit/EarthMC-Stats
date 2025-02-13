@@ -17,7 +17,10 @@ import {
 
 import { Aurora, formatString, NotFoundError } from 'earthmc'
 
-import type { DBNation, DBSquaremapTown, TownDataItem } from '../../bot/types.js'
+import type { 
+    TownDataItem,
+    DBSquaremapTown, DBSquaremapNation
+} from '../../bot/types.js'
 
 const invalidUsageEmbed = () => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -208,7 +211,7 @@ export default {
                 townEmbed.setDescription(`*${town.board}*`)
             }
 
-            let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBNation
+            let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBSquaremapNation
             if (townNation instanceof NotFoundError) {
                 townNation = null
             }

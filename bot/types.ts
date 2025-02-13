@@ -132,17 +132,17 @@ export type TownInfo = {
     ruined?: boolean 
 }
 
-export type NationInfo = Partial<{
+export type CustomNationInfo = Partial<{
     kingPrefix: string
     flag: string
     discord: string
 }>
 
-export type DBTown = Town & TownInfo
+//export type DBTown = Town & TownInfo
 export type DBSquaremapTown = SquaremapTown & TownInfo
 
-export type DBNation = Nation & NationInfo
-export type DBSquaremapNation = SquaremapNation & NationInfo
+//export type DBNation = Nation & CustomNationInfo
+export type DBSquaremapNation = SquaremapNation & CustomNationInfo
 
 export interface SkinOpts {
     view: SkinType2D | SkinType3D

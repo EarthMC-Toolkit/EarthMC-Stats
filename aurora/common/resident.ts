@@ -75,10 +75,9 @@ class ResidentHelper extends BaseHelper {
         if (resident.town?.uuid) {
             const resTown = await OfficialAPI.V3.towns(resident.town.name.toLowerCase()).then(arr => arr[0])
 
-            let rank = resTown.mayor.name == resident.name ? "Mayor" : "Resident"
-            if (rank == "Mayor" && resTown.status.isCapital) 
-                rank = "Nation Leader" 
-
+            const isMayor = resTown.mayor.name == resident.name
+            const rank = isMayor ? (resTown.status.isCapital ? "Nation Leader" : "Mayor") : "Resident"
+            
             resident['rank'] = rank
         }
 
@@ -103,18 +102,16 @@ class ResidentHelper extends BaseHelper {
         const res: any = this.apiResident || this.dbResident
         //const formattedPlayerName = res.name.replace(/_/g, "\\_")
         
-        const affiliation = {
-            town: (res.town?.name ?? res.town) ?? res.townName,
-            nation: (res.nation?.name ?? res.nation) ?? res.townNation
-        }
-
+        const affiliatedTown = (res.town?.name ?? res.town) ?? res.townName
+        const affiliatedNation = (res.nation?.name ?? res.nation) ?? res.townNation
+        
         this.embed.setTitle(`Resident Info | \`${res.name}\``)
 
         if (res.about && res.about != defaultAbout) {
             this.embed.setDescription(`*${res.about}*`)
         }
 
-        this.addField("Affiliation", `${affiliation.town} (${affiliation.nation})`, true)
+        this.addField("Affiliation", `${affiliatedTown} (${affiliatedNation})`, true)
         if (res.rank) this.addField("Rank", res.rank, true)
 
         this.tryAddNickname()

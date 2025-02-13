@@ -733,6 +733,7 @@ export default {
                 ]})
             } 
             
+            // TODO: Use switch case for set options?
             if (arg1 == "set") {
                 if (!arg2) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Please provide a valid option for this command.\nChoices: Leader, Discord, Type or Image/Flag.`)
@@ -740,6 +741,7 @@ export default {
                     .setColor(Colors.Red)
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 
+                //#region /a set leader
                 if (arg2 == "leader") {
                     const alliances = await database.Aurora.getAlliances()
 
@@ -774,7 +776,9 @@ export default {
                         .setTimestamp()
                     ]})
                 }
+                //#endregion
 
+                //#region /a set discord
                 if (arg2 == "discord" || arg2 == "invite") {
                     const alliances = await database.Aurora.getAlliances()
                     const allianceName = args[2]
@@ -789,23 +793,30 @@ export default {
                             name: message.author.username,
                             iconURL: message.author.displayAvatarURL()
                         })
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     
                     const inviteInput = args[3]
-                    if (!inviteInput.startsWith("https://discord.gg")) {
-                        return m.edit({embeds: [new EmbedBuilder()
-                            .setTitle("Error updating alliance")
-                            .setDescription("That invite is not valid. Make sure it begins with `https://discord.gg`.")
-                            .setAuthor({
-                                name: message.author.username,
-                                iconURL: message.author.displayAvatarURL()
-                            })
-                            .setColor(Colors.Red)
-                            .setTimestamp()
-                        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-                    }
+                    if (inviteInput.toLowerCase() == "none" || inviteInput.toLowerCase() == "null") {
+                        foundAlliance.discordInvite = "No discord invite has been set for this alliance"
+                    } else {
+                        const inviteCode = inviteInput.split("/").pop() // Extract code from input (works if link or code)
 
-                    foundAlliance.discordInvite = inviteInput
+                        const inviteRes = await fetch("https://discordapp.com/api/invite/" + inviteCode).then(res => res.json()) as any
+                        if (inviteRes.code == 10006) {
+                            return m.edit({embeds: [new EmbedBuilder()
+                                .setTitle("Error updating alliance")
+                                .setDescription("Given input was not an invite code or link. Please try again.")
+                                .setAuthor({
+                                    name: message.author.username,
+                                    iconURL: message.author.displayAvatarURL()
+                                })
+                                .setColor(Colors.Red)
+                                .setTimestamp()
+                            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+                        }
+    
+                        foundAlliance.discordInvite = "https://discord.gg/" + inviteCode
+                    }
 
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                     alliances[allianceIndex] = foundAlliance
@@ -823,8 +834,10 @@ export default {
                         .setTimestamp()
                     ]})
                 }
-                
-                if (arg2== "image" || arg2 == "flag") {
+                //#endregion
+
+                //#region /a set flag
+                if (arg2 == "image" || arg2 == "flag") {
                     const alliances = await database.Aurora.getAlliances()
 
                     const allianceName = args[2]
@@ -860,7 +873,10 @@ export default {
                         .setTimestamp()
                     ]}).catch(() => {})
                 }
-                else if (arg2 == "type") { 
+                //#endregion                
+
+                //#region /a set type
+                if (arg2 == "type") { 
                     const alliances = await database.Aurora.getAlliances()
 
                     const allianceName = args[2]
@@ -908,7 +924,11 @@ export default {
                         .setColor(Colors.DarkBlue)
                         .setTimestamp()]
                     }).catch(() => {})
-                } else if (arg2 == "colours" || arg2 == "colors") {
+                }
+                //#endregion
+                
+                //#region /a set colours
+                if (arg2 == "colours" || arg2 == "colors") {
                     const alliances = await database.Aurora.getAlliances()
 
                     const allianceName = args[2]
@@ -953,7 +973,9 @@ export default {
                         .setTimestamp()
                     ]}).catch(() => {})                 
                 }
+                //#endregion
                 
+                //#region /a set fullname
                 if (arg2 == "fullname" || arg2 == "label") {
                     const alliances = await database.Aurora.getAlliances()
 
@@ -994,14 +1016,15 @@ export default {
                         .setTimestamp()
                     ]}).catch(() => {})
                 }
-                
+                //#endregion
+
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`${args[1]} isn't a valid option, please try again.`)
                     .setTimestamp()
                     .setColor(Colors.Red)
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
-
+            
             if (arg1 == "merge") {
                 const alliances = await database.Aurora.getAlliances()
 
