@@ -19,7 +19,7 @@ import {
     jsonReq, paginator 
 } from "../../bot/utils/fn.js"
 
-import { Aurora, type SquaremapPlayer } from "earthmc"
+import { Aurora, OfficialAPI, type SquaremapPlayer } from "earthmc"
 
 const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
     .setTitle("That command is for developers only!")
@@ -1291,8 +1291,10 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .setTimestamp()
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-    const players = await database.getPlayers()
-    if (!players) return m.edit({embeds: [new EmbedBuilder()
+    const leaderNames = foundAlliance.leaderName.split(', ')
+
+    const leaderPlayers = await OfficialAPI.V3.players(...leaderNames)
+    if (!leaderPlayers) return m.edit({embeds: [new EmbedBuilder()
         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
         .setTitle("Database error occurred")
         .setDescription("Failed to fetch players needed for this command to work.")
@@ -1300,9 +1302,17 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .setTimestamp()
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-    const leaderNames = foundAlliance.leaderName.split(', ')
-    const leaderPlayers = players.filter(p => leaderNames.find(l => l.toLowerCase() == p.name.toLowerCase())) // Don't include non-existent players
-    const leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => backtick(p.name)).join(", ") : "None"
+    const leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
+        if (p.town.uuid) {
+            if (p.nation.uuid) {
+                return `${p.name} of ${p.town.name} (${p.nation.name})`
+            }
+
+            return `${p.name} of ${p.town.name}`
+        }
+        
+        return p.name
+    }).join("\n") : "None"
 
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
     const allianceType = 
