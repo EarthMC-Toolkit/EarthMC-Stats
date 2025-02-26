@@ -17,7 +17,7 @@ import {
 const EMBED_COLOUR = "#d67a82"
 
 function displayOnlineStaff(client: Client, interaction: ChatInputCommandInteraction, ops: Player[]) {
-    const onlineStaff = staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+    const onlineStaff = staff.all().filter(sm => ops.some(op => op.name.toLowerCase() == sm.toLowerCase()))
     return interaction.editReply({embeds: [new EmbedBuilder()
         .setTitle("Online Activity | Staff")
         .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
@@ -62,7 +62,7 @@ export default {
                     //ephemeral: true
                 })
 
-                const towns = allTowns.filter(t => ops.find(op => op.name == t.mayor))
+                const towns = allTowns.filter(t => ops.some(op => op.name == t.mayor))
                 sortByKey(towns, 'mayor')
             
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
@@ -79,7 +79,7 @@ export default {
                     //ephemeral: true
                 })
 
-                const nations = allNations.filter(n => ops.find(op => op.name == n.king))
+                const nations = allNations.filter(n => ops.some(op => op.name == n.king))
                 sortByKey(nations, 'king')
             
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)

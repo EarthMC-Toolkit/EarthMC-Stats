@@ -118,7 +118,7 @@ export async function getAlliance(name: string) {
     const opData = await getOnlinePlayerData()
 
     // Get nations that are in the inputted alliance.
-    const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
+    const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
     const len = allianceNations.length
 
     for (let i = 0; i < len; i++) {
@@ -128,7 +128,7 @@ export async function getAlliance(name: string) {
 
         if (!opData) continue
 
-        const onlineInNation = n.residents.filter(res => opData.players.find(op => op.name == res))
+        const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
         foundAlliance.online = fastMerge([], onlineInNation)
     }
 

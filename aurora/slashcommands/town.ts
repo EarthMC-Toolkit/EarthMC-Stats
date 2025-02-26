@@ -87,7 +87,7 @@ export default {
                 onlineTownData.forEach(a => {                   
                     // If town doesnt exist, add it.
                     if (!ctx[a.name]) {           
-                        a.onlineResidents = a.residents.filter(res => ops.find(op => res === op.name))
+                        a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
 
                         ctx[a.name] = { 
                             name: a.name, 
@@ -311,7 +311,7 @@ export default {
                 //         "No residents are online in " + town.name + "."
                 //     ))
                 // } else {
-                //     onlineResidents = removeDuplicates(town.residents.filter(res => townyData.players.find(op => res === op.name)))
+                //     onlineResidents = removeDuplicates(town.residents.filter(res => townyData.players.some(op => res === op.name)))
                 //     const onlineResLen = onlineResidents.length
 
                 //     if (onlineResLen > 0) {

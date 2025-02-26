@@ -143,7 +143,7 @@ export default {
 
                     const name = getNameOrLabel(foundAlliance)
                     
-                    const allianceOps = ops.filter(op => foundAlliance.online.find(p => p == op.name)) ?? []
+                    const allianceOps = ops.filter(op => foundAlliance.online.some(p => p == op.name)) ?? []
                     if (allianceOps.length < 1) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Online in ${name} [0]`)
                         .setDescription("No players are online in this alliance :(")

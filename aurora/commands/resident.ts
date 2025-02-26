@@ -1,4 +1,4 @@
-import { devsFooter } from '../../bot/utils/fn.js'
+import { backtick, devsFooter } from '../../bot/utils/fn.js'
 
 import { ResidentHelper } from '../common/resident.js'
 import type { MessageCommand } from '../../bot/types.js'
@@ -23,7 +23,7 @@ const resCmd: MessageCommand = {
     description: "Displays info for a specific resident.",
     slashCommand: true,
     aliases: ["res", "player"],
-    run: async (client: Client, message: Message, args) => {    
+    run: async (client: Client, message: Message, args: string[]) => {    
         const req = args.join(" ")
         const m = await message.reply({embeds: [new EmbedBuilder()
             .setTitle("<a:loading:966778243615191110> Fetching resident data, this might take a moment.")
@@ -48,9 +48,9 @@ const resCmd: MessageCommand = {
         const resHelper = new ResidentHelper(client)
         const exists = await resHelper.init(input)
 
-        if (!exists || !resHelper.apiResident) {
+        if (!exists /*|| !resHelper.apiResident*/) {
             return m.edit({embeds: [errEmbed(client, message)
-                .setTitle(`${req} isn't a registered player name, please try again.`)
+                .setTitle(`${backtick(req)} is not a registered player, please try again.`)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
 

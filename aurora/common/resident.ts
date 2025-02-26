@@ -145,19 +145,22 @@ class ResidentHelper extends BaseHelper {
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
         this.addField("Status", statusStr, true)
 
-        if (lastOnlineTs != 0 && this.status == "Offline")
+        if (lastOnlineTs != 0 && this.status == "Offline") {
             this.addField("Last Online", `<t:${secToMs(lastOnlineTs)}:R>`, true)
+        }
 
-        if (registeredTs != 0)
+        if (registeredTs != 0) {
             this.addField("Registered", `<t:${secToMs(registeredTs)}:F>`, true)
+        }
     }
 
     addDatesFromDB = () => {
         const lastOnlineTs = this.pInfo?.lastOnline?.nova
         if (!lastOnlineTs || lastOnlineTs == 0) return
 
-        if (this.status == "Offline")
+        if (this.status == "Offline") {
             this.addField("Last Online", `<t:${lastOnlineTs}:R>`, true)
+        }
     }
 
     tryAddAvatar = () => {
@@ -175,8 +178,9 @@ class ResidentHelper extends BaseHelper {
             const nickname = striptags(opName)
 
             // If the player has a nickname, add the Nickname field.
-            if (opName !== nickname && nickname.length > 0)
+            if (opName !== nickname && nickname.length > 0) {
                 this.addField("Nickname", nickname, true)
+            }
         }
     }
 

@@ -93,13 +93,13 @@ async function getAlliance(name: string) {
 
         return getNations().then(async nations => {
             // Get nations that are in the inputted alliance.
-            const allianceNations = nations.filter(nation => foundAlliance.nations.find(n => n.toLowerCase() == nation.name.toLowerCase()))
+            const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
             let onlineInAlliance = []
             
             // Compare against 
-            return getOnlinePlayerData().then(async (data: any) => {
+            return getOnlinePlayerData().then(async data => {
                 allianceNations.forEach(allianceNation => {
-                    const onlineInNation = allianceNation.residents.filter(res => data.players.find(op => op.account == res))
+                    const onlineInNation = allianceNation.residents.filter(res => data.players.some(op => op.account == res))
                     onlineInAlliance = onlineInAlliance.concat(onlineInNation)
                 })
     

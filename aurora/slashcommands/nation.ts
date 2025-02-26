@@ -11,21 +11,26 @@ import {
 } from '../../bot/utils/fn.js'
 
 import {
+    type Message,
     type Client, 
     type TextChannel,
     type ChatInputCommandInteraction, 
     EmbedBuilder, SlashCommandBuilder, 
-    Colors, ButtonStyle,
-    type Message
+    Colors, ButtonStyle
 } from "discord.js"
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
 
-import type { SquaremapTown } from 'earthmc'
-import { Aurora, NotFoundError } from 'earthmc'
+import { 
+    type SquaremapTown,
+    NotFoundError, Aurora
+} from 'earthmc'
 
-import type { DBSquaremapNation, NationItem, TownItem } from '../../bot/types.js'
+import type {
+    DBSquaremapNation,
+    NationItem, TownItem 
+} from '../../bot/types.js'
 
 export default {
     name: "nation",
@@ -270,7 +275,7 @@ export default {
                         embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
                         embedField("Size", chunksStr, true),
                         embedField("Residents", `\`${nationResLength.toString()}\``, true),
-                        embedField("Bonus Grant", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
+                        embedField("<:chunk:1318944677562679398> Nation Bonus", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                     )
     
                 if (nation.discord) 
@@ -279,7 +284,7 @@ export default {
                 const ops = await Aurora.Players.online().catch(() => {})
                 if (ops) {
                     // Filter nation residents by which are online
-                    const onlineNationResidents = removeDuplicates(nation.residents.filter(res => ops.find(op => res == op.name)))
+                    const onlineNationResidents = removeDuplicates(nation.residents.filter(res => ops.some(op => res == op.name)))
                     
                     if (onlineNationResidents.length >= 1) nationEmbed.addFields(embedField(
                         "Online Residents [" + onlineNationResidents.length + "]", 

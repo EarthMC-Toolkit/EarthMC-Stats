@@ -17,7 +17,8 @@ const getStaff = async(activeOnly: boolean) => {
     const players = await database.getPlayers()
     const staffList = activeOnly ? staff.active : staff.all()
 
-    return players.filter(p => staffList.find(sm => sm.toLowerCase() == p.name.toLowerCase())).map(player => { 
+    const staffPlayers = players.filter(p => staffList.some(sm => sm.toLowerCase() == p.name.toLowerCase()))
+    return staffPlayers.map(player => {
         const id = player?.linkedID
         return (!id || id == '') ? player.name.replace(/_/g, "\\_") : `<@${id}>`
     })
@@ -37,7 +38,7 @@ export default {
                     //ephemeral: true
                 })
 
-                const onlineStaff = staff.all().filter(sm => ops.find(op => op.name.toLowerCase() == sm.toLowerCase()))
+                const onlineStaff = staff.all().filter(sm => ops.some(op => op.name.toLowerCase() == sm.toLowerCase()))
                 const list = "```" + onlineStaff.join(", ").toString() + "```"
 
                 return await interaction.reply({embeds: [new EmbedBuilder()
