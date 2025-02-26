@@ -616,8 +616,8 @@ export default {
                     }
 
                     // If the current nation doesn't already exist in the alliance, add it.
-                    const foundNation = foundAlliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
-                    if (!foundNation) {
+                    const nationExists = foundAlliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
+                    if (!nationExists) {
                         foundAlliance.nations.push(nation.name)
                         nationsAdded.push(nation.name)
                     }
@@ -659,7 +659,6 @@ export default {
 
                 const formattedArgs = new ArgsHelper(args, 2)
                 const nationsToRemove = formattedArgs.asArray()
-                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 
                 if (!nationsToRemove) {
                     console.error(`Failed to remove nations from ${getNameOrLabel(foundAlliance)}`)
@@ -693,15 +692,17 @@ export default {
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     }
 
-                    const foundAllianceNations = foundAlliance.nations as any[]
-                    const lower = cur?.toLowerCase()
-
-                    const foundNation = foundAllianceNations.find(nation => nation.toLowerCase() == lower)
-                    const foundNationIndex = foundAllianceNations.findIndex(nation => nation.toLowerCase() == lower)
-                                        
+                    const foundNationIndex = foundAlliance.nations.findIndex(nation => nation.toLowerCase() == cur?.toLowerCase())
+    
                     // If the current nation exists in the alliance, remove it.
-                    if (foundNation) foundAllianceNations.splice(foundNationIndex, 1)
-                    else nationsToRemove.splice(foundNationIndex, 1)
+                    if (foundNationIndex != -1) {
+                        foundAlliance.nations.splice(foundNationIndex, 1)
+                    } else {
+                        // Remove the current nation and account for it by decrementing 
+                        // so that we correctly check the next nation (now at same index).
+                        nationsToRemove.splice(i, 1)
+                        i--
+                    }
                 }
             
                 if (nationsToRemove.length < 1) return m.edit({embeds: [new EmbedBuilder()
@@ -715,12 +716,14 @@ export default {
                     })
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
+                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
+
                 alliances[allianceIndex] = foundAlliance
                 database.Aurora.setAlliances(alliances)
 
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                    .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```")
+                    .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```") // TODO: Actually track removed nations.
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()
                     .setAuthor({ 
