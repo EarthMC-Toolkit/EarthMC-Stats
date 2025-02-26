@@ -102,4 +102,4 @@ const interactionCreate: DJSEvent = {
     }
 }
 
-export default DJSEvent
+export default interactionCreate
