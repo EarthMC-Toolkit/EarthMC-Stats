@@ -15,7 +15,7 @@ import {
 } from "../../bot/types.js"
 
 import { backtick, secToMs } from "../../bot/utils/fn.js"
-import { BaseHelper } from "./base.js"
+import { BaseCommandHelper } from "./base.js"
 
 const buildSkinURL = (opts: SkinOpts) => {
     const domain = "https://visage.surgeplay.com/"
@@ -26,7 +26,7 @@ const buildSkinURL = (opts: SkinOpts) => {
 
 const defaultAbout = "/res set about [msg]"
 
-class ResidentHelper extends BaseHelper {
+class ResidentHelper extends BaseCommandHelper {
     dbResident: DBResident | Resident = null
     
     #apiResident: RawPlayerV3 = null

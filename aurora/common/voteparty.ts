@@ -1,9 +1,9 @@
 import { OfficialAPI } from "earthmc"
-import { BaseHelper } from "./base.js"
+import { BaseCommandHelper } from "./base.js"
 
 import type { Client } from "discord.js"
 
-export class VPHelper extends BaseHelper {
+export class VPHelper extends BaseCommandHelper {
     #target: number
     get target() {
         return this.#target

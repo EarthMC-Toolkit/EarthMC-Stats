@@ -1,10 +1,12 @@
 import * as fn from '../../bot/utils/fn.js'
 
-import { EmbedBuilder } from 'discord.js'
-import type { Client } from 'discord.js'
+import { 
+    type Client,
+    EmbedBuilder
+} from 'discord.js'
 
-class BaseHelper {
-    client: Client = null
+class BaseCommandHelper {
+    //client: Client = null
     //isNova = false
 
     embed = new EmbedBuilder()
@@ -14,14 +16,25 @@ class BaseHelper {
         //this.isNova = isNova
     }
 
+    /**
+     * Appends a single field to the embed (max 25 fields).\
+     * This is equivalent to calling `embed.addFields` once, essentially bringing back the old chain style.
+     * @param name The field title.
+     * @param value The field description/text.
+     * @param inline Whether this field should be displayed on the same line (up to max of 3).
+     */
     addField(name: string, value: string, inline = false) {
         this.embed.addFields({ name, value, inline })
         return this.embed
     }
 
+    /**
+     * Get the raw data of this command by stringifying the whole embed object.
+     * @returns {string} The JSON formatted string.
+     */
     raw = () => JSON.stringify(this.embed)
 }
 
 export {
-    BaseHelper
+    BaseCommandHelper
 }

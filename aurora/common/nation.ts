@@ -1,4 +1,4 @@
-import { BaseHelper } from "./base.js"
+import { BaseCommandHelper } from "./base.js"
 
 import { 
     type Client,
@@ -10,7 +10,7 @@ import {
     OfficialAPI
 } from "earthmc"
 
-class NationHelper extends BaseHelper {
+class NationHelper extends BaseCommandHelper {
     #apiNation: RawNationV3 = null
     get apiNation() { return this.#apiNation }
 

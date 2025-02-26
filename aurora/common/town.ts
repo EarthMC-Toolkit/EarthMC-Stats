@@ -1,9 +1,9 @@
-import { BaseHelper } from "./base.js"
+import { BaseCommandHelper } from "./base.js"
 
 import type { Client } from "discord.js"
 import { Colors } from "discord.js"
 
-class TownHelper extends BaseHelper {
+class TownHelper extends BaseCommandHelper {
     constructor(client: Client) {
         super(client)
         this.embed.setColor(Colors.Green)

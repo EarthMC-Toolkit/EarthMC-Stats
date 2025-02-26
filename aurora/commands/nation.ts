@@ -46,7 +46,7 @@ export default {
         const nationHelper = new NationHelper(client) 
         const exists = await nationHelper.init(input)
         
-        if (!exists || !nationHelper.apiNation) {
+        if (!exists) {
             return m.edit({embeds: [errEmbed(client, message)
                 .setTitle(`${req} isn't a registered nation, please try again.`)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
