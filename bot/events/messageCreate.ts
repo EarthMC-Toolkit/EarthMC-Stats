@@ -6,9 +6,7 @@ import {
     Colors, ChannelType
 } from 'discord.js'
 
-import { AURORA, NOVA } from '../utils/fn.js'
-import { sendNews } from '../utils/api.js'
-import type { MessageCommand } from '../types.js'
+import type { DJSEvent, MessageCommand } from '../types.js'
 
 const { SendMessages, EmbedLinks } = PermissionFlagsBits
 const requiredPerms = [SendMessages, EmbedLinks]
@@ -50,17 +48,18 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
 const prefix = (message: Message, str: string) => 
     message.content.startsWith(str)
 
-export default {
+const msgCreate: DJSEvent = {
     name: 'messageCreate',
     async execute(message: Message) {
-        if (message.author.id == '970963659109060640') {
-            const channelID = message.channel.id
-            const mapName = 
-                channelID == NOVA.newsChannel ? 'nova' : 
-                channelID == AURORA.newsChannel ? 'aurora' : null
+        // TODO: Who does ID belong to? Start labelling what's what you moron.
+        // if (message.author.id == '970963659109060640') {
+        //     const channelID = message.channel.id
+        //     const mapName = 
+        //         channelID == NOVA.newsChannel ? 'nova' : 
+        //         channelID == AURORA.newsChannel ? 'aurora' : null
                 
-            if (mapName) return sendNews(message.client, mapName)
-        }
+        //     if (mapName) return sendNews(message.client, mapName)
+        // }
     
         if (message.author.bot) return
 
@@ -74,3 +73,5 @@ export default {
             //return runCmd(message, 2, 'novaCommands')
     }
 }
+
+export default msgCreate

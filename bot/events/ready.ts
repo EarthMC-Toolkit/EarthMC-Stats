@@ -6,9 +6,9 @@ import * as fn from "../utils/fn.js"
 import { initUpdates } from "../updater.js"
 
 import { 
-    prod, 
-    queueSubbedChannels,
-    townlessSubbedChannels 
+    prod
+    // queueSubbedChannels,
+    // townlessSubbedChannels 
 } from "../constants.js"
 
 import { 
@@ -20,7 +20,11 @@ import {
     type ApplicationCommandDataResolvable
 } from "discord.js"
 
-import type { BaseCommand, Button, DJSEvent, ExtendedClient, SlashCommand } from "../types.js"
+import type { 
+    BaseCommand, SlashCommand,
+    Button, DJSEvent,
+    ExtendedClient
+} from "../types.js"
 //#endregion
 
 let lastActivity = -1
@@ -40,7 +44,7 @@ const rdyEvent: DJSEvent = {
             `${client.guilds.cache.size} Servers`, 'towns being created.',
             'emctoolkit.vercel.app', 'for map updates', 'for /help', 
             'nations die', 'Wales boat sink', 'towns fall', 'players travel',
-            'admin abuse', 'alliances form', 'the queue grow', 
+            'admin abuse', 'alliances form', 'the queue grow',
             'Fix sleep', 'townless players struggle'
         ]
     

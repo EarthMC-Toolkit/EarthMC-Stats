@@ -14,11 +14,11 @@ import * as fn from '../utils/fn.js'
 import { CustomEmbed } from '../objects/CustomEmbed.js'
 
 import type AllianceModal from '../objects/AllianceModal.js'
-import type { ExtendedClient } from '../types.js'
+import type { DJSEvent, ExtendedClient } from '../types.js'
 
 //let target: User = null
 
-export default {
+const interactionCreate: DJSEvent = {
     name: 'interactionCreate',
     async execute(interaction: BaseInteraction) {
         const client: ExtendedClient = interaction.client
@@ -102,74 +102,4 @@ export default {
     }
 }
 
-// const ignInput = new TextInputBuilder()
-//     .setCustomId('ign')
-//     .setLabel("Enter user's Minecraft name")
-//     .setStyle(TextInputStyle.Short)
-//     .setMinLength(3)
-//     .setMaxLength(16)
-
-// const editorRoleID = '966359842417705020'
-// const showLinkModal = async (interaction: UserContextMenuCommandInteraction) => {
-//     const roles = interaction.member.roles as GuildMemberRoleManager
-//     const editor = roles.cache.has(editorRoleID)
-
-//     if (!fn.botDevs.includes(interaction.user.id) && !editor) 
-//         return interaction.reply({embeds: [new EmbedBuilder()
-//             .setColor(Colors.Red)
-//             .setTitle("Insufficient Permissions")
-//             .setDescription("Only editors and bot developers can link users.")
-//             .setFooter(fn.devsFooter(interaction.client)).setTimestamp()
-//         ], ephemeral: true })
-
-//     const ignRow = new ActionRowBuilder<TextInputBuilder>()
-//     ignRow.addComponents(ignInput)
-
-//     const modal = new ModalBuilder()
-//         .setCustomId('link')
-//         .setTitle('Link User')
-//         .addComponents(ignRow)
-    
-//     target = interaction.targetUser
-//     return await interaction.showModal(modal)
-// }
-
-// const submitLinkModal = async (interaction: ModalSubmitInteraction) => {
-//     await interaction.deferReply()
-    
-//     const ign = interaction.fields.getTextInputValue('ign')
-//     const player = await MC.Players.get(ign).catch(console.error)
-
-//     if (!player) return await interaction.editReply({embeds: [
-//         new EmbedBuilder()
-//         .setDescription(`<:red_tick:1036290475012915270> '${ign}' is not a registered player name, please try again.`)
-//         .setColor(Colors.Red)
-//         .setTimestamp()
-//     ]})
- 
-//     //console.log(`Attempting to link '${target.username}'`)
-
-//     const linkedPlayer = await getLinkedPlayer(ign)
-//     if (linkedPlayer != null) return interaction.editReply({embeds: [
-//         new EmbedBuilder()
-//         .setDescription(`<:red_tick:1036290475012915270> That player is already linked to <@${linkedPlayer.linkedID}>.`)
-//         .setColor(Colors.Red)
-//         .setTimestamp()
-//     ]}).then(m => setTimeout(() => m.delete(), 10000))
-
-//     const userID = target.id
-//     if (!userID || !new RegExp(/[0-9]{18}/).test(userID)) return interaction.editReply({embeds: [
-//         new EmbedBuilder()
-//         .setDescription("<:red_tick:1036290475012915270> Invalid user or ID, please try again.")
-//         .setColor(Colors.Red)
-//         .setTimestamp()
-//     ]}).then(m => setTimeout(() => m.delete(), 10000))
-
-//     await linkPlayer(userID, player.name)
-//     interaction.editReply({embeds: [
-//         new EmbedBuilder()
-//         .setDescription(`<:green_tick:1036290473708495028> ${player.name.replace(/_/g, "\\_")} is now linked with <@${userID}>.`)
-//         .setColor(Colors.Green)
-//         .setTimestamp()
-//     ]})
-// }
+export default DJSEvent
