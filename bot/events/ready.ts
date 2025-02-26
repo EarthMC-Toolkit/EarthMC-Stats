@@ -38,28 +38,30 @@ const rdyEvent: DJSEvent = {
 
         const watchingActivities = [
             `${client.guilds.cache.size} Servers`, 'towns being created.',
-            'emctoolkit.vercel.app', 'for Dynmap updates', 'for /help', 
+            'emctoolkit.vercel.app', 'for map updates', 'for /help', 
             'nations die', 'Wales boat sink', 'towns fall', 'players travel',
-            'admin abuse', 'alliances form', 'the queue grow', 'Fix sleep'
+            'admin abuse', 'alliances form', 'the queue grow', 
+            'Fix sleep', 'townless players struggle'
         ]
     
         await initUpdates(prod)
 
-        if (prod) {
-            queueSubbedChannels.get().then(doc => { 
-                const { channelIDs } = doc.data()
-                fn.setQueueSubbedChannels(channelIDs)
+        // TODO: Re-enable if live stuff comes back.
+        // if (prod) {
+        //     queueSubbedChannels.get().then(doc => { 
+        //         const { channelIDs } = doc.data()
+        //         fn.setQueueSubbedChannels(channelIDs)
     
-                console.log(`${fn.time()} | Queue subbed channels retrieved. Length: ${channelIDs.length}`)
-            })
+        //         console.log(`${fn.time()} | Queue subbed channels retrieved. Length: ${channelIDs.length}`)
+        //     })
     
-            townlessSubbedChannels.get().then(doc => { 
-                const { channelIDs } = doc.data()
-                fn.setTownlessSubbedChannels(channelIDs)
+        //     townlessSubbedChannels.get().then(doc => { 
+        //         const { channelIDs } = doc.data()
+        //         fn.setTownlessSubbedChannels(channelIDs)
     
-                console.log(`${fn.time()} | Townless subbed channels retrieved. Length: ${channelIDs.length}`)
-            })
-        }
+        //         console.log(`${fn.time()} | Townless subbed channels retrieved. Length: ${channelIDs.length}`)
+        //     })
+        // }
     
         setInterval(() => {
             const randomNum = fn.random(watchingActivities, lastActivity)
