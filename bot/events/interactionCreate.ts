@@ -25,8 +25,9 @@ const interactionCreate: DJSEvent = {
         const username = interaction.user.displayName
 
         let cmdName: string = null
-        if (interaction.isCommand())
+        if (interaction.isCommand()) {
             cmdName = interaction.commandName
+        }
 
         if (interaction.isChatInputCommand()) {
             const cmd = client.slashCommands.get(cmdName)
@@ -36,16 +37,8 @@ const interactionCreate: DJSEvent = {
             return await cmd.run(client, interaction).catch(console.error)
         }
 
-        // if (interaction.isUserContextMenuCommand()) {
-        //     console.log(`[${username}] Context menu action triggered: '${cmdName}'`)
-        //     if (cmdName == "Link User") return await showLinkModal(interaction)  
-        // }
-        
         if (interaction.isModalSubmit()) {   
             console.log(`${username} submitted a modal.`)
-
-            // if (interaction.customId == "link") 
-            //     return await submitLinkModal(interaction)
 
             if (interaction.customId == "alliance_create") {
                 const key = interaction.member.user.id
@@ -62,8 +55,9 @@ const interactionCreate: DJSEvent = {
                     .addButton('creation_finish', 'Finish', ButtonStyle.Success)
                     .addField("Leader(s)", alliance.leaderName.length > 0 ? alliance.leaderName : "None", true)
 
-                if (alliance.discordInvite != "No discord invite has been set for this alliance") 
+                if (alliance.discordInvite != "No discord invite has been set for this alliance") {
                     preview.setURL(alliance.discordInvite)
+                }
                 
                 const allianceNationsLength = alliance.nations.length
                 const nationsString = alliance.nations.join(", ")
