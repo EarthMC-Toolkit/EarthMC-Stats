@@ -5,13 +5,17 @@ import {
     EmbedBuilder
 } from 'discord.js'
 
-export default class BaseCommandHelper {
+export default abstract class BaseCommandHelper {
+    client: Client = null
     embed = new EmbedBuilder()
 
     constructor(client: Client) {
         this.embed.setFooter(fn.devsFooter(client)).setTimestamp()
         //this.isNova = isNova
     }
+
+    abstract init(input: string): Promise<boolean>;
+    abstract createEmbed(): EmbedBuilder;
 
     /**
      * Appends a single field to the embed (max 25 fields).\
@@ -26,10 +30,15 @@ export default class BaseCommandHelper {
     }
 
     /**
-     * Get the raw data of this command by stringifying the whole embed object.
+     * Stringifys the embed data, returning info about this command as a JSON string.\
+     * While we could use `embed.toJSON()`, this avoids the overhead of validation and allows us to customize how it gets printed.
+     * 
      * @returns {string} The JSON formatted string.
      */
-    raw = () => JSON.stringify(this.embed)
+    raw = (pretty = true) => {
+        const embedData = this.embed.data
+        return pretty ? JSON.stringify(embedData, null, 2) : JSON.stringify(embedData)
+    }
 }
 
 export {

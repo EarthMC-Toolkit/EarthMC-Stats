@@ -11,7 +11,6 @@ import {
 } from '../../bot/utils/fn.js'
 
 import {
-    type Message,
     type Client, 
     type TextChannel,
     type ChatInputCommandInteraction, 
@@ -297,23 +296,21 @@ export default {
     
                 //#region Recent news logic
                 const newsChannel = client.channels.cache.get(AURORA.newsChannel) as TextChannel
-                const newsChannelMessages = await newsChannel?.messages.fetch()
-    
-                const filterNews = (msg: Message) => msg.content.toLowerCase().includes(nation.name.replace(/_/g, " ").toLowerCase() || nation.name.toLowerCase())
-    
-                // Get news descriptions that include the nation name
-                // Then sort/get most recent description
-                const filteredMessages = newsChannelMessages?.filter(msg => filterNews(msg))
-                const mostRecentDate = new Date(Math.max.apply(null, filteredMessages?.map(e => new Date(e.createdTimestamp))))
-    
-                const recentNews = filteredMessages?.find(e => { 
-                    const d = new Date(e.createdTimestamp)
-                    return d.getTime() == mostRecentDate.getTime()
+                const newsChannelMsgs = await newsChannel?.messages.fetch()
+
+                const filteredNewsMsgs = newsChannelMsgs?.filter(msg => {
+                    const nationName = nation.name.toLowerCase()
+
+                    // Message includes nation name. Either exactly or where underscores became spaces.
+                    return msg.content.toLowerCase().includes(nationName || nationName.replace(/_/g, " "))
                 })
+
+                const mostRecentTimestamp = Math.max(...filteredNewsMsgs.map(e => e.createdTimestamp))
+                const recentNews = filteredNewsMsgs?.find(e => e.createdTimestamp === mostRecentTimestamp)
                 //#endregion
                 
                 const nationTowns = nation.towns.join(", ")
-                const nationTownsString = nationTowns.toString().replace(/^\s+|\s+$/gm, "")
+                const nationTownsString = nationTowns.toString().trim()
                 
                 if (nationTownsString.length >= 1024) {
                     nationEmbed.addFields(embedField(

@@ -26,7 +26,7 @@ const EntityType = {
 type ObjectValues<T> = T[keyof T]
 type EntityType = ObjectValues<typeof EntityType>
 
-class CustomEmbed extends EmbedBuilder {
+export default class CustomEmbed extends EmbedBuilder {
     embeds: EmbedBuilder[] = []
     components: any[] = []
     files: any[] = []
@@ -78,6 +78,13 @@ class CustomEmbed extends EmbedBuilder {
         return this
     }
 
+    /** Sets the footer to the default one displaying name of the maintainer and bot profile pic as the icon. */
+    setDefaultFooter() {
+        this.setFooter(fn.devsFooter(this.client))
+        return this
+    }
+
+    /** Sets the author to the default one where it uses the message author's username and avatar url. */
     setDefaultAuthor(message: Message) {
         this.setAuthor({ 
             name: message.author.username, 

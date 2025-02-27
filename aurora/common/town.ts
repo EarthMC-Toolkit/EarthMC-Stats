@@ -13,8 +13,9 @@ class TownHelper extends BaseCommandHelper {
         return false
     }
 
-    setupEmbed() {
-        
+    createEmbed() {
+        //this.#setupEmbed()
+        return this.embed
     }
 }
 
