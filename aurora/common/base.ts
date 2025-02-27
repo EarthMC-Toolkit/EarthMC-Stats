@@ -10,6 +10,7 @@ export default abstract class BaseCommandHelper {
     embed = new EmbedBuilder()
 
     constructor(client: Client) {
+        this.client = client
         this.embed.setFooter(fn.devsFooter(client)).setTimestamp()
         //this.isNova = isNova
     }
