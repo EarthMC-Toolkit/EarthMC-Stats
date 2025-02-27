@@ -41,6 +41,7 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         //#endregion
 
+        // TODO: Replace with .trim() instead?
         const input = req.replaceAll(' ', '')
 
         const nationHelper = new NationHelper(client) 
@@ -53,7 +54,8 @@ export default {
         }
 
         return await m.edit({
-            embeds: [nationHelper.createEmbed()] 
+            embeds: [nationHelper.createEmbed()],
+            files: [nationHelper.getDownloadAttachment()]
         })
     }
 }

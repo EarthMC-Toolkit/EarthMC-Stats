@@ -5,10 +5,7 @@ import {
     EmbedBuilder
 } from 'discord.js'
 
-class BaseCommandHelper {
-    //client: Client = null
-    //isNova = false
-
+export default class BaseCommandHelper {
     embed = new EmbedBuilder()
 
     constructor(client: Client) {
@@ -25,7 +22,7 @@ class BaseCommandHelper {
      */
     addField(name: string, value: string, inline = false) {
         this.embed.addFields({ name, value, inline })
-        return this.embed
+        return this
     }
 
     /**

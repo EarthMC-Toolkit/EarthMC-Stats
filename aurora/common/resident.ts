@@ -1,11 +1,14 @@
 import type { Client } from "discord.js"
 import striptags from 'striptags'
 
-import * as MC from '../../bot/utils/minecraft.js'
-import * as database from '../../bot/utils/database.js'
-
 import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
+
+import BaseCommandHelper from "./base.js"
+import { backtick, secToMs } from "../../bot/utils/fn.js"
+
+import * as MC from '../../bot/utils/minecraft.js'
+import * as database from '../../bot/utils/database.js'
 
 import { 
     type DBResident,
@@ -14,9 +17,6 @@ import {
     SkinType3D
 } from "../../bot/types.js"
 
-import { backtick, secToMs } from "../../bot/utils/fn.js"
-import { BaseCommandHelper } from "./base.js"
-
 const buildSkinURL = (opts: SkinOpts) => {
     const domain = "https://visage.surgeplay.com/"
     const params = `?width=${opts.width ?? 256}&height=${opts.height ?? 256}`
@@ -24,7 +24,7 @@ const buildSkinURL = (opts: SkinOpts) => {
     return `${domain}${opts.view}/${opts.subject}.png${params}`
 }
 
-const defaultAbout = "/res set about [msg]"
+const DEFAULT_ABOUT = "/res set about [msg]"
 
 class ResidentHelper extends BaseCommandHelper {
     dbResident: DBResident | Resident = null
@@ -107,7 +107,7 @@ class ResidentHelper extends BaseCommandHelper {
         
         this.embed.setTitle(`Resident Info | \`${res.name}\``)
 
-        if (res.about && res.about != defaultAbout) {
+        if (res.about && res.about != DEFAULT_ABOUT) {
             this.embed.setDescription(`*${res.about}*`)
         }
 

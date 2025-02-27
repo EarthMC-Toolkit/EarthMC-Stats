@@ -249,10 +249,11 @@ export default {
                 //#endregion
     
                 nations = defaultSort(nations)
-    
+
+                // Custom prefix (via /nationset) otherwise Towny default.
+                const kingPrefix = nation.kingPrefix ? `${nation.kingPrefix} ` : nationLeaderPrefix 
                 const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
-                const kingPrefix = nation.kingPrefix ? nation.kingPrefix + " " : nationLeaderPrefix
-    
+
                 //#region Embed Stuff
                 const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
                 const mapUrl = Aurora.buildMapLink({ x: capitalX, z: capitalZ }, 5)
@@ -270,7 +271,7 @@ export default {
                     .setThumbnail(nation.flag || 'attachment://aurora.png')
                     .setFooter(devsFooter(client))
                     .addFields(
-                        embedField("King", backtick(nation.king, { prefix: kingPrefix }), true),
+                        embedField("Leader", backtick(nation.king, { prefix: kingPrefix }), true),
                         embedField("Capital", backtick(nation.capital.name), true), 
                         embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
                         embedField("Size", chunksStr, true),
@@ -278,8 +279,9 @@ export default {
                         embedField("<:chunk:1318944677562679398> Nation Bonus", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
                     )
     
-                if (nation.discord) 
+                if (nation.discord) {
                     nationEmbed.setURL(nation.discord)
+                }
     
                 const ops = await Aurora.Players.online().catch(() => {})
                 if (ops) {
