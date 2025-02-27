@@ -38,7 +38,7 @@ class NationHelper extends BaseCommandHelper {
 
     constructor(client: Client) {
         super(client)
-        this.embed.setColor(Colors.Orange)
+        this.embed.setColor(Colors.Aqua)
     }
 
     async init(input: string) {
@@ -158,21 +158,21 @@ class NationHelper extends BaseCommandHelper {
         const mapUrl = Aurora.buildMapLink(spawnPoint, 5)
 
         const area = Math.round(this.apiNation.stats.numTownBlocks)
+        const foundedTimestamp = DiscordUtils.timestampDateTime(this.apiNation.timestamps.registered)
 
         this.embed.setTitle(`Nation Info | ${backtick(label)}`)
-
-        const foundedTimestamp = DiscordUtils.timestampDateTime(this.apiNation.timestamps.registered)
-        this.embed.setDescription(`${this.apiNation.board}\n\nFounded on ${foundedTimestamp}.`)
-
-        this.addField("Leader", backtick(this.apiNation.king.name, { prefix: kingPrefix }), true)
+            .setDescription(`*${this.apiNation.board}*`)
+            //.setThumbnail(this.dbNation.flag || 'attachment://aurora.png')
+            
+        this.addField("Founded", foundedTimestamp, true)
+            .addField("Leader", backtick(this.apiNation.king.name, { prefix: kingPrefix }), true)
             .addField("Capital", backtick(this.apiNation.capital.name), true)
             .addField("Location", `[${spawnPoint.x}, ${spawnPoint.z}](${mapUrl.toString()})`, true)
             .addField("Residents", backtick(resLength.toString()), true)
+            .addField("Balance", `${DiscordUtils.EMOJI_GOLD} ${backtick(this.apiNation.stats.balance)}G`, true)
             .addField("Size", `${DiscordUtils.EMOJI_CHUNK} ${backtick(area)} Chunks`, true)
             .addField("Bonus", `${DiscordUtils.EMOJI_CHUNK} ${backtick(bonus)} Chunks`, true)
-            .addField("Balance", `${DiscordUtils.EMOJI_GOLD} ${backtick(this.apiNation.stats.balance)}G`, true)
-            .addField("Towns", ``)
-        
+
         const amtAlliances = this.affiliatedAlliances?.length
         if (amtAlliances > 0) {
             this.addField(`Alliances [${amtAlliances}]`, "```" + this.affiliatedAlliances.join(", ") + "```")
