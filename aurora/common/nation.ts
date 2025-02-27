@@ -5,13 +5,14 @@ import {
 } from "discord.js"
 
 import { 
+    type StrictPoint2D,
     type RawNationV3,
     Aurora,
     OfficialAPI
 } from "earthmc"
 
 import BaseCommandHelper from "./base.js"
-import { auroraNationBonus, backtick, secToMs } from "../../bot/utils/fn.js"
+import { auroraNationBonus, backtick } from "../../bot/utils/fn.js"
 import * as DiscordUtils from "../../bot/utils/discord.js"
 
 class NationHelper extends BaseCommandHelper {
@@ -48,8 +49,8 @@ class NationHelper extends BaseCommandHelper {
         const kingPrefix = /* dbNation.kingPrefix | */ this.getLeaderPrefix(resLength)
         const bonus = auroraNationBonus(resLength)
 
-        const spawnLoc = this.getSpawnLocation()
-        const mapUrl = Aurora.buildMapLink(spawnLoc, 5)
+        const spawnPoint = this.getSpawnPoint(true, true)
+        const mapUrl = Aurora.buildMapLink(spawnPoint, 5)
 
         const area = Math.round(this.apiNation.stats.numTownBlocks)
 
@@ -60,15 +61,26 @@ class NationHelper extends BaseCommandHelper {
 
         this.addField("Leader", backtick(this.apiNation.king.name, { prefix: kingPrefix }), true)
             .addField("Capital", backtick(this.apiNation.capital.name), true)
-            .addField("Location", `[${spawnLoc.x}, ${spawnLoc.z}](${mapUrl.toString()})`, true)
+            .addField("Location", `[${spawnPoint.x}, ${spawnPoint.z}](${mapUrl.toString()})`, true)
             .addField("Residents", backtick(resLength.toString()), true)
             .addField("Size", `${DiscordUtils.EMOJI_CHUNK} ${backtick(area)} Chunks`, true)
             .addField("Bonus", `${DiscordUtils.EMOJI_CHUNK} ${backtick(bonus)} Chunks`, true)
             .addField("Balance", `${DiscordUtils.EMOJI_GOLD} ${backtick(this.apiNation.stats.balance)}`, true)
     }
 
-    getSpawnLocation() {
-        return this.apiNation.coordinates.spawn
+    /**
+     * Gets the spawn location of nation (from the API) and makes it conform to {@link StrictPoint2D} with the option to strip decimals per coord.
+     * @param truncX - Whether to truncate the X coordinate to remove all decimals.
+     * @param truncZ - Whether to truncate the Z coordinate to remove all decimals.
+     */
+    getSpawnPoint(truncX = false, truncZ = false): StrictPoint2D {
+        const apiLoc = this.apiNation.coordinates.spawn
+        const [locX, locZ] = [Number(apiLoc.x), Number(apiLoc.z)]
+
+        return {
+            x: truncX ? Math.trunc(locX) : locX,
+            z: truncZ ? Math.trunc(locZ) : locZ
+        }
     }
 
     getLeaderPrefix(residentsAmt: number) {
