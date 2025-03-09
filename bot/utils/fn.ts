@@ -78,7 +78,7 @@ export const staff = {
 
 export const staffListEmbed = (client: Client, arr: string[], active = true) => new EmbedBuilder({
     title: `Staff List (${active ? "Active" : "Inactive"})`,
-    description: alphabetSort(arr).join(", "),
+    description: sortAlphabetical(arr).join(", "),
     footer: devsFooter(client),
     color: Colors.Green
 }).setThumbnail(client.user.avatarURL()).setTimestamp()
@@ -290,27 +290,29 @@ export function divideArray(arr: any[], n: number) {
     return chunks
 }
 
-export const alphabetSort = (arr: any[], key?: string) => arr.sort((a, b) => {
-    const aVal = (key ? a[key] : a).toLowerCase()
-    const bVal = (key ? a[key] : b).toLowerCase()
-
+export const sortAlphabetical = <V extends string>(arr: V[]) => arr.sort((a, b) => {
+    const [aVal, bVal] = [a.toLowerCase(), b.toLowerCase()]
     return (bVal < aVal) ? 1 : (bVal > aVal ? -1 : 0)
 })
 
-export const sortByKey = (arr: any[], key: string) => {
-    arr.sort(function(a, b) {
-        const [aKey, bKey] = [a[key].toLowerCase(), b[key].toLowerCase()]
+/**
+ * Sorts an array alphabetically similar to {@link sortAlphabetical}, but using the specified key as the comparator.\
+ * For example, instead of sorting an array of strings, we can pass an array of objects and do something like so:
+ * 
+ * ```ts
+ * const items = [{ name: "Owen" }, { name: "Fix" }]
+ * sortByKey(items, "name") // Result: [{ name: "Fix" }, { name: "Owen" }]
+ * ```
+ * @param arr
+ * @param key 
+ */
+export const sortByKey = <V extends object>(arr: V[], key: string) => arr.sort((a, b) => {
+    const [aVal, bVal] = [a[key].toLowerCase(), b[key].toLowerCase()]
+    return (bVal < aVal) ? 1 : (bVal > aVal ? -1 : 0)
+})
 
-        if (aKey < bKey) return -1
-        if (aKey > bKey) return 1
-        
-        return 0
-    })
-
-    return arr
-}
-
-export function sortByOrder(arr: any[], keys: { key: string, callback?: any }[], ascending = false) {
+type KeySortOption = { key: string, callback?: any }
+export function sortByOrder<V extends object>(arr: V[], keys: KeySortOption[], ascending = false) {
     arr.sort((a, b) => {
         for (const { key, callback } of keys) {
             const aVal = a[key]
