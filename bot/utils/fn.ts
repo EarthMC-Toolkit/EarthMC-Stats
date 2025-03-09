@@ -26,6 +26,7 @@ import { Timestamp } from "firebase-admin/firestore"
 import fs from 'fs'
 import { request } from "undici"
 import path from "path"
+import { DBAlliance } from "../types.js"
 
 export const botDevs = ["Owen3H", "263377802647175170"]
 
@@ -337,7 +338,7 @@ export function sortByOrder<V extends object>(arr: V[], keys: KeySortOption[], a
 }
 
 const len = (x: any[]) => x.length
-export const defaultSort = (arr: any[]) => sortByOrder(arr, [{
+export const defaultSort = <V extends object>(arr: V[]) => sortByOrder(arr, [{
     key: 'residents',
     callback: len
 }, {
@@ -347,7 +348,7 @@ export const defaultSort = (arr: any[]) => sortByOrder(arr, [{
     callback: (k: string) => k.toLowerCase()
 }])
 
-export const defaultSortAlliance = (arr: any[]) => sortByOrder(arr, [{ 
+export const defaultSortAlliance = (arr: DBAlliance[]) => sortByOrder(arr, [{ 
     key: "residents"
 }, { 
     key: "area"
