@@ -6,7 +6,7 @@ import {
     Colors
 } from 'discord.js'
 
-import { Aurora, type Player } from "earthmc"
+import { Aurora, OfficialAPI, type Player } from "earthmc"
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import { 
@@ -46,7 +46,6 @@ export default {
                     .join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 
                 return await new CustomEmbed(client, "Online Activity | All")
-                    .setPage(0)
                     .setColour(EMBED_COLOUR)
                     .paginate(allData, "```", "```")
                     .editInteraction(interaction)
@@ -67,7 +66,6 @@ export default {
             
                 const allData = towns.map(town => `${town.mayor} (${town.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Mayors")
-                    .setPage(0)
                     .setColour(EMBED_COLOUR)
                     .paginate(allData, `Total: ${towns.length}` + "```", "```")
                     .editInteraction(interaction)
@@ -84,9 +82,37 @@ export default {
             
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
                 return await new CustomEmbed(client, "Online Activity | Kings")
-                    .setPage(0)
                     .setColour(EMBED_COLOUR)
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
+                    .editInteraction(interaction)
+            }
+            case "balances":
+            case "baltop": {
+                const opNames = ops.map(o => o.name)
+                const players = await OfficialAPI.V3.players(...opNames).catch(err => console.log(err))
+                if (!players || players.length < 1) {
+                    return await interaction.editReply({ embeds: [fetchError] })
+                }
+
+                // Descending order, highest to lowest.
+                players.sort((a, b) => a.stats.balance - b.stats.balance)
+
+                const allData = players.map(p => {
+                    let str = `${p.name}`
+                    
+                    if (p.town.name) {
+                        str += p.nation.name 
+                            ? ` of ${p.town.name} (${p.nation.name})` 
+                            : ` of ${p.town.name}`
+                    }
+
+                    return str + ` - ${p.stats.balance}G`
+                })
+
+                const total = players.reduce((acc, p) => acc + p.stats.balance, 0)
+                return await new CustomEmbed(client, "Online Activity | Balances")
+                    .setColour(EMBED_COLOUR)
+                    .paginate(allData, `Online: ${players.length} (${total}G)`)
                     .editInteraction(interaction)
             }
             default: return await interaction.editReply({embeds: [new EmbedBuilder()

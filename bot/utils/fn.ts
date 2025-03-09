@@ -1,3 +1,5 @@
+import type { DBAlliance } from "../types.js"
+
 import type { 
     Channel, Message,
     MessageReaction,
@@ -7,7 +9,6 @@ import type {
     EmojiIdentifierResolvable,
     User,
     APIEmbedField,
-    Awaitable,
     APIActionRowComponent,
     APIMessageActionRowComponent
 } from "discord.js"
@@ -20,13 +21,12 @@ import {
     PermissionFlagsBits
 } from "discord.js"
 
-import moment from "moment"
+import { request } from "undici"
 import { Timestamp } from "firebase-admin/firestore"
 
+import moment from "moment"
 import fs from 'fs'
-import { request } from "undici"
 import path from "path"
-import { DBAlliance } from "../types.js"
 
 export const botDevs = ["Owen3H", "263377802647175170"]
 
