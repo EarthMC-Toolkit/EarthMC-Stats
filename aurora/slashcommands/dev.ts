@@ -7,7 +7,7 @@ import {
 } from "discord.js"
 
 //import { Service } from 'koyeb.js'
-import { botDevs } from '../../bot/utils/fn.js'
+import { backtick, botDevs } from '../../bot/utils/fn.js'
 
 import dotenv from 'dotenv'
 dotenv.config()
@@ -21,7 +21,6 @@ export default {
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         //const service = new Service(serviceID, process.env.AUTH_TOKEN)
         const embed = new EmbedBuilder()
-
         const member = interaction.member as GuildMember
 
         if (!botDevs.includes(member.id)) {
@@ -73,14 +72,36 @@ export default {
             // }
             case "purge": {
                 await interaction.deferReply()
+                const purgeThreshold = interaction.options.getInteger("purge threshold")
 
-                const guildsToLeave = client.guilds.cache.filter(g => g.memberCount < 5).map(g => g.id)
+                const guildsToLeave = client.guilds.cache.filter(g => g.memberCount <= purgeThreshold).map(g => g.id)
                 let leaveCounter = 0
+
+                const leftEmbed = new EmbedBuilder()
+                    .setTitle("Notice of Departure")
+                    .setColor("#d64b00")
 
                 guildsToLeave.forEach(async id => {
                     const guild = await client.guilds.fetch(id)
-                    const left = await guild.leave().then(() => true).catch(console.log)
-                    if (left) leaveCounter++
+                    const left = await guild.leave().then(() => true).catch(e => { console.error(e); return false })
+
+                    if (!left) return
+                    leaveCounter++
+
+                    const guildOwner = await guild.fetchOwner()
+                    if (!guildOwner) return
+
+                    leftEmbed.setDescription(`
+                        Due to low member count, I have left this server: ${backtick(guild.name)}
+                        This was done for two main reasons:
+                        1. To combat abuse, where the goal is to intentionally overwhelm the database.
+                        2. To prevent hitting the 2500 shard limit until truly necessary to avoid major refactoring and downtime.
+                        
+                        It is recommended you use the bot in more established servers like [EMC Toolkit Development](https://discord.gg/yyKkZfmFAK).
+                        Sorry for the inconvenience!
+                    `)
+
+                    await guildOwner.send({ embeds: [leftEmbed] })
                 })
 
                 return await interaction.editReply({ content: `Left ${leaveCounter} guilds.` })
@@ -96,5 +117,12 @@ export default {
         .addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
-        .addSubcommand(subCmd => subCmd.setName('purge').setDescription('Leaves all guilds with 4 or less members.'))
+        .addSubcommand(subCmd => subCmd.setName('purge')
+            .setDescription('Leaves all guilds with the specified amount of members or less.')
+            .addIntegerOption(opt => opt.setName("purge threshold")
+                .setDescription("The member count threshold at which to leave guilds at or below.")
+                .setMinValue(2)
+                .setMaxValue(10)
+            )
+        )
 }

@@ -30,15 +30,12 @@ import path from "path"
 
 export const botDevs = ["Owen3H", "263377802647175170"]
 
-// eslint-disable-next-line
 export let queueSubbedChannelArray: string[] = []
 export const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
 
-// eslint-disable-next-line
 export let newsSubbedChannelArray: string[] = []
 export const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
 
-// eslint-disable-next-line
 export let townlessSubbedChannelArray: string[] = []
 export const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import type { 
     Client,
     Message,
@@ -10,8 +9,7 @@ import type {
 
 import type { 
     Squaremap, SquaremapOnlinePlayer, 
-    SquaremapTown, SquaremapNation,
-    Town, Nation
+    SquaremapTown, SquaremapNation
 } from "earthmc"
 
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
