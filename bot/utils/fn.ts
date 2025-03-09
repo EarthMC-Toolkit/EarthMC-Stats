@@ -131,22 +131,25 @@ export function unixFromDate(date: Date | Timestamp): number {
     return result ? moment.utc(result).unix() : null
 }
 
+export const fiveMin = 5 * 60 * 1000
 export const removeDuplicates = (arr: any[]) => [...new Set(arr)]
 export const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
 export const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
-export const isEmpty = (str: string) => (!str || str.length === 0)
-export const fiveMin = 5 * 60 * 1000
+//export const isEmpty = (str: string) => (!str || str.length === 0)
+
+// type ForwardCallback = (
+//     interaction: ButtonInteraction, 
+//     msg: Message,
+//     embeds: EmbedBuilder[]
+// ) => Awaitable<any>
 
 export const paginator = async(
     author: string, 
     msg: Message, 
     embeds: EmbedBuilder[], 
-    currentPage: number,
+    currentPage: number
     // TODO: Implement this
-    _forwardCallback?: (
-        interaction: ButtonInteraction, 
-        msg: Message, embeds: EmbedBuilder[]
-    ) => Awaitable<any>
+    // _forward: ForwardCallback
 ) => {
     // DM messages don't work with component collectors right now
     if (msg?.channel?.type == ChannelType.DM) 

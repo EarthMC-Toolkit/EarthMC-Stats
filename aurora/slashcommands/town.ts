@@ -11,8 +11,8 @@ import {
     AURORA, auroraNationBonus, 
     databaseError, defaultSort, 
     devsFooter, embedField, fetchError, 
-    maxTownSize, 
-    sortByOrder, unixFromDate 
+    sortByKey, unixFromDate,
+    maxTownSize
 } from '../../bot/utils/fn.js'
 
 import { Aurora, formatString, NotFoundError } from 'earthmc'
@@ -109,16 +109,12 @@ export default {
                     .paginate(allData, "```", "```")
                     .editInteraction(interaction)
             }
-            else if (comparator == "residents") 
-                towns.sort((a, b) => b.residents.length - a.residents.length)   
+            else if (comparator == "residents")
+                towns.sort((a, b) => b.residents.length - a.residents.length)
             else if (comparator == "chunks" || comparator == "land" || comparator == "area") 
-                towns.sort((a, b) => b.area - a.area) 
+                towns.sort((a, b) => b.area - a.area)
             else if (comparator == "name" || comparator == "alphabetical") {
-                sortByOrder(towns, [
-                    { key: "name", callback: (k: string) => k.toLowerCase() },
-                    { key: "residents", callback: (arr: string[]) => arr.length },
-                    { key: "area" }
-                ])
+                sortByKey(towns, "name")
             }
             else { // /t list <nation>
                 const nation = towns.some(town => town.nation.toLowerCase() == comparator)
@@ -127,7 +123,7 @@ export default {
                     .setDescription(`No nation with name \`${args2}\` exists.`)
                     .setTimestamp().setColor(Colors.Red)
                 ]})
-                    
+
                 // It exists, get only towns within the nation, and sort.
                 towns.map(town => town.nation.toLowerCase() == comparator)
                 towns = defaultSort(towns)
@@ -365,11 +361,26 @@ export default {
                 .setRequired(true)
             )
         )              
-        .addSubcommand(subCmd => subCmd
+        .addSubcommandGroup(subCmdGroup => subCmdGroup
             .setName('list')
-            .setDescription('List towns using various comparators.')
-            .addStringOption(option => option.setName("comparator")
-                .setDescription("The comparator to use which the list will be filtered by.")
+            .setDescription('List towns using various comparators including nation, chunks, online, residents and alphabetical.')
+            .addSubcommand(subCmd => subCmd.setName("nation")
+                .setDescription("Ouputs a list of towns that are only within the specified nation.")
+                .addStringOption(option => option.setName("name")
+                    .setDescription("The name of the nation to filter towns by.")
+                )
+            )
+            .addSubcommand(subCmd => subCmd.setName("online")
+                .setDescription("Ouputs a list of towns with their respective number of online residents. Sorted by Most -> Least.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("chunks")
+                .setDescription("Outputs a list of towns sorted by chunks in the order: Highest -> Lowest.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("residents")
+                .setDescription("Outputs a list of towns sorted by amount of residents in the order: Highest -> Lowest.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("alphabetical")
+                .setDescription("Outputs a list of all towns sorted in alphabetical order.")
             )
         )
 }
