@@ -234,7 +234,7 @@ export default {
             
             if (subCmd == "nation") { // /t list <nation>
                 const nationNameArg = interaction.options.getString("name")
-                const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg)
+                const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg.toLowerCase())
                 if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle("Invalid Nation!")
                     .setDescription(`Could not find any towns belonging to nation: ${backtick(nationNameArg)}.`)
