@@ -16,7 +16,6 @@ dotenv.config()
 
 export default {
     name: "dev",
-    disabled: true,
     description: "Developer restricted commands for bot management.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         //const service = new Service(serviceID, process.env.AUTH_TOKEN)
@@ -24,24 +23,19 @@ export default {
         const member = interaction.member as GuildMember
 
         if (!botDevs.includes(member.id)) {
-            try {
-                const m = await interaction.reply({embeds: [
-                    embed.setTitle("Goofy ah :skull:")
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setAuthor({ 
-                        name: interaction.user.username, 
-                        iconURL: interaction.user.displayAvatarURL() 
-                    })
-                ]})
-            
-                setTimeout(() => m.delete(), 10000)
-                return
-            }
-            catch(_) { /* empty */ } 
+            return await interaction.reply({embeds: [embed
+                .setTitle("Goofy ah :skull:")
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setAuthor({ 
+                    name: interaction.user.username, 
+                    iconURL: interaction.user.displayAvatarURL() 
+                })
+            ]}).then(m => setTimeout(() => m.delete(), 10000))
         }
 
-        switch(interaction.options.getSubcommand().toLowerCase()) {
+        const subCmdName = interaction.options.getSubcommand().toLowerCase()
+        switch(subCmdName) {
             // case "restart": {
             //     await interaction.reply({embeds: [embed
             //         .setColor(Colors.Blue)
@@ -74,15 +68,15 @@ export default {
                 await interaction.deferReply()
                 const purgeThreshold = interaction.options.getInteger("purge threshold")
 
-                const guildsToLeave = client.guilds.cache.filter(g => g.memberCount <= purgeThreshold).map(g => g.id)
+                const guildsToLeave = await client.guilds.cache.filter(g => g.memberCount <= purgeThreshold)
                 let leaveCounter = 0
 
                 const leftEmbed = new EmbedBuilder()
                     .setTitle("Notice of Departure")
                     .setColor("#d64b00")
 
-                guildsToLeave.forEach(async id => {
-                    const guild = await client.guilds.fetch(id)
+                guildsToLeave.forEach(async guild => {
+                    //const guild = await client.guilds.fetch(id)
                     const left = await guild.leave().then(() => true).catch(e => { console.error(e); return false })
 
                     if (!left) return
