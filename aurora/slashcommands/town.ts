@@ -125,7 +125,7 @@ export default {
         }
 
         const subCmdGroup = interaction.options.getSubcommandGroup()
-        if (subCmdGroup == "list") {
+        if (subCmdGroup == "list_group") {
             if (subCmd == "online") {
                 const ops = await Aurora.Players.online().catch(() => {})
                 if (!ops) return await interaction.editReply({ embeds: [fetchError] })
@@ -227,7 +227,7 @@ export default {
         .addSubcommand(subCmd => subCmd.setName('list')
             .setDescription("Simply displays a list of all towns.")
         )
-        .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list')
+        .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list_group')
             .setDescription("List towns using various comparators including nation, chunks, online, residents and alphabetical.")
             .addSubcommand(subCmd => subCmd.setName("online")
                 .setDescription("Ouputs a list of towns with their respective number of online residents. Sorted by Most -> Least.")

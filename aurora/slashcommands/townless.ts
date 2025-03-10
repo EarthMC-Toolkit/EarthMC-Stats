@@ -51,7 +51,7 @@ const send = (interaction: ChatInputCommandInteraction, allData: RegExpMatchArra
         botEmbed[page] = embed(townless.length, desc, { text: `Page ${page+1}/${len}` })
     }
 
-    interaction.reply({ embeds: [botEmbed[0]] })
+    return interaction.reply({ embeds: [botEmbed[0]] })
         .then(() => paginatorInteraction(interaction, botEmbed, 0))
         .catch(console.log)
 }
@@ -66,7 +66,7 @@ export default {
         if (townlessAmt < 1) {
             // Try emc.Townless() 
             const townless = await Aurora.Players.townless()
-            if (!townless) return await interaction.reply({ embeds: [fetchError], ephemeral: true })
+            if (!townless) return interaction.reply({ embeds: [fetchError], ephemeral: true })
 
             // Definitely no townless online, send appropriate msg.
             if (townless.length) return interaction.reply({
