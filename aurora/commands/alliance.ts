@@ -16,10 +16,12 @@ import {
     defaultSortAlliance, embedField, 
     fastMerge, isNumeric,
     backtick, backticks,
-    jsonReq, paginator 
+    jsonReq, paginator, 
+    removeDuplicates
 } from "../../bot/utils/fn.js"
 
 import { Aurora, OfficialAPI, type SquaremapPlayer } from "earthmc"
+import { request } from "undici"
 
 const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
     .setTitle("That command is for developers only!")
@@ -249,8 +251,9 @@ export default {
 
             const seniorEditor = message.member.roles.cache.has(seniorEditorID)
 
-            const arg1 = args[0]?.toLowerCase()
-            const arg2 = args[1]?.toLowerCase()
+            // These are subcmds after the actual /alliance or /a cmd.
+            const arg1 = args[0]?.toLowerCase() // /a <arg1>
+            const arg2 = args[1]?.toLowerCase() // /a <arg1> <arg2>
 
             // Creating an alliance
             if (arg1 == "create" || arg1 == "new") {   
@@ -276,17 +279,6 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                 
-                const leaderName = !args[2] ? "None" : new ArgsHelper(args, 2).asString()
-                const alliance = {
-                    allianceName: allianceName,
-                    leaderName: leaderName,
-                    discordInvite: "No discord invite has been set for this alliance",
-                    nations: [] as string[],
-                    type: 'normal' as AllianceType
-                }
-                
-                alliances.push(alliance)
-
                 const embed = new EmbedBuilder()
                     .setTimestamp()
                     .setAuthor({ 
@@ -294,18 +286,16 @@ export default {
                         iconURL: message.author.displayAvatarURL() 
                     })
 
+                const index = alliances.push({
+                    allianceName: allianceName,
+                    leaderName: "None",
+                    discordInvite: "No discord invite has been set for this alliance",
+                    nations: [] as string[],
+                    type: 'normal' as AllianceType
+                })
+
                 try {
                     await database.Aurora.setAlliances(alliances)
-
-                    const leaderStr = leaderName == "No leader set." || leaderName == "None" 
-                        ? `No leader has been set.` 
-                        : `Leader(s): ${backtick(leaderName)}`
-
-                    return m.edit({embeds: [embed
-                        .setTitle("Alliance Created")
-                        .setDescription(`The alliance \`${allianceName}\` has been created.\n\n${leaderStr}`)
-                        .setColor(Colors.DarkBlue)
-                    ]})
                 } catch(err: any) {
                     console.error(`[/a new] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -315,6 +305,16 @@ export default {
                         .setColor(Colors.Red)
                     ]})
                 }
+
+                return m.edit({embeds: [embed
+                    .setTitle("Alliance Created")
+                    .setDescription(`
+                        The alliance \`${allianceName}\` has been created.
+                        
+                        For future reference, this alliance exists at index ${index} in the database.
+                    `)
+                    .setColor(Colors.DarkBlue)
+                ]})
             } 
             
             if (arg1 == "wizard") {
@@ -389,8 +389,8 @@ export default {
                 //#endregion
 
                 const alliances = await database.Aurora.getAlliances()
-                const allianceExists = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 
+                const allianceExists = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 if (allianceExists) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error creating alliance")
                     .setDescription("The alliance you're trying to create already exists! This wizard can only create alliances.")
@@ -399,19 +399,65 @@ export default {
                     .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const leaderName = info[2] || "None"
+                //#region Discord Invite
+                const inviteInput = info[5]
+                let discordInvite: string = null
+
+                if (inviteInput.toLowerCase() == "none" || inviteInput.toLowerCase() == "null") {
+                    discordInvite = "No discord invite has been set for this alliance"
+                } else {
+                    const inviteCode = inviteInput.split("/").pop() // Extract code from input (works if link or code)
+                    const inviteRes = await request(`https://discordapp.com/api/invite/${inviteCode}`)
+                        .then(res => res.body.json()) as { message: string, code: number }
+
+                    // This is not the response code, but the one from the body discord gave us.
+                    if (inviteRes.code == 10006) return m.edit({embeds: [new EmbedBuilder()
+                        .setTitle("Error updating alliance")
+                        .setDescription("Discord argument was not an invite code or link. Please try again.")
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                        .setAuthor({
+                            name: message.author.username,
+                            iconURL: message.author.displayAvatarURL()
+                        })
+                    ]}).then(m => setTimeout(() => m.delete(), 15000)).catch(() => {})
+
+                    discordInvite = `https://discord.gg/${inviteCode}`
+                }
+                //#endregion
+
+                //#region Check if leaders exist before adding them.
+                const leaderName = info[2].replaceAll(' ', '') || "None"
+                if (leaderName.toLowerCase() != "none") {
+                    const missingPlayers = await checkLeadersExist(leaderName.split(","))
+                    if (missingPlayers.length > 0) {
+                        return m.edit({embeds: [new EmbedBuilder()
+                            .setTitle(`Failed to update alliance`)
+                            .setDescription(`The following leaders do not exist: ${backtick(missingPlayers.join(", "))}`)
+                            .setColor(Colors.Orange)
+                            .setTimestamp()
+                            .setAuthor({
+                                name: message.author.username,
+                                iconURL: message.author.displayAvatarURL() 
+                            })
+                        ]})
+                    }
+                }
+                //#endregion
+
                 const alliance: DBAlliance = {
                     allianceName,
-                    leaderName: leaderName,
+                    leaderName,
                     nations: [],
                     type: typeLower,
-                    discordInvite: info[5] || "No discord invite has been set for this alliance",
+                    discordInvite,
                     ...{
                         fullName: info[1] || null,
                         imageURL: info[6] || null
                     }
                 }
 
+                //#region Nations
                 const nations = await database.Aurora.getNations()
 
                 const nationsSkipped = []
@@ -433,15 +479,16 @@ export default {
                         nationsAdded.push(nation.name)
                     }
                 }
+                //#region
 
+                //#region Colors
                 const fill = info[7]
                 if (fill) {
                     alliance.colours = { 
                         fill, outline: info[8] || fill
                     }
                 }
-
-                alliances.push(alliance)
+                //#endregion
 
                 const embed = new EmbedBuilder()
                     .setTimestamp()
@@ -451,20 +498,8 @@ export default {
                     })
 
                 try {
+                    alliances.push(alliance)
                     await database.Aurora.setAlliances(alliances)
-
-                    const leaderStr = leaderName == "No leader set." || leaderName == "None" 
-                        ? `No leader has been set.` 
-                        : `Leader(s): ${backtick(leaderName)}`
-
-                    const name = getNameOrLabel(alliance)
-                    
-                    embed.setTitle(`Alliance Created | ${name}`)
-                         .setFields(embedField("Leader(s)", leaderStr))
-
-                    setAddedNationsInfo(nationsSkipped, nationsAdded, embed, name, 'creating')
-    
-                    return m.edit({ embeds: [embed] })
                 } catch(err: any) {
                     console.error(`[/a wizard] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -474,6 +509,19 @@ export default {
                         .setColor(Colors.Red)
                     ]})
                 }
+
+                //#region Add extra info to embed if creation succeeded.
+                const name = getNameOrLabel(alliance)
+                embed.setTitle(`Alliance Created | ${name}`)
+                    .setFields(embedField("Leader(s)", leaderName == "No leader set." || leaderName == "None" 
+                        ? `No leader has been set.` 
+                        : `Leader(s): ${backtick(leaderName)}`
+                    ))
+
+                setAddedNationsInfo(nationsSkipped, nationsAdded, embed, name, 'creating')
+                //#endregion
+
+                return m.edit({ embeds: [embed] })
             } 
             
             if (arg1 == "rename") {
@@ -721,9 +769,10 @@ export default {
                 alliances[allianceIndex] = foundAlliance
                 database.Aurora.setAlliances(alliances)
 
+                // TODO: Actually track removed nations instead of just using original input.
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                    .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```") // TODO: Actually track removed nations.
+                    .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```")
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()
                     .setAuthor({ 
@@ -731,7 +780,7 @@ export default {
                         iconURL: message.author.displayAvatarURL() 
                     })
                 ]})
-            } 
+            }
             
             // TODO: Use switch case for set options?
             if (arg1 == "set") {
@@ -758,8 +807,25 @@ export default {
                         })
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     
-                    // TODO: Check players exist before setting leader.
-                    foundAlliance.leaderName = new ArgsHelper(args, 3).asString()
+                    const playerArgs = new ArgsHelper(args, 3)
+
+                    //#region Check if leaders exist adding them.
+                    const missingPlayers = await checkLeadersExist(playerArgs.asArray())
+                    if (missingPlayers.length > 0) {
+                        return m.edit({embeds: [new EmbedBuilder()
+                            .setTitle(`Failed to update alliance`)
+                            .setDescription(`The following leaders do not exist: ${backtick(missingPlayers.join(", "))}`)
+                            .setColor(Colors.Orange)
+                            .setTimestamp()
+                            .setAuthor({
+                                name: message.author.username,
+                                iconURL: message.author.displayAvatarURL() 
+                            })
+                        ]})
+                    }
+                    //#endregion
+
+                    foundAlliance.leaderName = playerArgs.asString()
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                     alliances[allianceIndex] = foundAlliance
@@ -804,8 +870,10 @@ export default {
                         removing = true
                     } else {
                         const inviteCode = inviteInput.split("/").pop() // Extract code from input (works if link or code)
+                        const inviteRes = await request(`https://discordapp.com/api/invite/${inviteCode}`)
+                            .then(res => res.body.json()) as { message: string, code: number }
 
-                        const inviteRes = await fetch("https://discordapp.com/api/invite/" + inviteCode).then(res => res.json()) as any
+                        // This is not the response code, but the one from the body discord gave us.
                         if (inviteRes.code == 10006) return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error updating alliance")
                             .setDescription("Given input was not an invite code or link. Please try again.")
@@ -817,7 +885,7 @@ export default {
                             })
                         ]}).then(m => setTimeout(() => m.delete(), 15000)).catch(() => {})
 
-                        foundAlliance.discordInvite = "https://discord.gg/" + inviteCode
+                        foundAlliance.discordInvite = `https://discord.gg/${inviteCode}`
                     }
 
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -1129,6 +1197,15 @@ export default {
             //#endregion
         }
     }
+}
+
+async function checkLeadersExist(leaderNames: string[]) {
+    const playerArgsArr = removeDuplicates(leaderNames)
+
+    const apiPlayers = await OfficialAPI.V3.players(...leaderNames)
+    const apiPlayerNames = apiPlayers.map(p => p.name)
+
+    return playerArgsArr.filter(name => !apiPlayerNames.includes(name))
 }
 
 const hasDiscord = (a: DBAlliance) => a.discordInvite.startsWith("https://") && a.discordInvite.includes("discord.")

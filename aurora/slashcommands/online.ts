@@ -95,7 +95,7 @@ export default {
                 }
 
                 // Descending order, highest to lowest.
-                players.sort((a, b) => a.stats.balance - b.stats.balance)
+                players.sort((a, b) => b.stats.balance - a.stats.balance)
 
                 const allData = players.map(p => {
                     let str = `${p.name}`
