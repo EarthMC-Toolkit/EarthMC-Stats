@@ -65,7 +65,7 @@ export default {
             // }
             case "purge": {
                 await interaction.deferReply()
-                const purgeThreshold = interaction.options.getInteger("purge threshold")
+                const purgeThreshold = interaction.options.getInteger("purge_threshold")
 
                 const guildsToLeave = await client.guilds.cache.filter(g => g.memberCount <= purgeThreshold)
                 let leaveCounter = 0
@@ -112,7 +112,7 @@ export default {
         //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('purge')
             .setDescription('Leaves all guilds with the specified amount of members or less.')
-            .addIntegerOption(opt => opt.setName("purge threshold")
+            .addIntegerOption(opt => opt.setName("purge_threshold")
                 .setDescription("The member count threshold at which to leave guilds at or below.")
                 .setMinValue(2)
                 .setMaxValue(10)
