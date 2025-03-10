@@ -21,13 +21,14 @@ async function unsub(
     const channelID = interaction.channelId
     subbedChannels.get().then(doc => {
         if (!doc.exists) return
-        if (!doc.data().channelIDs.includes(channelID)) return interaction.reply({embeds: [
-            new EmbedBuilder()
-            .setTitle("Unsubscription Failed")
-            .setDescription(`This channel is not subscribed to receive ${subTypeName} updates.`)
-            .setColor(Colors.Red)
-            .setTimestamp()
-        ], ephemeral: true })
+        if (!doc.data().channelIDs.includes(channelID)) {
+            return interaction.reply({embeds: [new EmbedBuilder()
+                .setTitle("Unsubscription Failed")
+                .setDescription(`This channel is not subscribed to receive ${subTypeName} updates.`)
+                .setColor(Colors.Red)
+                .setTimestamp()
+            ], ephemeral: true })
+        }
 
         subbedChannels.update({ channelIDs: FieldValue.arrayRemove(channelID) })
 

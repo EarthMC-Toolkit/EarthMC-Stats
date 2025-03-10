@@ -12,7 +12,8 @@ import {
     databaseError, defaultSort, 
     devsFooter, embedField, fetchError, 
     sortByKey, unixFromDate,
-    maxTownSize
+    maxTownSize,
+    backtick
 } from '../../bot/utils/fn.js'
 
 import { Aurora, formatString, NotFoundError } from 'earthmc'
@@ -42,7 +43,7 @@ export default {
         await interaction.deferReply()
 
         let towns = await database.Aurora.getTowns()
-        if (!towns) return await interaction.reply({ embeds: [databaseError] })
+        if (!towns) return await interaction.editReply({ embeds: [databaseError] })
             .then(m => setTimeout(() => m.delete(), 10000))
             .catch(() => {})
 
@@ -51,7 +52,7 @@ export default {
             return t
         })).catch(() => null)
 
-        if (!towns) return await interaction.reply({ embeds: [fetchError] })
+        if (!towns) return await interaction.editReply({ embeds: [fetchError] })
             .then(m => setTimeout(() => m.delete(), 10000))
 
         const subCmd = interaction.options.getSubcommand().toLowerCase()
@@ -61,7 +62,7 @@ export default {
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
             if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
                 .setTitle("Invalid Town!")
-                .setDescription(`No town with name \`${nameArg}\` exists.`)
+                .setDescription(`No town with name ${backtick(nameArg)} exists.`)
                 .setColor(Colors.Red)
                 .setTimestamp()
             ]})
@@ -192,7 +193,7 @@ export default {
                 const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg)
                 if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle("Invalid Nation!")
-                    .setDescription(`Could not find any towns belonging to nation: \`${nationNameArg}\`.`)
+                    .setDescription(`Could not find any towns belonging to nation: ${backtick(nationNameArg)}.`)
                     .setTimestamp().setColor(Colors.Red)
                 ]})
     

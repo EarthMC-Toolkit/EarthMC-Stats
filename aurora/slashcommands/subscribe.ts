@@ -30,8 +30,7 @@ export default {
     description: "Subscribes a channel to receive live data.",
     disabled: true,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        if (!interaction.guild) interaction.reply({embeds: [
-            new EmbedBuilder()
+        if (!interaction.guild) return interaction.reply({embeds: [new EmbedBuilder()
             .setTitle("Error while using /sub:")
             .setDescription("You can't use `/sub` in a direct message!")
             .setColor(Colors.Red)
