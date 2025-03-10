@@ -310,8 +310,7 @@ export default {
                     .setTitle("Alliance Created")
                     .setDescription(`
                         The alliance \`${allianceName}\` has been created.
-                        
-                        For future reference, this alliance exists at index ${index} in the database.
+                        For future reference, this alliance exists at index ${backtick(index)} in the database.
                     `)
                     .setColor(Colors.DarkBlue)
                 ]})
