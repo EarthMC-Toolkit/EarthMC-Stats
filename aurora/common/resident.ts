@@ -52,6 +52,7 @@ class ResidentHelper extends BaseCommandHelper {
 
         this.mcProfile = await MC.Players.get(arg1).catch(() => null)
 
+        // Fetch from DB/Cache - fallback to NPM.
         const residents = await this.fetchResidents()
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)
 
@@ -102,9 +103,10 @@ class ResidentHelper extends BaseCommandHelper {
         const res: any = this.apiResident || this.dbResident
         //const formattedPlayerName = res.name.replace(/_/g, "\\_")
         
-        const affiliatedTown = (res.town?.name ?? res.town) ?? res.townName
-        const affiliatedNation = (res.nation?.name ?? res.nation) ?? res.townNation
-        
+        // Tries OAPI then tries DB/Cache then tries NPM.
+        const affiliatedTown = (res.town?.name ?? res.townName) ?? res.town
+        const affiliatedNation = (res.nation?.name ?? res.townNation) ?? res.nation
+
         this.embed.setTitle(`Resident Info | \`${res.name}\``)
 
         if (res.about && res.about != DEFAULT_ABOUT) {
