@@ -249,8 +249,9 @@ async function updateMapData(map: MapInstance) {
         }
     }
 
-    if (residentsArray?.length > 0)
+    if (residentsArray?.length > 0) {
         await map.db.setResidents(residentsArray)
+    }
     //#endregion
 
     //#region Nation Logic
@@ -269,8 +270,9 @@ async function updateMapData(map: MapInstance) {
     })
 
     // Make sure we don't overwrite with empty/null
-    if (nationsArray?.length > 0)
+    if (nationsArray?.length > 0) {
         map.db.setNations(nationsArray)
+    }
     //#endregion
 }
 
