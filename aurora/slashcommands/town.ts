@@ -54,82 +54,22 @@ export default {
         if (!towns) return await interaction.reply({ embeds: [fetchError] })
             .then(m => setTimeout(() => m.delete(), 10000))
 
-        const townEmbed = new EmbedBuilder()
+        const subCmd = interaction.options.getSubcommand().toLowerCase()
+        if (subCmd == "lookup") { // /t <town>
+            const nameArg = interaction.options.getString("name", true)
 
-        const subCmdName = interaction.options.getSubcommand().toLowerCase()
-        if (subCmdName == "list") {
-            const args2 = interaction.options.getString("comparator")
-            if (!args2) return sendList(client, interaction, null, towns) // Regular '/town list'
-                
-            const comparator = args2.toLowerCase()
+            const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
+            if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
+                .setTitle("Invalid Town!")
+                .setDescription(`No town with name \`${nameArg}\` exists.`)
+                .setColor(Colors.Red)
+                .setTimestamp()
+            ]})
 
-            if (comparator == "online") {
-                const ops = await Aurora.Players.online().catch(() => {})
-                if (!ops) return await interaction.editReply({ embeds: [fetchError] })
-
-                const onlineTownData: TownDataItem[] = []
-                const onlineTownDataFinal: TownDataItem[] = []
-
-                const len = towns.length
-                for (let i = 0; i < len; i++) {
-                    const cur = towns[i]
-
-                    onlineTownData.push({
-                        name: cur.name,
-                        nation: cur.nation,
-                        residents: cur.residents,
-                        onlineResidents: []
-                    }) 
-                }
-
-                // Function to get rid of duplicates and add up residents and chunks.
-                const ctx: Record<string, TownDataItem> = {}
-                onlineTownData.forEach(a => {                   
-                    // If town doesnt exist, add it.
-                    if (!ctx[a.name]) {           
-                        a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
-
-                        ctx[a.name] = { 
-                            name: a.name, 
-                            nation: a.nation,
-                            onlineResidents: a.onlineResidents
-                        }
-
-                        onlineTownDataFinal.push(ctx[a.name])
-                    }     
-                })
-
-                onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
-
-                const allData = onlineTownDataFinal.map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
-
-                new CustomEmbed(client, "Town Info | Online Residents")
-                    .setType(EntityType.Town)
-                    .paginate(allData, "```", "```")
-                    .editInteraction(interaction)
-            }
-            else if (comparator == "residents")
-                towns.sort((a, b) => b.residents.length - a.residents.length)
-            else if (comparator == "chunks" || comparator == "land" || comparator == "area") 
-                towns.sort((a, b) => b.area - a.area)
-            else if (comparator == "name" || comparator == "alphabetical") {
-                sortByKey(towns, "name")
-            }
-            else { // /t list <nation>
-                const nation = towns.some(town => town.nation.toLowerCase() == comparator)
-                if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
-                    .setTitle("Invalid Nation!")
-                    .setDescription(`No nation with name \`${args2}\` exists.`)
-                    .setTimestamp().setColor(Colors.Red)
-                ]})
-
-                // It exists, get only towns within the nation, and sort.
-                towns.map(town => town.nation.toLowerCase() == comparator)
-                towns = defaultSort(towns)
-            }
+            return sendSingle(client, interaction, towns, town)
         }
-        else if (subCmdName == "activity") {  
+
+        if (subCmd == "activity") {  
             const nameArg = interaction.options.getString("name", true)
 
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
@@ -172,214 +112,135 @@ export default {
                 return "" + resident + " | Unknown"
             }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-            new CustomEmbed(client, "Town Information | Activity in " + town.name)
+            return new CustomEmbed(client, "Town Information | Activity in " + town.name)
                 .paginate(allData)
                 .editInteraction(interaction)
         }
-        else if (subCmdName == "lookup") { // /t <town>
-            const nameArg = interaction.options.getString("name", true)
 
-            const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
-            if (!town) return await interaction.editReply({embeds: [new EmbedBuilder()
-                .setTitle("Invalid Town!")
-                .setDescription(`No town with name \`${nameArg}\` exists.`)
-                .setColor(Colors.Red)
-                .setTimestamp()
-            ]})
-
+        // Base 'list' subcommand, not a filter/group.
+        if (subCmd == "list") {
             towns = defaultSort(towns)
-
-            //let onlineResidents = []
-
-            const townRank = (towns.findIndex(t => t.name == town.name)) + 1
-            //const mayor = town.mayor.replace(/_/g, "\\_")
-            
-            // const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => {
-            //     return t instanceof NotFoundError ? null : t.colours
-            // })
-
-            // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-            
-            townEmbed.setColor(town.ruined ? Colors.Orange : Colors.Green)
-            townEmbed.setTitle(("Town Info | `" + town.name + `\`${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
-            
-            if (town.board) {
-                townEmbed.setDescription(`*${town.board}*`)
-            }
-
-            let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBSquaremapNation
-            if (townNation instanceof NotFoundError) {
-                townNation = null
-            }
-
-            const townResidentsLength = town.residents.length
-            if (!town.ruined) {
-                if (town.flags.capital) {
-                    const nationResidentsLength = townNation?.residents?.length ?? 0
-
-                    townEmbed.addFields(embedField("Mayor", `${nationResidentsLength >= 60 ? "God Emperor "
-                        : nationResidentsLength >= 40 ? "Emperor "
-                        : nationResidentsLength >= 30 ? "King "
-                        : nationResidentsLength >= 20 ? "Duke "
-                        : nationResidentsLength >= 10 ? "Count "
-                        : nationResidentsLength >= 0  ? "Leader " : "" }\`${town.mayor}\``, true
-                    ))
-                } else {
-                    townEmbed.addFields(embedField("Mayor", `${ townResidentsLength >= 28 ? "Lord "
-                        : townResidentsLength >= 24 ? "Duke " 
-                        : townResidentsLength >= 20 ? "Earl "
-                        : townResidentsLength >= 14 ? "Count "
-                        : townResidentsLength >= 10 ? "Viscount "
-                        : townResidentsLength >= 6  ? "Baron "
-                        : townResidentsLength >= 2  ? "Chief "
-                        : townResidentsLength == 1  ? "Hermit " : "" }\`${town.mayor}\``, true
-                    ))
-                }
-
-                const nationWiki = town?.wikis?.nation
-                const nationString = !nationWiki ? `\`${town.nation}\`` : `[${town.nation}](${nationWiki})`
-                
-                townEmbed.addFields(
-                    embedField("Nation", nationString, true),
-                    embedField("Founded", `<t:${town.foundedTimestamp}:R>`, true)
-                )
-            }
-
-            const townAreaStr = `\`${town.area}\` / `
-            const multiplier = townResidentsLength * 12
-            
-            if (town.nation != "No Nation") {
-                const nationBonus = auroraNationBonus(townNation.residents.length)
-                const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
-
-                townEmbed.addFields(
-                    embedField("Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
-                )
-            } else {
-                const claimBonus = Math.min(multiplier, maxTownSize)
-                townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}\``, true))
-            }
-
-            // if (town.wealth) {
-            //     townEmbed.addFields(embedField("Wealth", `\`${town.wealth}\`G`, true))
-            // }
-
-            townEmbed.addFields(embedField(
-                "Location",
-                `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, 
-                true
-            ))
-
-            townEmbed.setFooter(devsFooter(client))
-                .setThumbnail('attachment://aurora.png')
-                .setTimestamp()
-
-            if (!town.ruined) {
-                if (townResidentsLength > 0) {
-                    if (townResidentsLength <= 50) {
-                        townEmbed.addFields(embedField(
-                            `Residents [${townResidentsLength}]`, 
-                            "```" + town.residents.join(", ") + "```"
-                        ))
-                    }
-                    else townEmbed.addFields(embedField("Residents", `\`${townResidentsLength.toString()}\``))
-                }
-                else townEmbed.addFields(embedField("Residents", "There are no residents in this town?")) 
-
-                const townCouncillorsLen = town.councillors.length
-                if (townCouncillorsLen > 0) {
-                    if (townCouncillorsLen <= 50) {
-                        townEmbed.addFields(embedField(
-                            `Councillors [${townCouncillorsLen}]`, 
-                            "```" + town.councillors.join(", ") + "```"
-                        ))
-                    }
-                    else townEmbed.addFields(embedField("Councillors", townCouncillorsLen.toString()))
-                } 
-                else townEmbed.addFields(embedField("Councillors", "None")) 
-
-                // //#region "Online Residents" field
-                // const townyData = await database.Aurora.getOnlinePlayerData()
-
-                // if (!townyData) {
-                //     townEmbed.addFields(embedField(
-                //         "Online Residents", 
-                //         "No residents are online in " + town.name + "."
-                //     ))
-                // } else {
-                //     onlineResidents = removeDuplicates(town.residents.filter(res => townyData.players.some(op => res === op.name)))
-                //     const onlineResLen = onlineResidents.length
-
-                //     if (onlineResLen > 0) {
-                //         townEmbed.addFields(embedField(
-                //             `Online Residents [${onlineResLen}]`, 
-                //             "```" + onlineResidents.join(", ") + "```"
-                //         ))
-                //     }
-                //     else townEmbed.addFields(embedField(
-                //         "Online Residents", 
-                //         "No residents are online in " + town.name + "."
-                //     ))
-                // }
-                // //#endregion
-            }
-
-            const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-            townEmbed.addFields(embedField("Flags", `
-                ${town.flags.pvp ? green : red } PVP
-                ${town.flags.public ? green : red } Public
-            `))
-
-            // ${town.flags.mobs ? green : red } Mobs 
-            // ${town.flags.public ? green : red } Public
-            // ${town.flags.explosion ? green : red } Explosions 
-            // ${town.flags.fire ? green : red } Fire Spread
-
-            return interaction.editReply({
-                embeds: [townEmbed],
-                files: [AURORA.thumbnail]
-            })
+            return sendList(client, interaction, towns)
         }
 
-        return await interaction.editReply({embeds: [invalidUsageEmbed()]})
+        if (subCmd == "list_online") {
+            const ops = await Aurora.Players.online().catch(() => {})
+            if (!ops) return await interaction.editReply({ embeds: [fetchError] })
+
+            const onlineTownData: TownDataItem[] = []
+            const onlineTownDataFinal: TownDataItem[] = []
+
+            const len = towns.length
+            for (let i = 0; i < len; i++) {
+                const cur = towns[i]
+
+                onlineTownData.push({
+                    name: cur.name,
+                    nation: cur.nation,
+                    residents: cur.residents,
+                    onlineResidents: []
+                }) 
+            }
+
+            // Function to get rid of duplicates and add up residents and chunks.
+            const ctx: Record<string, TownDataItem> = {}
+            onlineTownData.forEach(a => {                   
+                // If town doesnt exist, add it.
+                if (!ctx[a.name]) {           
+                    a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
+
+                    ctx[a.name] = { 
+                        name: a.name, 
+                        nation: a.nation,
+                        onlineResidents: a.onlineResidents
+                    }
+
+                    onlineTownDataFinal.push(ctx[a.name])
+                }     
+            })
+
+            onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+
+            const allData = onlineTownDataFinal.map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
+                .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+
+            return new CustomEmbed(client, "Town Info | Online Residents")
+                .setType(EntityType.Town)
+                .paginate(allData, "```", "```")
+                .editInteraction(interaction)
+        }
+        
+        if (subCmd == "list_residents") {
+            towns.sort((a, b) => b.residents.length - a.residents.length)
+            return sendList(client, interaction, towns)
+        }
+
+        if (subCmd == "list_chunks") {
+            towns.sort((a, b) => b.area - a.area)
+            return sendList(client, interaction, towns)
+        }
+
+        if (subCmd == "list_alphabetical") {
+            sortByKey(towns, "name")
+            return sendList(client, interaction, towns)
+        }
+        
+        if (subCmd == "list_nation") { // /t list <nation>
+            const nationNameArg = interaction.options.getString("list_nation_name")
+            const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg)
+            if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
+                .setTitle("Invalid Nation!")
+                .setDescription(`Could not find any towns belonging to nation: \`${nationNameArg}\`.`)
+                .setTimestamp().setColor(Colors.Red)
+            ]})
+
+            // It exists, get only towns within the nation, and sort.
+            towns.map(town => town.nation.toLowerCase() == nationNameArg)
+            towns = defaultSort(towns)
+
+            return sendList(client, interaction, towns)
+        }
+
+        // TODO: I don't think we need this anymore since comparator option is gone.
+        //return await interaction.editReply({embeds: [invalidUsageEmbed()]})
     }, data: new SlashCommandBuilder()
         .setName("town")
         .setDescription("Displays info for a town.")
-        .addSubcommand(subCmd => subCmd
-            .setName('lookup')
-            .setDescription('Get detailed information for a town')
+        .addSubcommand(subCmd => subCmd.setName('lookup')
+            .setDescription("Get detailed information for a town.")
             .addStringOption(option => option.setName("name")
                 .setDescription("The name of the town to lookup.")
                 .setRequired(true)
             )
         )
-        .addSubcommand(subCmd => subCmd
-            .setName('activity')
-            .setDescription('Gets activity data for members of a town.')
+        .addSubcommand(subCmd => subCmd.setName('activity')
+            .setDescription("Gets activity data for members of a town.")
             .addStringOption(option => option.setName("name")
                 .setDescription("The name of the town to get activity data for.")
                 .setRequired(true)
             )
-        )              
-        .addSubcommandGroup(subCmdGroup => subCmdGroup
-            .setName('list')
-            .setDescription('List towns using various comparators including nation, chunks, online, residents and alphabetical.')
-            .addSubcommand(subCmd => subCmd.setName("nation")
+        )
+        .addSubcommand(subCmd => subCmd.setName('list')
+            .setDescription("Simply displays a list of all towns.")
+        )
+        .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list_group')
+            .setDescription("List towns using various comparators including nation, chunks, online, residents and alphabetical.")
+            .addSubcommand(subCmd => subCmd.setName("list_nation")
                 .setDescription("Ouputs a list of towns that are only within the specified nation.")
-                .addStringOption(option => option.setName("name")
+                .addStringOption(option => option.setName("list_nation_name")
                     .setDescription("The name of the nation to filter towns by.")
                 )
             )
-            .addSubcommand(subCmd => subCmd.setName("online")
+            .addSubcommand(subCmd => subCmd.setName("list_online")
                 .setDescription("Ouputs a list of towns with their respective number of online residents. Sorted by Most -> Least.")
             )
-            .addSubcommand(subCmd => subCmd.setName("chunks")
+            .addSubcommand(subCmd => subCmd.setName("list_chunks")
                 .setDescription("Outputs a list of towns sorted by chunks in the order: Highest -> Lowest.")
             )
-            .addSubcommand(subCmd => subCmd.setName("residents")
+            .addSubcommand(subCmd => subCmd.setName("list_residents")
                 .setDescription("Outputs a list of towns sorted by amount of residents in the order: Highest -> Lowest.")
             )
-            .addSubcommand(subCmd => subCmd.setName("alphabetical")
+            .addSubcommand(subCmd => subCmd.setName("list_alphabetical")
                 .setDescription("Outputs a list of all towns sorted in alphabetical order.")
             )
         )
@@ -419,13 +280,10 @@ const extractTownData = (towns: DBSquaremapTown[]) => {
 function sendList(
     client: Client, 
     interaction: ChatInputCommandInteraction, 
-    comparator: string, 
-    towns: DBSquaremapTown[]
+    towns: DBSquaremapTown[],
+    page = 0
 ) {
-    towns = defaultSort(towns)
-  
     const townData = extractTownData(towns)
-
     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
         `Residents: \`${town.residentNames.length}\`\n` +
         `Chunks: \`${town.area}\``
@@ -434,7 +292,160 @@ function sendList(
 
     new CustomEmbed(client, "Town Info | Town List")
         .setType(EntityType.Town)
-        .setPage(comparator ? parseInt(comparator) : 0)
+        .setPage(page ?? 0)
         .paginate(allData, "\n")
         .editInteraction(interaction)
+}
+
+async function sendSingle(
+    client: Client, interaction: ChatInputCommandInteraction, 
+    towns: DBSquaremapTown[], town: DBSquaremapTown
+) {
+    towns = defaultSort(towns)
+
+    const townEmbed = new EmbedBuilder()
+    const townRank = (towns.findIndex(t => t.name == town.name)) + 1
+    //const mayor = town.mayor.replace(/_/g, "\\_")
+    
+    // const townColours = await Aurora.Towns.get(town.name).then((t: SquaremapTown) => {
+    //     return t instanceof NotFoundError ? null : t.colours
+    // })
+
+    // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
+    
+    townEmbed.setColor(town.ruined ? Colors.Orange : Colors.Green)
+    townEmbed.setTitle(("Town Info | `" + town.name + `\`${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
+    
+    if (town.board) {
+        townEmbed.setDescription(`*${town.board}*`)
+    }
+
+    let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBSquaremapNation
+    if (townNation instanceof NotFoundError) {
+        townNation = null
+    }
+
+    const townResidentsLength = town.residents.length
+    if (!town.ruined) {
+        if (town.flags.capital) {
+            const nationResidentsLength = townNation?.residents?.length ?? 0
+
+            townEmbed.addFields(embedField("Mayor", `${nationResidentsLength >= 60 ? "God Emperor "
+                : nationResidentsLength >= 40 ? "Emperor "
+                : nationResidentsLength >= 30 ? "King "
+                : nationResidentsLength >= 20 ? "Duke "
+                : nationResidentsLength >= 10 ? "Count "
+                : nationResidentsLength >= 0  ? "Leader " : "" }\`${town.mayor}\``, true
+            ))
+        } else {
+            townEmbed.addFields(embedField("Mayor", `${ townResidentsLength >= 28 ? "Lord "
+                : townResidentsLength >= 24 ? "Duke " 
+                : townResidentsLength >= 20 ? "Earl "
+                : townResidentsLength >= 14 ? "Count "
+                : townResidentsLength >= 10 ? "Viscount "
+                : townResidentsLength >= 6  ? "Baron "
+                : townResidentsLength >= 2  ? "Chief "
+                : townResidentsLength == 1  ? "Hermit " : "" }\`${town.mayor}\``, true
+            ))
+        }
+
+        const nationWiki = town?.wikis?.nation
+        const nationString = !nationWiki ? `\`${town.nation}\`` : `[${town.nation}](${nationWiki})`
+        
+        townEmbed.addFields(
+            embedField("Nation", nationString, true),
+            embedField("Founded", `<t:${town.foundedTimestamp}:R>`, true)
+        )
+    }
+
+    const townAreaStr = `\`${town.area}\` / `
+    const multiplier = townResidentsLength * 12
+    
+    if (town.nation != "No Nation") {
+        const nationBonus = auroraNationBonus(townNation.residents.length)
+        const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
+
+        townEmbed.addFields(
+            embedField("Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
+        )
+    } else {
+        const claimBonus = Math.min(multiplier, maxTownSize)
+        townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}\``, true))
+    }
+
+    // if (town.wealth) {
+    //     townEmbed.addFields(embedField("Wealth", `\`${town.wealth}\`G`, true))
+    // }
+
+    const mapUrl = `https://map.earthmc.net?worldname=earth&zoom=6&x=${town.x}&z=${town.z}`
+    townEmbed.addFields(embedField("Location", `[${town.x}, ${town.z}](${mapUrl})`, true))
+
+    townEmbed.setFooter(devsFooter(client))
+        .setThumbnail('attachment://aurora.png')
+        .setTimestamp()
+
+    if (!town.ruined) {
+        if (townResidentsLength > 0) {
+            if (townResidentsLength <= 50) {
+                townEmbed.addFields(embedField(
+                    `Residents [${townResidentsLength}]`, 
+                    "```" + town.residents.join(", ") + "```"
+                ))
+            }
+            else townEmbed.addFields(embedField("Residents", `\`${townResidentsLength.toString()}\``))
+        }
+        else townEmbed.addFields(embedField("Residents", "There are no residents in this town?")) 
+
+        const townCouncillorsLen = town.councillors.length
+        if (townCouncillorsLen > 0) {
+            if (townCouncillorsLen <= 50) {
+                townEmbed.addFields(embedField(
+                    `Councillors [${townCouncillorsLen}]`, 
+                    "```" + town.councillors.join(", ") + "```"
+                ))
+            }
+            else townEmbed.addFields(embedField("Councillors", townCouncillorsLen.toString()))
+        } 
+        else townEmbed.addFields(embedField("Councillors", "None")) 
+
+        // //#region "Online Residents" field
+        // const ops = await Aurora.Players.online().catch(console.error)
+
+        // if (!townyData) {
+        //     townEmbed.addFields(embedField(
+        //         "Online Residents", 
+        //         "No residents are online in " + town.name + "."
+        //     ))
+        // } else {
+        //     const onlineResidents = removeDuplicates(town.residents.filter(res => ops.some(op => res === op.name)))
+        //     const onlineResLen = onlineResidents.length
+
+        //     if (onlineResLen > 0) {
+        //         townEmbed.addFields(embedField(
+        //             `Online Residents [${onlineResLen}]`, 
+        //             "```" + onlineResidents.join(", ") + "```"
+        //         ))
+        //     }
+        //     else townEmbed.addFields(embedField(
+        //         "Online Residents", 
+        //         "No residents are online in " + town.name + "."
+        //     ))
+        // }
+        // //#endregion
+    }
+
+    const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
+    townEmbed.addFields(embedField("Flags", `
+        ${town.flags.pvp ? green : red } PVP
+        ${town.flags.public ? green : red } Public
+    `))
+
+    // ${town.flags.mobs ? green : red } Mobs 
+    // ${town.flags.explosion ? green : red } Explosions 
+    // ${town.flags.fire ? green : red } Fire Spread
+
+    return interaction.editReply({
+        embeds: [townEmbed],
+        files: [AURORA.thumbnail]
+    })
 }

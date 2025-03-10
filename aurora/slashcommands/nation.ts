@@ -371,6 +371,14 @@ export default {
                 .setRequired(true)
             )
         )
+        .addSubcommand(subCmd => subCmd.setName('worth')
+            .setDescription('Displays a full breakdown of .')
+            .addStringOption(option => option
+                .setName("name")
+                .setDescription("The name of the nation.")
+                .setRequired(true)
+            )
+        )
         .addSubcommand(subCmd => subCmd.setName('activity')
             .setDescription('Gets activity data for members of a nation.')
             .addStringOption(option => option
@@ -384,14 +392,6 @@ export default {
             .addStringOption(option => option
                 .setName("comparator")
                 .setDescription("The comparator to use. Available: online, residents, chunks & name.")
-            )
-        )
-        .addSubcommand(subCmd => subCmd.setName('worth')
-            .setDescription('Displays a full breakdown of .')
-            .addStringOption(option => option
-                .setName("name")
-                .setDescription("The name of the nation.")
-                .setRequired(true)
             )
         )
 }
