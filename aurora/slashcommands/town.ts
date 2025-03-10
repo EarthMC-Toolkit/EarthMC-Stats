@@ -123,86 +123,89 @@ export default {
             return sendList(client, interaction, towns)
         }
 
-        if (subCmd == "list_online") {
-            const ops = await Aurora.Players.online().catch(() => {})
-            if (!ops) return await interaction.editReply({ embeds: [fetchError] })
-
-            const onlineTownData: TownDataItem[] = []
-            const onlineTownDataFinal: TownDataItem[] = []
-
-            const len = towns.length
-            for (let i = 0; i < len; i++) {
-                const cur = towns[i]
-
-                onlineTownData.push({
-                    name: cur.name,
-                    nation: cur.nation,
-                    residents: cur.residents,
-                    onlineResidents: []
-                }) 
+        const subCmdGroup = interaction.options.getSubcommandGroup()
+        if (subCmdGroup == "list") {
+            if (subCmd == "online") {
+                const ops = await Aurora.Players.online().catch(() => {})
+                if (!ops) return await interaction.editReply({ embeds: [fetchError] })
+    
+                const onlineTownData: TownDataItem[] = []
+                const onlineTownDataFinal: TownDataItem[] = []
+    
+                const len = towns.length
+                for (let i = 0; i < len; i++) {
+                    const cur = towns[i]
+    
+                    onlineTownData.push({
+                        name: cur.name,
+                        nation: cur.nation,
+                        residents: cur.residents,
+                        onlineResidents: []
+                    }) 
+                }
+    
+                // Function to get rid of duplicates and add up residents and chunks.
+                const ctx: Record<string, TownDataItem> = {}
+                onlineTownData.forEach(a => {                   
+                    // If town doesnt exist, add it.
+                    if (!ctx[a.name]) {           
+                        a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
+    
+                        ctx[a.name] = { 
+                            name: a.name, 
+                            nation: a.nation,
+                            onlineResidents: a.onlineResidents
+                        }
+    
+                        onlineTownDataFinal.push(ctx[a.name])
+                    }     
+                })
+    
+                onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
+    
+                const allData = onlineTownDataFinal.map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
+                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+    
+                return new CustomEmbed(client, "Town Info | Online Residents")
+                    .setType(EntityType.Town)
+                    .paginate(allData, "```", "```")
+                    .editInteraction(interaction)
+            }
+            
+            if (subCmd == "chunks") {
+                towns.sort((a, b) => b.area - a.area)
+                return sendList(client, interaction, towns)
             }
 
-            // Function to get rid of duplicates and add up residents and chunks.
-            const ctx: Record<string, TownDataItem> = {}
-            onlineTownData.forEach(a => {                   
-                // If town doesnt exist, add it.
-                if (!ctx[a.name]) {           
-                    a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
+            if (subCmd == "residents") {
+                towns.sort((a, b) => b.residents.length - a.residents.length)
+                return sendList(client, interaction, towns)
+            }
 
-                    ctx[a.name] = { 
-                        name: a.name, 
-                        nation: a.nation,
-                        onlineResidents: a.onlineResidents
-                    }
-
-                    onlineTownDataFinal.push(ctx[a.name])
-                }     
-            })
-
-            onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
-
-            const allData = onlineTownDataFinal.map(town => `${town.name} (${town.nation}) - ${town.onlineResidents.length}`)
-                .join('\n').match(/(?:^.*$\n?){1,10}/mg)
-
-            return new CustomEmbed(client, "Town Info | Online Residents")
-                .setType(EntityType.Town)
-                .paginate(allData, "```", "```")
-                .editInteraction(interaction)
-        }
-        
-        if (subCmd == "list_residents") {
-            towns.sort((a, b) => b.residents.length - a.residents.length)
-            return sendList(client, interaction, towns)
+            if (subCmd == "alphabetical") {
+                sortByKey(towns, "name")
+                return sendList(client, interaction, towns)
+            }
+            
+            if (subCmd == "nation") { // /t list <nation>
+                const nationNameArg = interaction.options.getString("list_nation_name")
+                const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg)
+                if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
+                    .setTitle("Invalid Nation!")
+                    .setDescription(`Could not find any towns belonging to nation: \`${nationNameArg}\`.`)
+                    .setTimestamp().setColor(Colors.Red)
+                ]})
+    
+                // It exists, get only towns within the nation, and sort.
+                towns.map(town => town.nation.toLowerCase() == nationNameArg)
+                towns = defaultSort(towns)
+    
+                return sendList(client, interaction, towns)
+            }
         }
 
-        if (subCmd == "list_chunks") {
-            towns.sort((a, b) => b.area - a.area)
-            return sendList(client, interaction, towns)
-        }
-
-        if (subCmd == "list_alphabetical") {
-            sortByKey(towns, "name")
-            return sendList(client, interaction, towns)
-        }
-        
-        if (subCmd == "list_nation") { // /t list <nation>
-            const nationNameArg = interaction.options.getString("list_nation_name")
-            const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg)
-            if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
-                .setTitle("Invalid Nation!")
-                .setDescription(`Could not find any towns belonging to nation: \`${nationNameArg}\`.`)
-                .setTimestamp().setColor(Colors.Red)
-            ]})
-
-            // It exists, get only towns within the nation, and sort.
-            towns.map(town => town.nation.toLowerCase() == nationNameArg)
-            towns = defaultSort(towns)
-
-            return sendList(client, interaction, towns)
-        }
-
-        // TODO: I don't think we need this anymore since comparator option is gone.
-        //return await interaction.editReply({embeds: [invalidUsageEmbed()]})
+        // NOTE: We might hit this if a group exists but isn't implemented.
+        return await interaction.editReply({ embeds: [invalidUsageEmbed()] })
     }, data: new SlashCommandBuilder()
         .setName("town")
         .setDescription("Displays info for a town.")
@@ -223,25 +226,26 @@ export default {
         .addSubcommand(subCmd => subCmd.setName('list')
             .setDescription("Simply displays a list of all towns.")
         )
-        .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list_group')
+        .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list')
             .setDescription("List towns using various comparators including nation, chunks, online, residents and alphabetical.")
-            .addSubcommand(subCmd => subCmd.setName("list_nation")
+            .addSubcommand(subCmd => subCmd.setName("online")
+                .setDescription("Ouputs a list of towns with their respective number of online residents. Sorted by Most -> Least.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("chunks")
+                .setDescription("Outputs a list of towns sorted by chunks in the order: Highest -> Lowest.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("residents")
+                .setDescription("Outputs a list of towns sorted by amount of residents in the order: Highest -> Lowest.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("alphabetical")
+                .setDescription("Outputs a list of all towns sorted in alphabetical order.")
+            )
+            .addSubcommand(subCmd => subCmd.setName("nation")
                 .setDescription("Ouputs a list of towns that are only within the specified nation.")
                 .addStringOption(option => option.setName("list_nation_name")
                     .setDescription("The name of the nation to filter towns by.")
+                    .setRequired(true)
                 )
-            )
-            .addSubcommand(subCmd => subCmd.setName("list_online")
-                .setDescription("Ouputs a list of towns with their respective number of online residents. Sorted by Most -> Least.")
-            )
-            .addSubcommand(subCmd => subCmd.setName("list_chunks")
-                .setDescription("Outputs a list of towns sorted by chunks in the order: Highest -> Lowest.")
-            )
-            .addSubcommand(subCmd => subCmd.setName("list_residents")
-                .setDescription("Outputs a list of towns sorted by amount of residents in the order: Highest -> Lowest.")
-            )
-            .addSubcommand(subCmd => subCmd.setName("list_alphabetical")
-                .setDescription("Outputs a list of all towns sorted in alphabetical order.")
             )
         )
 }
