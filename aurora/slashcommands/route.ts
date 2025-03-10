@@ -25,9 +25,16 @@ const CoordIntOption = (
     return option
 }
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("route")
+    .setDescription(desc)
+    .addIntegerOption(opt => CoordIntOption(opt, "x", -33280, 33081))
+    .addIntegerOption(opt => CoordIntOption(opt, "z", -16640, 16508))
+
 export default {
     name: "route",
     description: desc,
+    data: slashCmdData,
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         const x = interaction.options.getInteger("x")
         const z = interaction.options.getInteger("z")
@@ -44,9 +51,5 @@ export default {
             )
 
         return interaction.reply({ embeds: [embed] })
-    }, data: new SlashCommandBuilder()
-        .setName("route")
-        .setDescription(desc)
-        .addIntegerOption(opt => CoordIntOption(opt, "x", -33280, 33081))
-        .addIntegerOption(opt => CoordIntOption(opt, "z", -16640, 16508))
+    }
 }

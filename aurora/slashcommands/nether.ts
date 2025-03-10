@@ -9,9 +9,16 @@ import { devsFooter, isNumeric } from '../../bot/utils/fn.js'
 const formatCoord = (coord: number) => coord.toString().replace(/[, ]/g, " ")
 const convertToOverworld = (coord: number) => Math.floor(coord / 8).toString()
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("nether")
+    .setDescription("Converts 2 coordinates into nether coordinates.")
+    .addIntegerOption(option => option.setName("x").setDescription("The x overworld coordinate.").setRequired(true))
+    .addIntegerOption(option => option.setName("z").setDescription("The z overworld coordinate.").setRequired(true))
+
 export default {
     name: "nether",
     description: "Converts 2 coordinates into nether coordinates.",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const errorEmbed = new EmbedBuilder()
             .setDescription("<:red_tick:1036290475012915270> Please enter 2 numerical arguments, divided by a space or comma.")
@@ -39,9 +46,5 @@ export default {
             .setTimestamp()
             .setFooter(devsFooter(client))
         ]})
-    }, data: new SlashCommandBuilder()
-        .setName("nether")
-        .setDescription("Converts 2 coordinates into nether coordinates.")
-        .addIntegerOption(option => option.setName("x").setDescription("The x overworld coordinate.").setRequired(true))
-        .addIntegerOption(option => option.setName("z").setDescription("The z overworld coordinate.").setRequired(true))
+    }
 }

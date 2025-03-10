@@ -24,9 +24,16 @@ const getStaff = async(activeOnly: boolean) => {
     })
 }
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("staff")
+    .setDescription("Show a list of either active or online staff.")
+    .addSubcommand(subCmd => subCmd.setName('list').setDescription('List of all active staff members.'))
+    .addSubcommand(subCmd => subCmd.setName('online').setDescription('List of staff currently online.'))
+
 export default {
     name: "staff",
     description: "Sends a list of current server staff",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         //await interaction.deferReply()
 
@@ -63,9 +70,5 @@ export default {
                 .setTimestamp()
             ]})
         }
-    }, data: new SlashCommandBuilder()
-        .setName("staff")
-        .setDescription("Show a list of either active or online staff.")
-        .addSubcommand(subCmd => subCmd.setName('list').setDescription('List of all active staff members.'))
-        .addSubcommand(subCmd => subCmd.setName('online').setDescription('List of staff currently online.'))
+    }
 }

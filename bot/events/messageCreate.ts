@@ -45,8 +45,7 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
     await command.run(msg.client, msg, args).catch(console.log)
 }
 
-const prefix = (message: Message, str: string) => 
-    message.content.startsWith(str)
+const prefix = (message: Message, str: string) => message.content.startsWith(str)
 
 const msgCreate: DJSEvent = {
     name: 'messageCreate',
@@ -62,9 +61,7 @@ const msgCreate: DJSEvent = {
         // }
     
         if (message.author.bot) return
-
-        if (prefix(message, "/")) 
-            return runCmd(message, 1, 'auroraCommands')
+        if (prefix(message, "/")) return runCmd(message, 1, 'auroraCommands')
 
         // if (prefix(message, "a/"))
         //     return runCmd(message, 2, 'auroraCommands')

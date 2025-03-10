@@ -65,16 +65,17 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
         const linkedPlayer = await OfficialAPI.V3.uuidFromDiscord(userID).then(arr => arr[0])
 
         const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer?.name.toLowerCase()
-        if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
-            new EmbedBuilder()
-            .setDescription(`
-                In order to edit it this nation's info, you must:
-                - Be the owner of this nation (NOT a representative).
-                - Have your Discord linked to your in-game name.
-            `)
-            .setColor(Colors.Red)
-            .setTimestamp()
-        ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        if (!linkedPlayer || !canEdit) {
+            return interaction.editReply({embeds: [new EmbedBuilder()
+                .setDescription(`
+                    In order to edit it this nation's info, you must:
+                    - Be the owner of this nation (NOT a representative).
+                    - Have your Discord linked to your in-game name.
+                `)
+                .setColor(Colors.Red)
+                .setTimestamp()
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        }
 
         const value = interaction.options.getString("value")
         const cleared = value.toLowerCase() == "none" || value.toLowerCase() == "clear"

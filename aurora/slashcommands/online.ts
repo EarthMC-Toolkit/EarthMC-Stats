@@ -27,9 +27,19 @@ function displayOnlineStaff(client: Client, interaction: ChatInputCommandInterac
     ]})
 }
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("online")
+    .setDescription("Several commands related to online players.")
+    .addSubcommand(subCmd => subCmd.setName('all').setDescription('Lists every online player.'))
+    .addSubcommand(subCmd => subCmd.setName('staff').setDescription('Lists all online staff.'))
+    .addSubcommand(subCmd => subCmd.setName('mayors').setDescription('Lists all online mayors.'))
+    .addSubcommand(subCmd => subCmd.setName('kings').setDescription('Lists all online kings.'))
+    .addSubcommand(subCmd => subCmd.setName('baltop').setDescription('Lists all online players sorted by highest balance.'))
+
 export default {
     name: "online",
     description: "Get online info for staff, mayors and more.",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
@@ -121,12 +131,5 @@ export default {
                 .setDescription("Arguments: `all`, `staff`, `mayors`, `kings`")
             ]})
         }
-    }, data: new SlashCommandBuilder()
-        .setName("online")
-        .setDescription("Several commands related to online players.")
-        .addSubcommand(subCmd => subCmd.setName('all').setDescription('Lists every online player.'))
-        .addSubcommand(subCmd => subCmd.setName('staff').setDescription('Lists all online staff.'))
-        .addSubcommand(subCmd => subCmd.setName('mayors').setDescription('Lists all online mayors.'))
-        .addSubcommand(subCmd => subCmd.setName('kings').setDescription('Lists all online kings.'))
-        .addSubcommand(subCmd => subCmd.setName('baltop').setDescription('Lists all online players sorted by highest balance.'))
+    }
 }

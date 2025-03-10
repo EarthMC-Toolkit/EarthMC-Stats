@@ -13,9 +13,24 @@ dotenv.config()
 
 //const serviceID = "32ed6d7c-e2b2-4ddd-bd40-f574e154fc0a"
 
+const slashCmdData = new SlashCommandBuilder().setName("dev")
+    .setDescription("Manage bot services.")
+    //.addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
+    //.addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
+    //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
+    .addSubcommand(subCmd => subCmd.setName('purge')
+        .setDescription('Leaves all guilds with the specified amount of members or less.')
+        .addIntegerOption(opt => opt.setName("purge_threshold")
+            .setDescription("The member count threshold at which to leave guilds at or below.")
+            .setMinValue(2)
+            .setMaxValue(10)
+        )
+    )
+
 export default {
     name: "dev",
     description: "Developer restricted commands for bot management.",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         //const service = new Service(serviceID, process.env.AUTH_TOKEN)
         const embed = new EmbedBuilder()
@@ -105,17 +120,5 @@ export default {
                 .setDescription("Arguments: `pause`, `resume`, `restart`")
             ], ephemeral: true })
         }
-    }, data: new SlashCommandBuilder().setName("dev")
-        .setDescription("Manage bot services.")
-        //.addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
-        //.addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
-        //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
-        .addSubcommand(subCmd => subCmd.setName('purge')
-            .setDescription('Leaves all guilds with the specified amount of members or less.')
-            .addIntegerOption(opt => opt.setName("purge_threshold")
-                .setDescription("The member count threshold at which to leave guilds at or below.")
-                .setMinValue(2)
-                .setMaxValue(10)
-            )
-        )
+    }
 }

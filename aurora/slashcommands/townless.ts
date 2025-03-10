@@ -56,9 +56,14 @@ const send = (interaction: ChatInputCommandInteraction, allData: RegExpMatchArra
         .catch(console.log)
 }
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("townless")
+    .setDescription("Lists all online townless players.")
+
 export default {
     name: "townless",
     description: "Lists all online players without a town.",
+    data: slashCmdData,
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         let townless = await townlessLastSeen()
         const townlessAmt = townless.length
@@ -102,7 +107,5 @@ export default {
         console.log(townless.map(p => `${p.name} - vanished ${p.timesVanished} times. Currently: ${p.online ? "Online" : "Offline"}`))
 
         return send(interaction, allData, townless)
-    }, data: new SlashCommandBuilder()
-        .setName("townless")
-        .setDescription("Lists all online townless players.")
+    }
 }

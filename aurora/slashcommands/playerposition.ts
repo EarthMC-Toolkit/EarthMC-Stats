@@ -11,9 +11,18 @@ import {
 
 import { Aurora } from "earthmc"
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("playerposition")
+    .setDescription("Get a players current location.")
+    .addStringOption(option => option.setName("player")
+        .setDescription("The player to get the location for.")
+        .setRequired(true)
+    )
+
 export default {
     name: "playerposition",
     description: "Get a players current location.",
+    data: slashCmdData,
 	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const player = interaction.options.getString("player")
         if (!player) return interaction.reply({embeds: [new EmbedBuilder()
@@ -76,8 +85,5 @@ export default {
             .setTimestamp()
             .setColor(Colors.Red)
         ], ephemeral: true})
-    }, data: new SlashCommandBuilder()
-        .setName("playerposition")
-        .setDescription("Get a players current location.")
-        .addStringOption(option => option.setName("player").setDescription("The player to get the location for.").setRequired(true))
+    }
 }

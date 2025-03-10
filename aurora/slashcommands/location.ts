@@ -18,8 +18,29 @@ const embed = (
     .setFooter(devsFooter(client))
     .setTimestamp()
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("location")
+    .setDescription("Converts 2 coordinates (and optional zoom) into a clickable map link.")
+    .addIntegerOption(option => option
+        .setName("x")
+        .setDescription("The coordinate on the X axis (left/right).")
+        .setRequired(true)
+    )
+    .addIntegerOption(option => option
+        .setName("z")
+        .setDescription("The coordinate on the Z axis (up/down).")
+        .setRequired(true)
+    )
+    .addIntegerOption(option => option
+        .setName("zoom")
+        .setDescription("Map zoom scale/factor.")
+        .setMaxValue(6)
+        .setMinValue(0)
+    )
+
 export default {
     name: "location",
+    data: slashCmdData,
     description: "Converts 2 coordinates into a clickable map link.",
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const xCoord = interaction.options.getInteger("x")
@@ -60,23 +81,5 @@ export default {
                 embedField("Map Link", `[Click to open](${mapUrl.toString()})`)
             )
         ]})
-    }, data: new SlashCommandBuilder()
-        .setName("location")
-        .setDescription("Converts 2 coordinates (and optional zoom) into a clickable map link.")
-        .addIntegerOption(option => option
-            .setName("x")
-            .setDescription("The coordinate on the X axis (left/right).")
-            .setRequired(true)
-        )
-        .addIntegerOption(option => option
-            .setName("z")
-            .setDescription("The coordinate on the Z axis (up/down).")
-            .setRequired(true)
-        )
-        .addIntegerOption(option => option
-            .setName("zoom")
-            .setDescription("Map zoom scale/factor.")
-            .setMaxValue(6)
-            .setMinValue(0)
-        )
+    }
 }

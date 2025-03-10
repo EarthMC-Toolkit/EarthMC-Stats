@@ -6,9 +6,17 @@ import {
 
 import { paginatorInteraction } from "../../bot/utils/fn.js"
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("Outputs all commands (and aliases) with descriptions, sorted into different pages.")
+    // .addSubcommand(subcommand => subcommand.setName('main').setDescription('Lists main bot commands.'))
+    // .addSubcommand(subcommand => subcommand.setName('alliance').setDescription('Lists alliance bot commands.'))
+    // .addSubcommand(subcommand => subcommand.setName('other').setDescription('Lists all other bot commands.'))
+
 export default {
     name: "help",
     description: "Sends you the bot's commands.",
+    data: slashCmdData,
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         const main = new EmbedBuilder()
             .setColor(Colors.Green)
@@ -64,10 +72,5 @@ export default {
         return await interaction.reply({ embeds: [embeds[0]] })
             .then(() => paginatorInteraction(interaction, embeds, 0))
             .catch(console.error)
-    }, data: new SlashCommandBuilder()
-        .setName("help")
-        .setDescription("Outputs all commands (and aliases) with descriptions, sorted into different pages.")
-        // .addSubcommand(subcommand => subcommand.setName('main').setDescription('Lists main bot commands.'))
-        // .addSubcommand(subcommand => subcommand.setName('alliance').setDescription('Lists alliance bot commands.'))
-        // .addSubcommand(subcommand => subcommand.setName('other').setDescription('Lists all other bot commands.'))
+    }
 }

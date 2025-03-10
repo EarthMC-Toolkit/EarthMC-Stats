@@ -7,9 +7,18 @@ import {
 import { ResidentHelper } from '../common/resident.js'
 import { devsFooter } from "../../bot/utils/fn.js"
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("resident")
+    .setDescription("Displays info for a specific resident.")
+    .addStringOption(option => option.setName("name")
+        .setDescription("Enter a name")
+        .setRequired(true)
+    )
+
 export default {
     name: "resident",
     description: "Displays info for a specific resident.",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
@@ -41,8 +50,5 @@ export default {
         await interaction.editReply({
             embeds: [resHelper.createEmbed()]
         })
-    }, data: new SlashCommandBuilder()
-        .setName("resident")
-        .setDescription("Displays info for a specific resident.")
-        .addStringOption(option => option.setName("name").setDescription("Enter a name").setRequired(true))
+    }
 }

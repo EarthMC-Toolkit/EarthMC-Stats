@@ -18,7 +18,6 @@ export default {
         await interaction.deferReply()
 
         const server = await MojangLib.servers.get("join.earthmc.net")
-
         const mapRes = await database.Aurora.getOnlinePlayerData()
         //const nova = await database.Nova.getOnlinePlayerData().catch(() => {})
 

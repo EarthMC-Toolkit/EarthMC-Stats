@@ -31,9 +31,45 @@ import type {
     NationItem, TownItem 
 } from '../../bot/types.js'
 
+const slashCmdData = new SlashCommandBuilder()
+    .setName("nation")
+    .setDescription("Displays info for a nation.")
+    .addSubcommand(subCmd => subCmd.setName('lookup')
+        .setDescription('Get detailed information for a nation.')
+        .addStringOption(option => option
+            .setName("name")
+            .setDescription("The name of the nation.")
+            .setRequired(true)
+        )
+    )
+    // .addSubcommand(subCmd => subCmd.setName('worth')
+    //     .setDescription('Displays a full breakdown of .')
+    //     .addStringOption(option => option
+    //         .setName("name")
+    //         .setDescription("The name of the nation.")
+    //         .setRequired(true)
+    //     )
+    // )
+    .addSubcommand(subCmd => subCmd.setName('activity')
+        .setDescription('Gets activity data for members of a nation.')
+        .addStringOption(option => option
+            .setName("name")
+            .setDescription("The name of the nation.")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subCmd => subCmd.setName('list')
+        .setDescription('List nations using various comparators.')
+        .addStringOption(option => option
+            .setName("comparator")
+            .setDescription("The comparator to use. Available: online, residents, chunks & name.")
+        )
+    )
+
 export default {
     name: "nation",
     description: "Displays info for a nation.",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const nationEmbed = new CustomEmbed(client)
             .setColour(Colors.Aqua)
@@ -360,38 +396,5 @@ export default {
                 return nationEmbed.editInteraction(interaction)
             }
         }
-    }, data: new SlashCommandBuilder()
-        .setName("nation")
-        .setDescription("Displays info for a nation.")
-        .addSubcommand(subCmd => subCmd.setName('lookup')
-            .setDescription('Get detailed information for a nation.')
-            .addStringOption(option => option
-                .setName("name")
-                .setDescription("The name of the nation.")
-                .setRequired(true)
-            )
-        )
-        .addSubcommand(subCmd => subCmd.setName('worth')
-            .setDescription('Displays a full breakdown of .')
-            .addStringOption(option => option
-                .setName("name")
-                .setDescription("The name of the nation.")
-                .setRequired(true)
-            )
-        )
-        .addSubcommand(subCmd => subCmd.setName('activity')
-            .setDescription('Gets activity data for members of a nation.')
-            .addStringOption(option => option
-                .setName("name")
-                .setDescription("The name of the nation.")
-                .setRequired(true)
-            )
-        )
-        .addSubcommand(subCmd => subCmd.setName('list')
-            .setDescription('List nations using various comparators.')
-            .addStringOption(option => option
-                .setName("comparator")
-                .setDescription("The comparator to use. Available: online, residents, chunks & name.")
-            )
-        )
+    }
 }
