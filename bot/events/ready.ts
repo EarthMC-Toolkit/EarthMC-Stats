@@ -36,9 +36,9 @@ const rdyEvent: DJSEvent = {
         console.log(`${fn.time()} | ${client.user.username} is up!`)
         client.user.setPresence({ activities: [{ name: 'Startup Complete!' }], status: 'online' })
 
-        registerCommands(client)
-        registerButtons(client)
-        //registerModals()
+        await registerCommands(client)
+        await registerButtons(client)
+        //await registerModals()
 
         const watchingActivities = [
             `${client.guilds.cache.size} Servers`, 'towns being created.',
@@ -48,6 +48,15 @@ const rdyEvent: DJSEvent = {
             'Fix sleep', 'townless players struggle'
         ]
     
+        setInterval(() => {
+            const randomNum = fn.random(watchingActivities, lastActivity)
+            client.user.setActivity(watchingActivities[randomNum], { 
+                type: ActivityType.Watching 
+            })
+    
+            lastActivity = randomNum
+        }, 30*1000)
+
         await initUpdates(prod)
 
         // TODO: Re-enable if live stuff comes back.
@@ -66,15 +75,6 @@ const rdyEvent: DJSEvent = {
         //         console.log(`${fn.time()} | Townless subbed channels retrieved. Length: ${channelIDs.length}`)
         //     })
         // }
-    
-        setInterval(() => {
-            const randomNum = fn.random(watchingActivities, lastActivity)
-            client.user.setActivity(watchingActivities[randomNum], { 
-                type: ActivityType.Watching 
-            })
-    
-            lastActivity = randomNum
-        }, 30*1000)
     }
 }
 
