@@ -128,4 +128,5 @@ export default {
         .addSubcommand(subCmd => subCmd.setName('staff').setDescription('Lists all online staff.'))
         .addSubcommand(subCmd => subCmd.setName('mayors').setDescription('Lists all online mayors.'))
         .addSubcommand(subCmd => subCmd.setName('kings').setDescription('Lists all online kings.'))
+        .addSubcommand(subCmd => subCmd.setName('baltop').setDescription('Lists all online players sorted by highest balance.'))
 }

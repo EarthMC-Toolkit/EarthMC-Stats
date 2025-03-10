@@ -90,7 +90,7 @@ export default {
             "alliances", "meganations", "submeganations", "pacts",
             "/alliances", "/meganations", "/submeganations", "/pacts"
         ] // TODO: Maybe add `/a` to this?
- 
+
         if (!req && !cmdArray.includes(commandName)) {
             return m.edit({embeds: [new EmbedBuilder()
                 .setTitle("No Arguments Given!")

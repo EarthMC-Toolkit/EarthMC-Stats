@@ -4,13 +4,12 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import striptags from 'striptags'
-
-import * as db from "../../bot/utils/database.js"
 import { 
     botDevs, devsFooter, 
     embedField
 } from '../../bot/utils/fn.js'
+
+import { Aurora } from "earthmc"
 
 export default {
     name: "playerposition",
@@ -25,8 +24,8 @@ export default {
             .setFooter(devsFooter(client))
         ], ephemeral: true})
 
-        const opsData = await db.Aurora.getOnlinePlayerData()
-        if (!opsData) return interaction.reply({embeds: [new EmbedBuilder()
+        const ops = await Aurora.Players.online()
+        if (!ops) return interaction.reply({embeds: [new EmbedBuilder()
             .setTimestamp()
             .setColor(Colors.Red)
             .setTitle("Connection Issues")
@@ -38,9 +37,7 @@ export default {
             .setFooter(devsFooter(client))
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const ops = opsData.players
         const foundPlayer = ops.find(op => op.name.toLowerCase() == player.toLowerCase())
-          
         if (foundPlayer && !botDevs.includes(player.toLowerCase())) {
             const acc = foundPlayer.name
 
@@ -60,9 +57,9 @@ export default {
                 .setTimestamp()
                 .setFooter(devsFooter(client))
                 
-            const foundPlayerNickname = striptags(foundPlayer.display_name)
-            if (acc !== foundPlayerNickname)
-                locationEmbed.addFields(embedField("Nickname", foundPlayerNickname))
+            if (acc !== foundPlayer.nickname) {
+                locationEmbed.addFields(embedField("Nickname", foundPlayer.nickname))
+            }
             
             const { x, z } = foundPlayer
             locationEmbed.addFields(

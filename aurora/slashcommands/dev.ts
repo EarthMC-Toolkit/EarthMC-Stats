@@ -6,7 +6,6 @@ import {
     SlashCommandBuilder
 } from "discord.js"
 
-//import { Service } from 'koyeb.js'
 import { backtick, botDevs } from '../../bot/utils/fn.js'
 
 import dotenv from 'dotenv'
