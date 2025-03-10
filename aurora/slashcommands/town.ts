@@ -49,11 +49,11 @@ const slashCmdData = new SlashCommandBuilder()
             .setRequired(true)
         )
     )
-    .addSubcommand(subCmd => subCmd.setName('list')
-        .setDescription("Simply displays a list of all towns.")
-    )
-    .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list_group')
-        .setDescription("List towns using various comparators including nation, chunks, online, residents and alphabetical.")
+    .addSubcommandGroup(subCmdGroup => subCmdGroup.setName('list')
+        .setDescription("List towns using various comparators.")
+        .addSubcommand(subCmd => subCmd.setName("all")
+            .setDescription("Ouputs a list of all towns.")
+        )
         .addSubcommand(subCmd => subCmd.setName("online")
             .setDescription("Ouputs a list of towns with their respective number of online residents. Sorted by Most -> Least.")
         )
@@ -68,7 +68,7 @@ const slashCmdData = new SlashCommandBuilder()
         )
         .addSubcommand(subCmd => subCmd.setName("nation")
             .setDescription("Ouputs a list of towns that are only within the specified nation.")
-            .addStringOption(option => option.setName("list_nation_name")
+            .addStringOption(option => option.setName("name")
                 .setDescription("The name of the nation to filter towns by.")
                 .setRequired(true)
             )
@@ -80,6 +80,7 @@ export default {
     description: "Displays info for a town.",
     data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+        // TODO: Don't think we even need this anymore?
         if (!interaction.options.getSubcommand()) {
             return await interaction.reply({ embeds: [invalidUsageEmbed()], ephemeral: true })
         }
@@ -162,14 +163,13 @@ export default {
                 .editInteraction(interaction)
         }
 
-        // Base 'list' subcommand, not a filter/group.
-        if (subCmd == "list") {
-            towns = defaultSort(towns)
-            return sendList(client, interaction, towns)
-        }
-
         const subCmdGroup = interaction.options.getSubcommandGroup()
-        if (subCmdGroup == "list_group") {
+        if (subCmdGroup == "list") {
+            if (subCmd == "all") {
+                towns = defaultSort(towns)
+                return sendList(client, interaction, towns)
+            }
+
             if (subCmd == "online") {
                 const ops = await Aurora.Players.online().catch(() => {})
                 if (!ops) return await interaction.editReply({ embeds: [fetchError] })
@@ -233,7 +233,7 @@ export default {
             }
             
             if (subCmd == "nation") { // /t list <nation>
-                const nationNameArg = interaction.options.getString("list_nation_name")
+                const nationNameArg = interaction.options.getString("name")
                 const nation = towns.some(town => town.nation.toLowerCase() == nationNameArg)
                 if (!nation) return interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle("Invalid Nation!")
