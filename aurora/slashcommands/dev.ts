@@ -108,9 +108,9 @@ export default {
         }
     }, data: new SlashCommandBuilder().setName("dev")
         .setDescription("Manage bot services.")
-        .addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
-        .addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
-        .addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
+        //.addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
+        //.addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
+        //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
         .addSubcommand(subCmd => subCmd.setName('purge')
             .setDescription('Leaves all guilds with the specified amount of members or less.')
             .addIntegerOption(opt => opt.setName("purge threshold")

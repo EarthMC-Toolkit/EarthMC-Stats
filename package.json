@@ -1,8 +1,8 @@
 {
   "name": "emc-stats",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "A discord bot providing info on the EarthMC Minecraft server.",
-  "license": "CC-BY-NC-SA",
+  "license": "CC-BY-NC-SA 4.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
