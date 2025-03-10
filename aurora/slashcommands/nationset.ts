@@ -68,8 +68,8 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
         if (!linkedPlayer || !canEdit) return interaction.editReply({embeds: [
             new EmbedBuilder()
             .setDescription(`
-                In order to edit it this nation's info, you must:\n
-                - Be the owner of this nation (NOT a representative).\n
+                In order to edit it this nation's info, you must:
+                - Be the owner of this nation (NOT a representative).
                 - Have your Discord linked to your in-game name.
             `)
             .setColor(Colors.Red)
@@ -130,10 +130,10 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
                     if (!imageRegex.test(value)) return interaction.editReply({embeds: [
                         new EmbedBuilder()
                         .setDescription(`
-                            ${value} is not a valid image link, please try again following these rules:\n
-                            - Must begin with \`https://\`.\n
-                            - Must be a \`PNG\`, \`JPG\` or \`JPEG\`.\n
-                            - Must be the source image itself and **NOT** the host domain (use 'Open image in new tab').\n
+                            ${value} is not a valid image link, please try again following these rules:
+                            - Must begin with \`https://\`.
+                            - Must be a \`PNG\`, \`JPG\` or \`JPEG\`.
+                            - Must be the source image itself and **NOT** the host domain (use 'Open image in new tab').
                             - The image must live on a valid domain without a region lock, paywall, authorization etc.
                         `)
                         .setColor(Colors.Red)
