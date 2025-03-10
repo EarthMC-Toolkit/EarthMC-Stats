@@ -241,11 +241,9 @@ export default {
                     .setTimestamp().setColor(Colors.Red)
                 ]})
     
-                // It exists, get only towns within the nation, and sort.
-                towns.map(town => town.nation.toLowerCase() == nationNameArg)
-                towns = defaultSort(towns)
-    
-                return sendList(client, interaction, towns)
+                // Nation exists, filter by towns only within the nation.
+                towns = towns.filter(town => town.nation.toLowerCase() == nationNameArg.toLowerCase())
+                return sendList(client, interaction, defaultSort(towns))
             }
         }
 
