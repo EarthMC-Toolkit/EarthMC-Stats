@@ -14,6 +14,7 @@ import {
     devsFooter, fetchError, sortByKey, 
     staff
 } from '../../bot/utils/fn.js'
+import { EMOJI_GOLD } from '../../bot/utils/discord.js'
 
 const EMBED_COLOUR = "#d67a82"
 
@@ -93,7 +94,7 @@ export default {
             
                 const allData = nations.map(nation => `${nation.king} (${nation.name})`)
                     .join('\n').match(/(?:^.*$\n?){1,20}/mg)
-                    
+
                 return await new CustomEmbed(client, "Online Activity | Kings")
                     .setColour(EMBED_COLOUR)
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
@@ -122,10 +123,10 @@ export default {
                     return str + ` - ${backtick(p.stats.balance)}G`
                 }).join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
-                const total = players.reduce((acc, p) => acc + p.stats.balance, 0)
+                const total = players.reduce((acc, p) => acc + p.stats.balance, 0).toLocaleString()
                 return await new CustomEmbed(client, "Online Activity | Balances")
                     .setColour(EMBED_COLOUR)
-                    .paginate(allData, `Online: ${players.length} (${backtick(total)}G)` + "```", "```")
+                    .paginate(allData, `Online: ${backtick(players.length)} (${EMOJI_GOLD} ${total}G)\n\n`)
                     .editInteraction(interaction)
             }
             default: return await interaction.editReply({embeds: [new EmbedBuilder()
