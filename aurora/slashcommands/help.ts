@@ -9,9 +9,6 @@ import { paginatorInteraction } from "../../bot/utils/fn.js"
 const slashCmdData = new SlashCommandBuilder()
     .setName("help")
     .setDescription("Outputs all commands (and aliases) with descriptions, sorted into different pages.")
-    // .addSubcommand(subcommand => subcommand.setName('main').setDescription('Lists main bot commands.'))
-    // .addSubcommand(subcommand => subcommand.setName('alliance').setDescription('Lists alliance bot commands.'))
-    // .addSubcommand(subcommand => subcommand.setName('other').setDescription('Lists all other bot commands.'))
 
 export default {
     name: "help",
@@ -26,15 +23,7 @@ export default {
                 "`/queue` | See what the current state of the queue looks like.\n" +
                 "`/townless` | Displays the names of online players who are not in a town.\n" +
                 "`/resident <player>` | Displays information on the specified resident.\n" +
-                "`/playerposition <player>` | Get the current coordinates of the specified player.\n\n" +
-                "**Town**\n" +
-                "`/town lookup <town>` | Shows information about the specified town.\n" + 
-                "`/town list` | Displays a list of towns according to highest resident and chunk count.\n" + 
-                "`/town list <comparator>` | Sorts the list of towns by specified comparator: `online`, `residents`, `chunks`, `name`, & `nation`.\n\n" +
-                "**Nation**\n" +
-                "`/nation lookup <nation>` | Shows information about the specified nation.\n" +
-                "`/nation list` | Displays a list of nations according to both residents and chunks.\n" + 
-                "`/nationset` | Allows the nation owner (if linked) to edit their king prefix, discord and flag.\n"
+                "`/playerposition <player>` | Get the current coordinates of the specified player.\n"
             )
 
         const alliance = new EmbedBuilder()
