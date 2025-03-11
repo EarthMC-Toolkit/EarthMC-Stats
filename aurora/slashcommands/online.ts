@@ -10,6 +10,7 @@ import { Aurora, OfficialAPI, type Player } from "earthmc"
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import { 
+    backtick,
     devsFooter, fetchError, sortByKey, 
     staff
 } from '../../bot/utils/fn.js'
@@ -90,7 +91,9 @@ export default {
                 const nations = allNations.filter(n => ops.some(op => op.name == n.king))
                 sortByKey(nations, 'king')
             
-                const allData = nations.map(nation => `${nation.king} (${nation.name})`).join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                const allData = nations.map(nation => `${nation.king} (${nation.name})`)
+                    .join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                    
                 return await new CustomEmbed(client, "Online Activity | Kings")
                     .setColour(EMBED_COLOUR)
                     .paginate(allData, `Total: ${nations.length}` + "```", "```")
@@ -108,21 +111,21 @@ export default {
                 players.sort((a, b) => b.stats.balance - a.stats.balance)
 
                 const allData = players.map(p => {
-                    let str = `${p.name}`
+                    let str = `${backtick(p.name)}`
                     
                     if (p.town.name) {
                         str += p.nation.name 
-                            ? ` of ${p.town.name} (${p.nation.name})` 
+                            ? ` of ${p.town.name} (**${p.nation.name}**)` 
                             : ` of ${p.town.name}`
                     }
 
-                    return str + ` - ${p.stats.balance}G`
-                })
+                    return str + ` - ${backtick(p.stats.balance)}G`
+                }).join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
                 const total = players.reduce((acc, p) => acc + p.stats.balance, 0)
                 return await new CustomEmbed(client, "Online Activity | Balances")
                     .setColour(EMBED_COLOUR)
-                    .paginate(allData, `Online: ${players.length} (${total}G)`)
+                    .paginate(allData, `Online: ${players.length} (${backtick(total)}G)` + "```", "```")
                     .editInteraction(interaction)
             }
             default: return await interaction.editReply({embeds: [new EmbedBuilder()
