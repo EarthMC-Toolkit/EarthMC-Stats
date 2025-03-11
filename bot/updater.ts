@@ -220,8 +220,9 @@ async function updateMapData(map: MapInstance) {
         return t
     })
 
-    if (townsArray?.length > 0)
+    if (townsArray?.length > 0) {
         await map.db.setTowns(townsArray)
+    }
     //#endregion
 
     //#region Resident Logic

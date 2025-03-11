@@ -81,10 +81,10 @@ export interface MapDB {
     setAlliances(alliances: DBAlliance[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>
     setResidents(residents: DBResident[]): Promise<void>
-    getTowns(): Promise<(DBSquaremapTown)[]>
-    setTowns(towns: (DBSquaremapTown)[]): Promise<void>
-    getNations(): Promise<(DBSquaremapNation)[]>
-    setNations(nations: (DBSquaremapNation)[]): Promise<void>
+    getTowns(): Promise<DBSquaremapTown[]>
+    setTowns(towns: DBSquaremapTown[]): Promise<void>
+    getNations(): Promise<DBSquaremapNation[]>
+    setNations(nations: DBSquaremapNation[]): Promise<void>
 }
 
 export type AllianceType = 'sub' | 'mega' | 'normal'
@@ -104,9 +104,9 @@ export type DBAlliance = {
     towns: number
     residents: number
     area: number
-    online: string[]
+    online: string[] // TODO: Factor this out so that it isn't included in the database. Only getAlliance() should provide it.
     rank: number
-    wealth: number
+    wealth: number // TODO: Factor this out so that it isn't included in the database. Only getAlliance() should provide it.
 }>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'

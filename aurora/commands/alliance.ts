@@ -13,7 +13,7 @@ import type { AllianceType, DBAlliance } from "../../bot/types.js"
 import { 
     ArgsHelper,
     AURORA, botDevs, 
-    defaultSortAlliance, embedField, 
+    defaultSortAlliance,
     fastMerge, isNumeric,
     backtick, backticks,
     jsonReq, paginator, 
@@ -515,10 +515,12 @@ export default {
                 //#region Add extra info to embed if creation succeeded.
                 const name = getNameOrLabel(alliance)
                 embed.setTitle(`Alliance Created | ${name}`)
-                    .setFields(embedField("Leader(s)", leaderName == "No leader set." || leaderName == "None" 
-                        ? `No leader has been set.`
-                        : `Leader(s): ${backtick(leaderName)}`
-                    ))
+                    .setFields({
+                        name: "Leader(s)", 
+                        value: leaderName == "No leader set." || leaderName == "None" 
+                            ? `No leader has been set.`
+                            : `Leader(s): ${backtick(leaderName)}`
+                    })
 
                 setAddedNationsInfo(nationsSkipped, nationsAdded, embed, name, 'creating')
                 //#endregion
@@ -1395,15 +1397,13 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     let leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
         const name = backtick(p.name)
 
-        if (p.town.uuid) {
-            if (p.nation.uuid) {
-                return `${name} of ${p.town.name} (**${p.nation.name}**)`
-            }
-
-            return `${name} of ${p.town.name}`
+        if (p.town?.name) {
+            return p.nation?.name
+                ? `${name} of ${p.town.name} (**${p.nation.name}**)`
+                : `${name} of ${p.town.name}`
         }
         
-        return p.name
+        return name
     }).join("\n") : "None"
 
     // Too many characters to show leader affiliations, fall back to just names.
@@ -1419,15 +1419,12 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
 
     const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
-        .addFields(
-            embedField("Leader(s)", leadersStr, false),
-            embedField("Type", backtick(allianceType), true),
-            //embedField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
-            embedField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true),
-            embedField("Towns", backtick(foundAlliance.towns), true),
-            embedField("Residents", backtick(foundAlliance.residents), true),
-            embedField("Online", backtick(foundAlliance.online.length), true)
-        )
+        .addField("Leader(s)", leadersStr, false)
+        .addField("Type", backtick(allianceType), true)
+        //.addField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
+        .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
+        .addField("Towns", backtick(foundAlliance.towns), true)
+        .addField("Residents", backtick(foundAlliance.residents), true)
         .setColor(foundAlliance.colours 
             ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
             : Colors.DarkBlue
@@ -1435,6 +1432,10 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setDefaultAuthor(message)
         .setTimestamp()
+
+    if (foundAlliance.online) {
+        allianceEmbed.addField("Online", backtick(foundAlliance.online.length), true)
+    }
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
         allianceEmbed.setURL(foundAlliance.discordInvite)
@@ -1446,18 +1447,15 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     const allianceNationsLen = foundAlliance.nations.length
     if (nationsString.length < 1024) {
         if (allianceNationsLen < 1) {
-            allianceEmbed.addFields(embedField("Nations [0]", "There are no nations in this alliance."))
+            allianceEmbed.addField("Nations [0]", "There are no nations in this alliance.")
         }
-        else allianceEmbed.addFields(embedField(
-            `Nations [${allianceNationsLen}]`, 
-            "```" + nationsString + "```"
-        ))
+        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, "```" + nationsString + "```")
     }
     else {
-        allianceEmbed.addFields(embedField(
+        allianceEmbed.addField(
             `Nations [${allianceNationsLen}]`, 
             "Too many nations to display! Click the 'view all' button to see the full list."
-        ))
+        )
 
         allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
     }
