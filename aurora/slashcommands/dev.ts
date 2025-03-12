@@ -102,7 +102,7 @@ export default {
                     leftEmbed.setDescription(`
                         Due to low member count, I have left this server: ${backtick(guild.name)}
                         This was done for two main reasons:
-                        1. To combat abuse, where the goal is to intentionally overwhelm the database.
+                        1. To combat abuse, where the goal is to intentionally overwhelm the database.\n
                         2. To prevent hitting the 2500 shard limit until truly necessary to avoid major refactoring and downtime.
                         
                         It is recommended you use the bot in more established servers like [EMC Toolkit Development](https://discord.gg/yyKkZfmFAK).
