@@ -4,6 +4,7 @@ import * as database from "../bot/utils/database.js"
 
 import { 
     formatString,
+    OfficialAPI,
     type SquaremapOnlinePlayer
 } from "earthmc"
 
@@ -196,7 +197,7 @@ async function updateMapData(map: MapInstance) {
     const towns = await map.emc.Towns.all().catch(console.error)
     if (!towns) return console.warn(`[${mapName}] Could not update map data! 'towns' is null or undefined.`)
 
-    const nations = await map.emc.Nations.all(towns as any).catch(console.error)
+    const nations = await map.emc.Nations.all(towns).catch(console.error)
     if (!nations) return console.warn(`[${mapName}] Could not update map data! 'nations' is null or undefined.`)
 
     console.log(`[${mapName}] Updating data..`)
@@ -583,21 +584,28 @@ const purged = (timestamp: { seconds: number }, now: Date) => {
 
 const latinize = (str: string) => formatString(str, true)
 
+async function apiPlayerList() {
+    return (await OfficialAPI.V3.playerList()).map(p => p.name)
+}
+
 async function purgeInactive(players: DBPlayer[]) {
+    const originalLen = players.length
+    const allPlayerNames = await apiPlayerList()
+
+    if (allPlayerNames && allPlayerNames.length > 0) {
+        players = players.filter(p => allPlayerNames.includes(p.name))
+    }
+
+    //#region Purge if 42'ed
     const now = new Date()
     const len = players.length
 
-    let i = 0, purgedAmt = 0
-
-    //#region Purge loop
-    for (i; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         const player = players[i]
         const lo = player?.lastOnline
 
         if (!lo) {
             players.splice(i, 1)
-            purgedAmt++
-
             continue
         }
 
@@ -609,11 +617,11 @@ async function purgeInactive(players: DBPlayer[]) {
         if (lo.aurora && !purged(lo.aurora, now)) continue
 
         players.splice(i, 1)
-        purgedAmt++
         //#endregion
     }
     //#endregion
 
+    const purgedAmt = originalLen - players.length
     if (purgedAmt > 0) {
         console.log(`Purged ${purgedAmt} inactive/corrupted players.`)
         await database.setPlayers(players)

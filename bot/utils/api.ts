@@ -40,7 +40,7 @@ async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora')
     const route = `${mapName}/news`
     const all = msgs.sort((a, b) => b.createdTimestamp - a.createdTimestamp).map(m => new News(m))
 
-    await sendRequest(route, 'POST', { all })
+    await sendRequest(route, 'POST', all)
     console.log(`Sent POST request to ${route}`)
 }
 
