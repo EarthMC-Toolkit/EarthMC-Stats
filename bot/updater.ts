@@ -53,8 +53,11 @@ export async function initUpdates(prod = false) {
     setInterval(updateLastSeen, 10 * 1000)
     setInterval(updateAurora, 1.5 * oneMinMs)
 
-    setInterval(() => updateAlliances(AURORA), oneMinMs)
     setInterval(() => api.sendNews(client, 'aurora'), 5 * oneMinMs)
+    setInterval(async () => {
+        await updateAlliances(AURORA)
+        await api.sendAuroraAlliances()
+    }, oneMinMs)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
