@@ -2,7 +2,7 @@ import { request } from "undici"
 
 import { Aurora, Nova } from "./database.js"
 import { 
-    AURORA, NOVA, 
+    AURORA,
     unixFromDate
 }  from "./fn.js"
 
@@ -22,45 +22,42 @@ const sendRequest = async (route: string, method: ReqMethod, content: any) => re
     headers: reqHeaders
 }).catch(console.warn)
 
-const replaceWithUnix = (arr: DBPlayer[], map: 'nova' | 'aurora') => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
+const replaceWithUnix = (arr: DBPlayer[], map: 'aurora') => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
     .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
 
-const sendNews = async (client: Client, map: 'aurora' | 'nova') => {
-    const channel = await client.channels.fetch(map == 'nova' ? NOVA.newsChannel : AURORA.newsChannel) as TextChannel
+const isValidMessage = (msg: Message) => 
+    msg.content != "[Original Message Deleted]" &&
+    !msg.content.startsWith("/")
 
-    try {
-        const msgs = await channel.messages.fetch()
-        return sendNewsReq(msgs.filter(m => 
-            m.content != "[Original Message Deleted]" && 
-            !m.content.startsWith("/")
-        ), map)
-    } catch(_) {
-        return
-    }
+const sendNews = async (client: Client, map: 'aurora') => {
+    const channel = await client.channels.fetch(AURORA.newsChannel) as TextChannel
+    const msgs = await channel.messages.fetch({ limit: 100 })
+
+    return sendNewsReq(msgs.filter(m => isValidMessage(m)), map)
 }
 
-async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora' | 'nova') {
+async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora') {
     const route = `${mapName}/news`
-    await sendRequest(route, 'POST', { 
-        all: msgs.map(m => new News(m)), 
-        latest: new News(msgs.first())
-    })
-    
+    const all = msgs.sort((a, b) => b.createdTimestamp - a.createdTimestamp).map(m => new News(m))
+
+    await sendRequest(route, 'POST', { all })
     console.log(`Sent POST request to ${route}`)
 }
 
 export async function sendNovaAlliances() {
     const novaAlliances = await Nova.getAlliances()
-    if (novaAlliances) await sendRequest('nova/alliances', 'PUT', novaAlliances)
-
-    console.log('[Nova] Sent PUT requests to alliances')
+    if (novaAlliances) {
+        await sendRequest('nova/alliances', 'PUT', novaAlliances)
+        console.log('[Nova] Sent PUT requests to alliances')
+    }
 }
 
 export async function sendAuroraAlliances() {
     const auroraAlliances = await Aurora.getAlliances()
-    if (auroraAlliances) await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
-
-    console.log('[Aurora] Sent PUT requests to alliances')
+    if (auroraAlliances) {
+        await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
+        console.log('[Aurora] Sent PUT requests to alliances')
+    }
 }
 
 // const getDBPlayers = async () => database.getPlayers().then(players => {

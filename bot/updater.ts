@@ -32,7 +32,7 @@ import { daysBetween, devsFooter } from "../bot/utils/fn.js"
 //#endregion
 
 //#region Call Updates
-const oneMinute = 60 * 1000
+const oneMinMs = 60 * 1000
 
 export async function initUpdates(prod = false) {
     await updateLastSeen()
@@ -46,32 +46,21 @@ export async function initUpdates(prod = false) {
         await sendEmptyAllianceNotif(AURORA)
 
         await api.sendAuroraAlliances()
-
-        await updateNews()
+        await api.sendNews(client, 'aurora')
     }
 
-    setInterval(updateLastSeen, 0.15 * oneMinute)
-    setInterval(updateAurora, 1.5 * oneMinute)
+    setInterval(updateLastSeen, 10 * 1000)
+    setInterval(updateAurora, 1.5 * oneMinMs)
 
-    setInterval(async () => {
-        await updateAlliances(AURORA)
-        await api.sendAuroraAlliances()
-    }, 2 * oneMinute)
-
-    // Send news to API (for both maps).
-    setInterval(updateNews, 10 * oneMinute)
+    setInterval(() => updateAlliances(AURORA), oneMinMs)
+    setInterval(() => api.sendNews(client, 'aurora'), 5 * oneMinMs)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
     // }, 2 * oneMinute)
 
     // Every 12hr, send empty alliances to #editor-chat
-    setInterval(() => sendEmptyAllianceNotif(AURORA), 720 * oneMinute)
-}
-
-async function updateNews() {
-    await api.sendNews(client, 'aurora')
-    api.sendNews(client, 'nova')
+    setInterval(() => sendEmptyAllianceNotif(AURORA), 720 * oneMinMs)
 }
 
 async function updateAurora(botStarting = false) {
