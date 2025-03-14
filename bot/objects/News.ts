@@ -1,6 +1,6 @@
 import type { Message } from 'discord.js'
 
-const IMAGE_MATCHER = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif)(?:\?[^\s]*)?)/g
+const IMAGE_MATCHER = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp)(?:\?[^\s]*)?)/g
 
 export default class News {
     id: string
