@@ -55,6 +55,8 @@ export default {
             ]}).then(m => setTimeout(() => m.delete(), 10000))
         }
 
+        await interaction.deferReply()
+
         const subCmdName = interaction.options.getSubcommand().toLowerCase()
         switch(subCmdName) {
             // case "restart": {
@@ -86,7 +88,6 @@ export default {
             //     ]})
             // }
             case "purge": {
-                await interaction.deferReply()
                 const purgeThreshold = interaction.options.getInteger("purge_threshold")
                 const guildsToLeave = client.guilds.cache.filter(g => g.memberCount <= purgeThreshold).values()
 
@@ -132,15 +133,15 @@ export default {
                         continue
                     }
 
-                    const nova = player.lastOnline['nova']
-                    if (nova) {
-                        delete player.lastOnline['nova']
-                    }
+                    // const nova = player.lastOnline['nova']
+                    // if (nova) {
+                    //     delete player.lastOnline['nova']
+                    // }
 
-                    const uppercaseAurora = player.lastOnline['AURORA']
-                    if (uppercaseAurora) {
-                        player.lastOnline.aurora = uppercaseAurora
-                        delete player.lastOnline['AURORA']
+                    const badAurora = player.lastOnline['Aurora']
+                    if (badAurora) {
+                        player.lastOnline.aurora = badAurora
+                        delete player.lastOnline['Aurora']
                     }
 
                     const missingOnlineDates = !player.lastOnline.aurora
@@ -148,7 +149,7 @@ export default {
                         toRemove.push(player.name)
                     }
 
-                    if (uppercaseAurora || nova || missingOnlineDates) {
+                    if (badAurora || missingOnlineDates) {
                         fixedPlayersAmt++
                     }
                 }

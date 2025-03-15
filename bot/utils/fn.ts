@@ -275,8 +275,8 @@ export const daysBetween = (start: Date, end: Date) => {
     return Math.ceil(diff / (1000 * 3600 * 24))
 }
 
-export function divideArray(arr: any[], n: number) {
-    const chunks = []
+export function divideArray<T>(arr: T[], n: number) {
+    const chunks: T[][] = []
 
     const arrLen = arr.length
     const chunkLength = Math.max(arrLen / n, 1)

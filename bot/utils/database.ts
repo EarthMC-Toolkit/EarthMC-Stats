@@ -56,6 +56,10 @@ async function setPlayers(players: DBPlayer[]) {
         counter++
 
         const playerRef = db.collection("players").doc(`playerArray${counter}`)
+
+        // Sort each arr by latest timestamp first so DB is easier to manually navigate.
+        array.sort((b, a) => b.lastOnline.aurora.toMillis() - a.lastOnline.aurora.toMillis())
+
         playerRef.set({ playerArray: array })
         //batch.set(playerRef, { playerArray: array })
     }
