@@ -83,18 +83,24 @@ async function updateMap(players: DBPlayer[], map: MapInstance) {
 //#endregion
 
 //#region Database Update Methods
-const mapToString = (map: MapInstance, uppercase = false) => {
-    const str = map == AURORA ? "Aurora" : "Nova"
-    return uppercase ? str.toUpperCase() : str
+const mapToString = (map: MapInstance, strCase?: 'upper' | 'lower') => {
+    let str = map == AURORA ? "Aurora" : "Nova"
+    if (!strCase) {
+        str = strCase == 'lower' ? str.toLowerCase() : str.toUpperCase()
+    }
+
+    return str
 }
 
 // TODO: Set alliances for both maps with a batch update to save on writes
 async function updateAlliances(map: MapInstance) {
+    const mapName = mapToString(map, 'upper')
+
     const nations = await map.emc.Nations.all()
-    if (!nations) return console.warn(`[${mapToString(map, true)}] Couldn't update alliances, failed to fetch nations.`)
+    if (!nations) return console.warn(`[${mapName}] Couldn't update alliances, failed to fetch nations.`)
 
     const alliances = await map.db.getAlliances(true) as DBAlliance[]
-    if (!alliances) return console.warn("Couldn't update alliances, failed to fetch from DB.")
+    if (!alliances) return console.warn(`[${mapName}] Couldn't update alliances, failed to fetch from DB.`)
 
     const alliancesAmt = alliances.length
     for (let index = 0; index < alliancesAmt; index++) {
@@ -121,7 +127,7 @@ async function updateAlliances(map: MapInstance) {
 }
 
 async function sendEmptyAllianceNotif(map: MapInstance) {
-    const mapName = mapToString(map, true)
+    const mapName = mapToString(map, 'upper')
 
     const nations = await map.emc.Nations.all()
     if (!nations) return console.warn(`[${mapName}] Couldn't check empty alliances, failed to fetch nations.`)
@@ -156,10 +162,10 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
 }
 
 async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
-    const mapName = mapToString(map, true)
+    const mapName = mapToString(map, 'lower')
 
     const onlinePlayers = await map.emc.Players.online().catch(() => {})
-    if (!onlinePlayers) return console.warn(`[${mapName}] Error updating player data, bad response getting online players!`)
+    if (!onlinePlayers) return console.warn(`[${mapName.toUpperCase()}] Error updating player data, bad response getting online players!`)
 
     const now = Timestamp.now()
 
@@ -169,8 +175,6 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
         const op = onlinePlayers[i]
 
         const playerInDB = players.find(p => p.name == op.name)
-        const playerIndex = players.findIndex(p => p.name == op.name)
-            
         const player = {
             name: op.name,
             lastOnline: {
@@ -186,7 +190,10 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
 
         // Not in DB, add them.
         if (!playerInDB) players.push(player)
-        else players[playerIndex] = player // Update them.
+        else {
+            const playerIndex = players.indexOf(playerInDB)
+            players[playerIndex] = player // Update them.
+        }
     }
     //#endregion
 
@@ -195,7 +202,7 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
 
 // Updates: Towns, Nations, Residents
 async function updateMapData(map: MapInstance) {
-    const mapName = mapToString(map, true)
+    const mapName = mapToString(map, 'upper')
 
     const towns = await map.emc.Towns.all().catch(console.error)
     if (!towns) return console.warn(`[${mapName}] Could not update map data! 'towns' is null or undefined.`)
