@@ -10,7 +10,7 @@ import { backtick, botDevs } from '../../bot/utils/fn.js'
 
 import dotenv from 'dotenv'
 import { getPlayers, setPlayers } from "../../bot/utils/database.js"
-import { DBPlayer } from "../../bot/types.js"
+
 dotenv.config()
 
 //const serviceID = "32ed6d7c-e2b2-4ddd-bd40-f574e154fc0a"
@@ -24,6 +24,7 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
     //.addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
     //.addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
     //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
+    .addSubcommand(subCmd => subCmd.setName('fixonline').setDescription('Fixes errors in DB player entries.'))
     .addSubcommand(subCmd => subCmd.setName('purge')
         .setDescription('Leaves all guilds with the specified amount of members or less.')
         .addIntegerOption(opt => opt.setName("purge_threshold")
