@@ -136,9 +136,18 @@ export default {
                     delete player.lastOnline['nova']
                     delete player.linkedID
 
+                    const badAurora = player.lastOnline['Aurora']
+                    if (badAurora) {
+                        player.lastOnline.aurora = badAurora
+                        delete player.lastOnline['Aurora']
+                    }
+
                     const missingOnlineDates = !player.lastOnline.aurora
                     if (missingOnlineDates) {
                         toRemove.push(player.name)
+                    }
+
+                    if (missingOnlineDates || badAurora) {
                         fixedPlayersAmt++
                     }
                 }

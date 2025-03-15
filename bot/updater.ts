@@ -85,7 +85,7 @@ async function updateMap(players: DBPlayer[], map: MapInstance) {
 //#region Database Update Methods
 const mapToString = (map: MapInstance, strCase?: 'upper' | 'lower') => {
     let str = map == AURORA ? "Aurora" : "Nova"
-    if (!strCase) {
+    if (strCase) {
         str = strCase == 'lower' ? str.toLowerCase() : str.toUpperCase()
     }
 
