@@ -9,9 +9,15 @@ import {
 import { backtick, botDevs } from '../../bot/utils/fn.js'
 
 import dotenv from 'dotenv'
+import { getPlayers, setPlayers } from "../../bot/utils/database.js"
+import { DBPlayer } from "../../bot/types.js"
 dotenv.config()
 
 //const serviceID = "32ed6d7c-e2b2-4ddd-bd40-f574e154fc0a"
+
+const leftEmbed = new EmbedBuilder()
+    .setTitle("Notice of Departure")
+    .setColor("#d64b00")
 
 const slashCmdData = new SlashCommandBuilder().setName("dev")
     .setDescription("Manage bot services.")
@@ -81,23 +87,20 @@ export default {
             case "purge": {
                 await interaction.deferReply()
                 const purgeThreshold = interaction.options.getInteger("purge_threshold")
+                const guildsToLeave = client.guilds.cache.filter(g => g.memberCount <= purgeThreshold).values()
 
-                const guildsToLeave = await client.guilds.cache.filter(g => g.memberCount <= purgeThreshold)
-                let leaveCounter = 0
-
-                const leftEmbed = new EmbedBuilder()
-                    .setTitle("Notice of Departure")
-                    .setColor("#d64b00")
-
-                guildsToLeave.forEach(async guild => {
-                    //const guild = await client.guilds.fetch(id)
-                    const left = await guild.leave().then(() => true).catch(e => { console.error(e); return false })
-
-                    if (!left) return
-                    leaveCounter++
+                let leftAmt = 0
+                for (const guild of guildsToLeave) {
+                    try {
+                        await guild.leave()
+                        leftAmt++
+                    } catch(e) {
+                        console.error(`Error leaving guild: ${guild.name}.\n${e.message}`)
+                        continue
+                    }
 
                     const guildOwner = await guild.fetchOwner()
-                    if (!guildOwner) return
+                    if (!guildOwner) continue
 
                     leftEmbed.setDescription(`
                         Due to low member count, I have left this server: ${backtick(guild.name)}
@@ -110,9 +113,48 @@ export default {
                     `)
 
                     await guildOwner.send({ embeds: [leftEmbed] })
-                })
+                }
 
-                return await interaction.editReply({ content: `Left ${leaveCounter} guilds.` })
+                return await interaction.editReply({ content: `Left ${leftAmt} guilds.` })
+            }
+            case "fixonline": {
+                let fixedPlayersAmt = 0
+
+                const dbPlayers = await getPlayers(true)
+                const toRemove = []
+
+                for (const player of dbPlayers) {
+                    if (!player.lastOnline) {
+                        toRemove.push(player.name)
+                        fixedPlayersAmt++
+
+                        continue
+                    }
+
+                    const nova = player.lastOnline['nova']
+                    if (nova) {
+                        delete player.lastOnline['nova']
+                    }
+
+                    const uppercaseAurora = player.lastOnline['AURORA']
+                    if (uppercaseAurora) {
+                        player.lastOnline.aurora = uppercaseAurora
+                        delete player.lastOnline['AURORA']
+                    }
+
+                    const missingOnlineDates = !player.lastOnline.aurora
+                    if (missingOnlineDates) {
+                        toRemove.push(player.name)
+                    }
+
+                    if (uppercaseAurora || nova || missingOnlineDates) {
+                        fixedPlayersAmt++
+                    }
+                }
+
+                await setPlayers(dbPlayers.filter(p => !toRemove.includes(p.name)))
+
+                return await interaction.editReply({ content: `Corrected DB errors for ${fixedPlayersAmt} players.` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Colors.Red)
