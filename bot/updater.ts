@@ -587,7 +587,7 @@ async function updateLastSeen() {
 //#endregion
 
 //#region Helper Methods
-const purged = (timestamp: { seconds: number }, now: Date) => {
+const isInactive = (timestamp: { seconds: number }, now: Date) => {
     const loDate = new Date(timestamp.seconds * 1000)
     return daysBetween(loDate, now) > 42
 }
@@ -602,34 +602,32 @@ async function purgeInactive(players: DBPlayer[]) {
     const originalLen = players.length
     const allPlayerNames = await apiPlayerList()
 
+    // Get rid of any not in OAPI.
     if (allPlayerNames && allPlayerNames.length > 0) {
         players = players.filter(p => allPlayerNames.includes(p.name))
     }
 
     //#region Purge if 42'ed
     const now = new Date()
-    const len = players.length
+    const inactive: string[] = []
 
-    for (let i = 0; i < len; i++) {
-        const player = players[i]
+    for (const player of players) {
         const lo = player?.lastOnline
-
         if (!lo) {
-            players.splice(i, 1)
+            inactive.push(player.name)
             continue
         }
 
-        // Player's discord is null or empty, delete it.
-        if (player.linkedID) delete player.linkedID
-        else continue // Don't purge linked players (old link command)
-
-        //#region Purge if inactive on active maps.
-        if (lo.aurora && !purged(lo.aurora, now)) continue
-
-        players.splice(i, 1)
+        //#region Purge if inactive on currently existing maps.
+        if (lo.aurora && isInactive(lo.aurora, now)) {
+            inactive.push(player.name)
+        }
         //#endregion
     }
     //#endregion
+
+    // Get rid of those we marked as inactive.
+    players = players.filter(p => !inactive.includes(p.name))
 
     const purgedAmt = originalLen - players.length
     if (purgedAmt > 0) {

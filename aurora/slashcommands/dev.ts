@@ -133,23 +133,12 @@ export default {
                         continue
                     }
 
-                    // const nova = player.lastOnline['nova']
-                    // if (nova) {
-                    //     delete player.lastOnline['nova']
-                    // }
-
-                    const badAurora = player.lastOnline['Aurora']
-                    if (badAurora) {
-                        player.lastOnline.aurora = badAurora
-                        delete player.lastOnline['Aurora']
-                    }
+                    delete player.lastOnline['nova']
+                    delete player.linkedID
 
                     const missingOnlineDates = !player.lastOnline.aurora
                     if (missingOnlineDates) {
                         toRemove.push(player.name)
-                    }
-
-                    if (badAurora || missingOnlineDates) {
                         fixedPlayersAmt++
                     }
                 }
