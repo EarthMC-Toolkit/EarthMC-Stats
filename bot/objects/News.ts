@@ -35,6 +35,7 @@ export default class News {
         }
 
         // The headline is everything in bold (between first set of **), or before first new line.
-        this.headline = headline.match(/\*\*(.*?)\*\*/)?.[1] || headline.split('\n')[0]
+        headline = headline.match(/\*\*(.*?)\*\*/)?.[1] || headline.split('\n')[0]
+        this.headline = headline.trim()
     }
 }
