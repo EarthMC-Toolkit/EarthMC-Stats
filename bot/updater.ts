@@ -41,7 +41,8 @@ export async function initUpdates(prod = false) {
     if (prod) {
         console.log("Production enabled, initializing data updates..")
 
-        await updateAurora(true)
+        await updatePlayers(true)
+        await updateMapData(AURORA)
         await updateAlliances(AURORA)
 
         await api.sendAuroraAlliances()
@@ -51,13 +52,16 @@ export async function initUpdates(prod = false) {
     }
 
     setInterval(updateLastSeen, 10 * 1000)
-    setInterval(updateAurora, 1.5 * oneMinMs)
 
-    setInterval(() => api.sendNews(client, 'aurora'), 5 * oneMinMs)
     setInterval(async () => {
+        await updatePlayers(false)
+        await updateMapData(AURORA)
+
         await updateAlliances(AURORA)
         await api.sendAuroraAlliances()
     }, 1.5 * oneMinMs)
+    
+    setInterval(() => api.sendNews(client, 'aurora'), 5 * oneMinMs)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
@@ -65,20 +69,6 @@ export async function initUpdates(prod = false) {
 
     // Every 12hr, send empty alliances to #editor-chat
     setInterval(() => sendEmptyAllianceNotif(AURORA), 720 * oneMinMs)
-}
-
-async function updateAurora(botStarting = false) {
-    const dbPlayers = await database.getPlayers(botStarting)
-    const players = dbPlayers ? await purgeInactive(dbPlayers) : []
-
-    await updateMap(players, AURORA)
-}
-
-async function updateMap(players: DBPlayer[], map: MapInstance) {
-    await updateMapData(map)
-
-    if (players.length < 1) return
-    updatePlayerData(players, map)
 }
 //#endregion
 
@@ -92,7 +82,6 @@ const mapToString = (map: MapInstance, strCase?: 'upper' | 'lower') => {
     return str
 }
 
-// TODO: Set alliances for both maps with a batch update to save on writes
 async function updateAlliances(map: MapInstance) {
     const mapName = mapToString(map, 'upper')
 
@@ -159,6 +148,14 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
 
         editorChannel.send({ embeds: [embed] })
     }
+}
+
+async function updatePlayers(botStarting = false) {
+    const dbPlayers = await database.getPlayers(botStarting)
+    const players = dbPlayers ? await purgeInactive(dbPlayers) : []
+
+    if (players.length < 1) return
+    updatePlayerData(players, AURORA)
 }
 
 async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
