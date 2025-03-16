@@ -130,8 +130,9 @@ export function unixFromDate(date: Date | Timestamp): number {
 
 export const fiveMin = 5 * 60 * 1000
 export const removeDuplicates = <T>(arr: T[]) => [...new Set(arr)]
-export const deepCopy = (arr: any[]) => JSON.parse(JSON.stringify(arr))
 export const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+
+//export const deepCopy = <T>(arr: T[]) => JSON.parse(JSON.stringify(arr))
 //export const isEmpty = (str: string) => (!str || str.length === 0)
 
 // type ForwardCallback = (

@@ -92,7 +92,6 @@ export async function setTowns(towns: DBSquaremapTown[]) {
     let counter = 0
 
     const batch = db.batch()
-
     for (const towns of dividedTownsArray) {
         counter++
 

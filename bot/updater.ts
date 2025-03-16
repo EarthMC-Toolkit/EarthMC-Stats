@@ -44,10 +44,10 @@ export async function initUpdates(prod = false) {
         await updateAurora(true)
         await updateAlliances(AURORA)
 
-        await sendEmptyAllianceNotif(AURORA)
-
         await api.sendAuroraAlliances()
         await api.sendNews(client, 'aurora')
+
+        await sendEmptyAllianceNotif(AURORA)
     }
 
     setInterval(updateLastSeen, 10 * 1000)
@@ -57,7 +57,7 @@ export async function initUpdates(prod = false) {
     setInterval(async () => {
         await updateAlliances(AURORA)
         await api.sendAuroraAlliances()
-    }, oneMinMs)
+    }, 1.5 * oneMinMs)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
@@ -632,7 +632,7 @@ async function purgeInactive(players: DBPlayer[]) {
     const purgedAmt = originalLen - players.length
     if (purgedAmt > 0) {
         console.log(`Purged ${purgedAmt} inactive/corrupted players.`)
-        await database.setPlayers(players)
+        //await database.setPlayers(players)
     }
 
     return players

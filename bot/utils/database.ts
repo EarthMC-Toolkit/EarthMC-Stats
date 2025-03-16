@@ -44,30 +44,34 @@ const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().t
     return player
 })
 
+// FIRESTORE LIMITS:
+// - 500 writes (set, update, delete)
+// - 10MB per transaction
 async function setPlayers(players: DBPlayer[]) {
-    cache.set('players', players, { ttl: 298 * 1000 })
+    cache.set('players', players, { ttl: 298 * 1000 }) // TODO: ttl could be Infinity since we calling this on interval anyway.
 
-    let counter = 0
     const dividedPlayerArray = divideArray(players, 8)
 
-    //const batch = db.batch()
-    
+    const batch1 = db.batch()
+    const batch2 = db.batch()
+
+    let counter = 0
     for (const array of dividedPlayerArray) {      
         counter++
 
-        const playerRef = db.collection("players").doc(`playerArray${counter}`)
-
-        // Sort each arr by latest timestamp first so DB is easier to manually navigate.
-        array.sort((b, a) => {
-            if (!b.lastOnline?.aurora?.seconds || !a.lastOnline?.aurora?.seconds) return 0
-            return b.lastOnline.aurora.seconds - a.lastOnline.aurora.seconds
-        })
-
-        playerRef.set({ playerArray: array })
-        //batch.set(playerRef, { playerArray: array })
+        const playerRef = db.collection("players").doc(`playerArray${counter}`)  
+        if (counter > 4) {
+            batch2.set(playerRef, { playerArray: array })
+        } else {
+            batch1.set(playerRef, { playerArray: array })
+        }
     }
 
-    //await batch.commit()
+    // TODO: Check if Promise.all would keep document order 1-8.
+    //await Promise.all([batch1.commit(), batch2.commit()])
+
+    await batch1.commit()
+    await batch2.commit()
 }
 
 export {
