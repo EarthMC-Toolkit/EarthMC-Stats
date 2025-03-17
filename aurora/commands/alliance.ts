@@ -45,7 +45,11 @@ const getType = (a: { type: string }) => a.type == 'mega'
     ? 'Meganation' : a.type == 'sub' 
     ? 'Sub-Meganation' : 'Normal'
 
-const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], allianceEmbed: EmbedBuilder, name: string, type: 'creating' | 'updating') => {
+const setAddedNationsInfo = (
+    type: 'creating' | 'updating',
+    nationsSkipped: string[], nationsAdded: string[], 
+    allianceName: string, allianceEmbed: EmbedBuilder
+) => {
     const amtSkipped = nationsSkipped.length
     const amtAdded = nationsAdded.length
 
@@ -60,7 +64,7 @@ const setAddedNationsInfo = (nationsSkipped: string[], nationsAdded: string[], a
             )
         } else { // All skipped, none added.
             allianceEmbed.setColor(Colors.Red)
-                .setTitle(`Error ${type} alliance | ${name}`)
+                .setTitle(`Error ${type} alliance | ${allianceName}`)
                 .setDescription("The following nations do not exist:\n\n```" + skippedStr + "```")
         }
     } else if (amtAdded >= 1) { // All added, none skipped.
@@ -522,11 +526,11 @@ export default {
                             : `Leader(s): ${backtick(leaderName)}`
                     })
 
-                setAddedNationsInfo(nationsSkipped, nationsAdded, embed, name, 'creating')
+                setAddedNationsInfo('creating', nationsSkipped, nationsAdded, name, embed)
                 //#endregion
 
                 return m.edit({ embeds: [embed] })
-            } 
+            }
             
             if (arg1 == "rename") {
                 const alliances = await database.Aurora.getAlliances()
@@ -654,14 +658,15 @@ export default {
 
                 const nations = await database.Aurora.getNations()
 
-                const nationsSkipped = []
-                const nationsAdded = []
+                const nationsSkipped: string[] = []
+                const nationsAdded: string[] = []
                 const len = nationsToAdd.length
 
                 for (let i = 0; i < len; i++) {   
                     const cur = nationsToAdd[i]                                              
                     const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
 
+                    // Invalid/non-existent nation, skip.
                     if (!nation) {
                         nationsSkipped.push(cur)
                         continue
@@ -678,8 +683,10 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
-                await database.Aurora.setAlliances(alliances)
-
+                if (nationsAdded.length > 0) {
+                    await database.Aurora.setAlliances(alliances)
+                }
+                
                 const name = getNameOrLabel(foundAlliance)
                 const allianceEmbed = new EmbedBuilder()
                     .setTitle(`Alliance Updated | ${name}`)
@@ -689,7 +696,7 @@ export default {
                         iconURL: message.author.displayAvatarURL()
                     })
                 
-                setAddedNationsInfo(nationsSkipped, nationsAdded, allianceEmbed, name, 'updating')
+                setAddedNationsInfo('updating', nationsSkipped, nationsAdded, name, allianceEmbed)
                 
                 return m.edit({ embeds: [allianceEmbed] })
             } 
