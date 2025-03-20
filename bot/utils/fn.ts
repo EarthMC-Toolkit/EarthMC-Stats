@@ -129,6 +129,7 @@ export function unixFromDate(date: Date | Timestamp): number {
 }
 
 export const fiveMin = 5 * 60 * 1000
+export const listInputToArr = (str: string) => str.replace(/,/g, ' ').split(' ').filter(Boolean)
 export const removeDuplicates = <T>(arr: T[]) => [...new Set(arr)]
 export const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
 

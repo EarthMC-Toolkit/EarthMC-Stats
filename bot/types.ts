@@ -106,7 +106,7 @@ export type DBAlliance = {
     area: number
     online: string[] // TODO: Factor this out so that it isn't included in the database. Only getAlliance() should provide it.
     rank: number
-    wealth: number // TODO: Factor this out so that it isn't included in the database. Only getAlliance() should provide it.
+    //wealth: number // TODO: Factor this out so that it isn't included in the database. Only getAlliance() should provide it.
 }>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'

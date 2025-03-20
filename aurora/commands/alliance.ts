@@ -1424,7 +1424,6 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         typeString == 'mega' ? "Meganation" : "Normal/Pact"
 
     const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
-
     const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
         .addField("Leader(s)", leadersStr, false)
         .addField("Type", backtick(allianceType), true)

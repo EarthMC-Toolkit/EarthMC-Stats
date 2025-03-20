@@ -48,7 +48,7 @@ const resCmd: MessageCommand = {
         const resHelper = new ResidentHelper(client)
         const exists = await resHelper.init(input)
 
-        if (!exists /*|| !resHelper.apiResident*/) {
+        if (!exists) {
             return m.edit({embeds: [errEmbed(client, message)
                 .setTitle(`${backtick(req)} is not a registered player, please try again.`)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})

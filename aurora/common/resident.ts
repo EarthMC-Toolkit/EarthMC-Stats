@@ -52,37 +52,48 @@ class ResidentHelper extends BaseCommandHelper {
 
         this.mcProfile = await MC.Players.get(arg1).catch(() => null)
 
-        // Fetch from DB/Cache - fallback to NPM.
+        //#region Get resident from OAPI.
+        let apiRes: RawPlayerV3 = null
+        try {
+            const players = await OfficialAPI.V3.players(arg1)
+            apiRes = players[0]
+
+            if (!apiRes) throw new Error(`Official API could not find resident: ${arg1}`)
+        } catch(e: any) {
+            console.error(e)
+            //return false // TODO: Just serve player embed without OAPI info if db fallback found.
+        }
+        //#endregion
+
+        // At this point, we can be quite sure this player doesn't exist since
+        // both the OAPI and MCAPI will rarely be both down at the same time.
+        if (!apiRes && !this.mcProfile) {
+            return false
+        }
+
+        //#region Fetch resident from Cache/DB or NPM as fallback.
         const residents = await this.fetchResidents()
         this.dbResident = residents.find(r => r.name.toLowerCase() == arg1)
+        //#endregion
 
+        //#region Set the online player info
         const resName = this.dbResident?.name || arg1
         const ops = await Aurora.Players.online()
 
         const searchName = !this.dbResident ? arg1 : resName
-        if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName) 
+        if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName.toLowerCase()) 
+        //#endregion
 
-        let resident: RawPlayerV3 = null
-        try {
-            const players = await OfficialAPI.V3.players(arg1)
-            resident = players[0]
+        if (apiRes.town?.uuid) {
+            const resTown = await OfficialAPI.V3.towns(apiRes.town.name.toLowerCase()).then(arr => arr[0])
 
-            if (!resident) throw new Error(`Official API could not find resident: ${arg1}`)
-        } catch(e: any) {
-            console.error(e)
-            return false
-        }
-
-        if (resident.town?.uuid) {
-            const resTown = await OfficialAPI.V3.towns(resident.town.name.toLowerCase()).then(arr => arr[0])
-
-            const isMayor = resTown.mayor.name == resident.name
+            const isMayor = resTown.mayor.name == apiRes.name
             const rank = isMayor ? (resTown.status.isCapital ? "Nation Leader" : "Mayor") : "Resident"
             
-            resident['rank'] = rank
+            apiRes['rank'] = rank
         }
 
-        this.#apiResident = resident
+        this.#apiResident = apiRes
 
         this.status = this.onlinePlayer ? "Online" : "Offline"
         this.pInfo = await database.getPlayerInfo(resName).catch(e => console.error(`Database error!\n${e}`))

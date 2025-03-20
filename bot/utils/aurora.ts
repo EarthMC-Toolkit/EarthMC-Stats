@@ -114,63 +114,67 @@ export async function getAlliance(name: string) {
     const nations = await getNations()
     if (!nations) return null
 
-    const opData = await getOnlinePlayerData()
-
-    // Get nations that are in the inputted alliance.
+    // Get nations that are in the input alliance.
     const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
     const len = allianceNations.length
 
+    const opData = await getOnlinePlayerData()
     for (let i = 0; i < len; i++) {
         const n = allianceNations[i]
 
-        foundAlliance.wealth += n.wealth
+        if (opData) {
+            const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
+            foundAlliance.online = fastMerge([], onlineInNation)
+        }
 
-        if (!opData) continue
-
-        const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
-        foundAlliance.online = fastMerge([], onlineInNation)
+        //foundAlliance.wealth += n.wealth
     }
 
     // Only get rank if 2 or more alliances exist.
-    const alliancesLen = alliances.length
-    if (alliancesLen > 1) {
-        for (let i = 0; i < alliancesLen; i++) {
-            const alliance = alliances[i]
-
-            let currentAllianceResidents = 0
-            let currentAllianceArea = 0
-            let currentAllianceTowns = 0
-            
-            const allianceNationsLen = alliance.nations.length
-            for (let j = 0; j < allianceNationsLen; j++) {
-                const allianceNation = alliance.nations[j]
-
-                const foundNation = nations.find(n => n.name == allianceNation)                       
-                if (!foundNation) continue
-
-                currentAllianceResidents += foundNation.residents.length
-                currentAllianceArea += foundNation.area
-                currentAllianceTowns += foundNation.towns.length
-            }
-
-            alliance.residents = currentAllianceResidents
-            alliance.towns = currentAllianceTowns
-            alliance.area = currentAllianceArea
-        }
-        
-        //#region Default sort
-        sortByOrder(alliances, [
-            { key: "residents" }, 
-            { key: "area" },
-            { key: "nations", callback: length }, 
-            { key: "towns", callback: length }
-        ])
-        //#endregion
-
-        foundAlliance.rank = alliances.findIndex(a => a.allianceName == foundAlliance.allianceName) + 1
+    if (alliances.length > 1) {
+        foundAlliance.rank = getAllianceRank(foundAlliance.allianceName, alliances, nations)
     }
 
     return foundAlliance
+}
+
+export function getAllianceRank(allianceName: string, alliances: DBAlliance[], nations: DBSquaremapNation[]) {
+    const alliancesLen = alliances.length
+    for (let i = 0; i < alliancesLen; i++) {
+        const alliance = alliances[i]
+        const curAllianceInfo = {
+            residents: 0,
+            towns: 0,
+            area: 0
+        }
+        
+        const allianceNationsLen = alliance.nations.length
+        for (let j = 0; j < allianceNationsLen; j++) {
+            const allianceNation = alliance.nations[j]
+
+            const foundNation = nations.find(n => n.name == allianceNation)                       
+            if (!foundNation) continue
+
+            curAllianceInfo.residents += foundNation.residents.length
+            curAllianceInfo.towns += foundNation.towns.length
+            curAllianceInfo.area += foundNation.area
+        }
+
+        alliance.residents = curAllianceInfo.residents
+        alliance.towns = curAllianceInfo.towns
+        alliance.area = curAllianceInfo.area
+    }
+    
+    //#region Default sort
+    sortByOrder(alliances, [
+        { key: "residents" }, 
+        { key: "area" },
+        { key: "nations", callback: length }, 
+        { key: "towns", callback: length }
+    ])
+    //#endregion
+
+    return alliances.findIndex(a => a.allianceName == allianceName) + 1
 }
 
 export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {

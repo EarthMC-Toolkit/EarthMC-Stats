@@ -47,10 +47,15 @@ export default class CustomEmbed extends EmbedBuilder {
     row: ActionRowBuilder = null
     title: string = null
 
-    constructor(client: Client, title: string = null) {
-        super({ title, footer: fn.devsFooter(client) })
-        this.client = client
+    constructor(client: Client = null, title: string = null) {
+        super({ title })
+
         this.title = title
+        this.client = client
+
+        if (this.client) {
+            this.setFooter(fn.devsFooter(client))
+        }
     }
 
     addField(name: string, value: string, inline = false) {
