@@ -18,7 +18,7 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
     const commands = (msg.client as any)[cmdsKey] as Collection<string, MessageCommand>
 
     const command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
-    if (!command) return console.log(`[${msg.author.displayName}] Could not find command '${commandName}'`)
+    if (!command) return console.warn(`[${msg.author.displayName}] Could not find command '${commandName}'`)
     
     const channel = msg.channel
     if (channel.type == ChannelType.GuildText) {

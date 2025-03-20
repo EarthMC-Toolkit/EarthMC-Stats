@@ -53,7 +53,7 @@ async function unsub(
             .setTimestamp()
         ]})
 
-    }).catch(err => console.log("Error getting document: ", err))
+    }).catch(err => console.error("Error getting document: ", err))
 }
 
 const validComparators = ['queue', 'townless']

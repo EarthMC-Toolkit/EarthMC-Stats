@@ -87,7 +87,7 @@ export default {
                     subscriptionSuccess.setDescription(`<@${memberID}> has successfully subscribed this channel to receive queue updates.`)
                     return interaction.reply({embeds: [subscriptionSuccess]})
 
-                }).catch(err => console.log("Error getting document: \n", err))
+                }).catch(err => console.error("Error getting document: \n", err))
 
                 break
             }
@@ -117,7 +117,7 @@ export default {
     
                     subscriptionSuccess.setDescription(`<@${memberID}> has successfully subscribed this channel to receive live townless players.`)
                     return interaction.reply({embeds: [subscriptionSuccess]})
-                }).catch(err => console.log("Error getting document: \n", err))
+                }).catch(err => console.error("Error getting document: \n", err))
 
                 break
             }

@@ -83,7 +83,7 @@ export default {
                     .editInteraction(interaction)
             }
             case "kings": {
-                const allNations = await Aurora.Nations.all().catch(err => console.log(err))
+                const allNations = await Aurora.Nations.all().catch(err => console.error(err))
                 if (!allNations || allNations.length < 1) return await interaction.editReply({
                     embeds: [fetchError]
                     //ephemeral: true
@@ -103,7 +103,7 @@ export default {
             case "balances":
             case "baltop": {
                 const opNames = ops.map(o => o.name)
-                const players = await OfficialAPI.V3.players(...opNames).catch(err => console.log(err))
+                const players = await OfficialAPI.V3.players(...opNames).catch(err => console.error(err))
                 if (!players || players.length < 1) {
                     return await interaction.editReply({ embeds: [fetchError] })
                 }

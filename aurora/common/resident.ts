@@ -85,7 +85,7 @@ class ResidentHelper extends BaseCommandHelper {
         this.#apiResident = resident
 
         this.status = this.onlinePlayer ? "Online" : "Offline"
-        this.pInfo = await database.getPlayerInfo(resName).catch(e => console.log(`Database error!\n${e}`))
+        this.pInfo = await database.getPlayerInfo(resName).catch(e => console.error(`Database error!\n${e}`))
 
         this.tryAddAvatar()
 

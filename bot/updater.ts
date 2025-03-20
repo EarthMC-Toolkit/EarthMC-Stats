@@ -82,6 +82,9 @@ const mapToString = (map: MapInstance, strCase?: 'upper' | 'lower') => {
     return str
 }
 
+// The #editor-chat channel in EMC Toolkit Development.
+const getEditorChannel = () => client.channels.cache.get("966398270878392382") as TextChannel
+
 async function updateAlliances(map: MapInstance) {
     const mapName = mapToString(map, 'upper')
 
@@ -127,9 +130,11 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
     const emptyAlliances: string[] = []
     const alliancesAmt = alliances.length
 
-    for (let index = 0; index < alliancesAmt; index++) {
-        const a = alliances[index]
+    for (let i = 0; i < alliancesAmt; i++) {
+        const a = alliances[i]
 
+        // Grab all nations that exist in this alliance.
+        // An alliance is considered 'empty' with one or no existing nations and is likely to be disbanded.
         const existing = nations.filter(n => a.nations.includes(n.name))
         if (existing.length < 2) {
             emptyAlliances.push(a.allianceName)
@@ -138,7 +143,6 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
     }
 
     if (emptyAlliances.length > 0) {
-        const editorChannel = client.channels.cache.get("966398270878392382") as TextChannel
         const embed = new EmbedBuilder()
             .setTitle(`Empty alliances - ${mapToString(map)}`)
             .setDescription(emptyAlliances.join(', '))
@@ -146,7 +150,7 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
             .setFooter(devsFooter(client))
             .setTimestamp()
 
-        editorChannel.send({ embeds: [embed] })
+        getEditorChannel().send({ embeds: [embed] })
     }
 }
 
@@ -164,31 +168,31 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
     const onlinePlayers = await map.emc.Players.online().catch(() => {})
     if (!onlinePlayers) return console.warn(`[${mapName.toUpperCase()}] Error updating player data, bad response getting online players!`)
 
-    const now = Timestamp.now()
-
     //#region Handle online players
     const len = onlinePlayers.length
+    const now = Timestamp.now()
+    
     for (let i = 0; i < len; i++) {
         const op = onlinePlayers[i]
 
-        const playerInDB = players.find(p => p.name == op.name)
+        const opInDB = players.find(p => p.name == op.name)
         const player = {
             name: op.name,
             lastOnline: {
                 //nova: playerInDB?.lastOnline?.nova ?? null,
-                aurora: playerInDB?.lastOnline?.aurora ?? null
+                aurora: opInDB?.lastOnline?.aurora ?? null
             }
         } as DBPlayer
         
         player.lastOnline[mapName] = now
 
-        const linkedID = playerInDB?.linkedID
+        const linkedID = opInDB?.linkedID
         if (linkedID) player.linkedID = linkedID
 
         // Not in DB, add them.
-        if (!playerInDB) players.push(player)
+        if (!opInDB) players.push(player)
         else {
-            const playerIndex = players.indexOf(playerInDB)
+            const playerIndex = players.indexOf(opInDB)
             players[playerIndex] = player // Update them.
         }
     }
@@ -269,7 +273,7 @@ async function updateMapData(map: MapInstance) {
 
     // Make sure we don't overwrite with empty/null
     if (nationsArray?.length > 0) {
-        map.db.setNations(nationsArray)
+        await map.db.setNations(nationsArray)
     }
     //#endregion
 }
@@ -328,7 +332,7 @@ async function updateLastSeen() {
 //     }
 
 //     newEmbed.setDescription(desc)
-//     msg.edit({ embeds: [newEmbed] }).catch(err => console.log(err))
+//     msg.edit({ embeds: [newEmbed] }).catch(err => console.error(err))
 // }
 
 // async function liveTownless() {
