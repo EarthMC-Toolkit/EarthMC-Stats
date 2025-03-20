@@ -1,6 +1,6 @@
 //#region Imports
-import dotenv from 'dotenv'
-dotenv.config()
+// import dotenv from 'dotenv'
+// dotenv.config()
 
 import * as fn from "../utils/fn.js"
 import { initUpdates } from "../updater.js"
@@ -13,7 +13,6 @@ import {
 
 import { 
     ActivityType,
-    ContextMenuCommandBuilder,
     Collection,
     type Client,
     type SlashCommandBuilder,
