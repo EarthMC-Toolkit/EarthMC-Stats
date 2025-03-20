@@ -119,11 +119,6 @@ async function registerCommands(client: ExtendedClient) {
         })
     }
 
-    data.push(new ContextMenuCommandBuilder()
-        .setName("Link User")
-        .setType(2) // ApplicationCommandType.User
-    )
-
     if (prod) await client.application.commands.set(data)
     //else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
 
