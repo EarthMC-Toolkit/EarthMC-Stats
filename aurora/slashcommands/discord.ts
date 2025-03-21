@@ -1,5 +1,5 @@
 import { Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js"
-import type { Client, ChatInputCommandInteraction } from "discord.js"
+import type { Client, ChatInputCommandInteraction, User } from "discord.js"
 
 import { 
     type DiscordReqObjectV3, 
@@ -49,11 +49,40 @@ export default {
                 // TODO: Validate ids, report any that are invalid in result embed.
                 //       If none are valid, skip sending OAPI req and show error embed.
 
+                const discordUsers = new Map<string, User>()
+                const invalidUsers = new Set<string>()
+
+                for (const id of ids) {
+                    const discordUser = await client.users.fetch(id).catch(() => null)
+                    if (discordUser) discordUsers.set(id, discordUser)
+                    else invalidUsers.add(id)
+                }
+
+                if (invalidUsers.size > 0) {
+                    return await interaction.editReply({ embeds: [new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle("Invalid ID(s) provided.")
+                        .setDescription(`
+                            The following ID(s) must be fixed or removed for this command to work.\n\n
+                            ${[...invalidUsers.keys()].map(k => backtick(k)).join("\n")}
+                        `)
+                    ]})
+                }
+
                 const resObjs = await sendReq('discord', ids)
+                if (resObjs.length < 1) {
+                    return await interaction.editReply({ embeds: [new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle("No valid arguments.")
+                        .setDescription("None of the input Discord IDs seem to be valid!")
+                    ]})
+                }
 
                 // TODO: Get discord names from ids and include them.
-                const allData = resObjs.map(obj => `${backtick(obj.id)} - ${backtick(obj.uuid)}`)
-                    .join('\n').match(/(?:^.*$\n?){1,20}/mg)
+                const allData = resObjs.map(obj => {
+                    const discordUser = discordUsers.get(obj.id)
+                    return `${backtick(obj.id)} (${discordUser.username}) - ${backtick(obj.uuid || "Not Linked")}`
+                }).join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
                 return await new CustomEmbed(client, "Discord Info | Discord IDs -> UUIDs")
                     .setColour(EMBED_COLOUR)
@@ -68,10 +97,27 @@ export default {
                 //       If none are valid, skip sending OAPI req and show error embed.
 
                 const resObjs = await sendReq('minecraft', uuids)
+                if (resObjs.length < 1) {
+                    return await interaction.editReply({ embeds: [new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle("No valid arguments.")
+                        .setDescription("None of the input UUIDs seem to be valid!")
+                    ]})
+                }
+
+                // TODO: Ideally we should find a way to avoid this and just build allData in a single pass.
+                const discordUsers = new Map<string, User>()
+                for (const obj of resObjs) {
+                    const discordUser = await client.users.fetch(obj.id)
+                    discordUsers.set(obj.uuid, discordUser)
+                }
 
                 const allData = resObjs.map(async obj => {
-                    const discordUser = await client.users.fetch(obj.id)
-                    return `${backtick(obj.uuid)} - ${backtick(obj.uuid)} (${discordUser.username})`
+                    // TODO: Get minecraft name from uuid and include it.
+                    if (!obj.id) return `${backtick(obj.uuid)} - Not Linked`
+
+                    const discordUser = discordUsers.get(obj.uuid)
+                    return `${backtick(obj.uuid)} - ${backtick(obj.id)} (${discordUser.username})`
                 }).join('\n').match(/(?:^.*$\n?){1,20}/mg)
 
                 return await new CustomEmbed(client, "Discord Info | UUIDs -> Discord Users")

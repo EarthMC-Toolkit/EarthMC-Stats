@@ -118,7 +118,11 @@ class ResidentHelper extends BaseCommandHelper {
         const affiliatedTown = (res.town?.name ?? res.townName) ?? res.town
         const affiliatedNation = (res.nation?.name ?? res.townNation) ?? res.nation
 
-        this.embed.setTitle(`Resident Info | \`${res.name}\``)
+        if (this.mcProfile.id) {
+            this.embed.setTitle(`Resident Info | ${backtick(res.name)} | ${backtick(this.mcProfile.id)}`)
+        } else {
+            this.embed.setTitle(`Resident Info | ${backtick(res.name)}`)
+        }
 
         if (res.about && res.about != DEFAULT_ABOUT) {
             this.embed.setDescription(`*${res.about}*`)
@@ -135,7 +139,7 @@ class ResidentHelper extends BaseCommandHelper {
         // TODO: mcProfile could be null, handle this case.
         //const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
 
-        this.embed.setTitle(`Player Info | \`${this.mcProfile.name}\``)
+        this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)} | ${backtick(this.mcProfile.id)}`)
         this.addField("Affiliation", "No Town", true)
 
         this.addCommonFields()
