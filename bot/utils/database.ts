@@ -26,22 +26,30 @@ const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
     }).catch(() => null)
 }
 
+type PlayerInfo = {
+    discord: string | number
+    lastOnline?: {
+        aurora: number
+    }
+}
+
 const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
     if (!players) return null
 
-    const player: any = players.find(p => p.name.toLowerCase() == name.toLowerCase())
+    const player: DBPlayer = players.find(p => p.name.toLowerCase() == name.toLowerCase())
     if (!player) return null
 
-    player["discord"] = player.linkedID
+    const playerInfo: PlayerInfo = {
+        discord: player.linkedID
+    }
 
     if (includeTimestamps) {
-        player.lastOnline = {
-            nova: unixFromDate(player.lastOnline.nova),
+        playerInfo.lastOnline = {
             aurora: unixFromDate(player.lastOnline.aurora)
         }
     }
     
-    return player
+    return playerInfo
 })
 
 // FIRESTORE LIMITS:

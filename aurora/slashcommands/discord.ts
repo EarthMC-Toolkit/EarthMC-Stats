@@ -51,8 +51,8 @@ export default {
 
                 //#region Pre-check input IDs.
                 for (const id of ids) {
-                    // Discord UID must be 17 or 18 chars.
-                    if (id.length != 17 && id.length != 18) {
+                    // Discord UID must be 17-19 chars long. 20 digits won't happen until 2090 :)
+                    if (id.length < 17 || id.length > 19) {
                         invalidUsers.add(id)
                         continue
                     }
@@ -69,7 +69,7 @@ export default {
                         .setColor(Colors.Red)
                         .setTitle("Invalid ID(s) provided.")
                         .setDescription(`
-                            The following ID(s) must be fixed or removed for this command to work.\n\n
+                            The following ID(s) must be fixed or removed for this command to work.\n
                             ${[...invalidUsers.keys()].map(k => backtick(k)).join("\n")}
                         `)
                     ]})

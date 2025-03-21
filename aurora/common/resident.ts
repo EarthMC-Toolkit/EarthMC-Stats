@@ -17,9 +17,11 @@ import {
     SkinType3D
 } from "../../bot/types.js"
 
+// TODO: Customizing params to make player face left reduces image quality,
+//       consider mirroring it after and sending it as a local discord `File`.
 const buildSkinURL = (opts: SkinOpts) => {
     const domain = "https://vzge.me/"
-    const params = `y=${opts.yaw ?? -42}&p=${opts.pitch ?? -8}&r=${opts.roll ?? 0}`
+    const params = `y=${opts.yaw ?? 0}&p=${opts.pitch ?? 0}&r=${opts.roll ?? 0}`
 
     return `${domain}${opts.view}/${opts.size ?? 256}/${opts.subject}.png?${params}`
 }
@@ -120,7 +122,7 @@ class ResidentHelper extends BaseCommandHelper {
 
         this.embed.setTitle(`Resident Info | ${backtick(res.name)}`)
         if (this.mcProfile.id) {
-            this.addField("MC UUID", backtick(this.mcProfile.id))
+            this.addField("Minecraft UUID", backtick(this.mcProfile.id))
         }
 
         if (res.about && res.about != DEFAULT_ABOUT) {
@@ -154,7 +156,7 @@ class ResidentHelper extends BaseCommandHelper {
             this.addDatesFromAPI()
         } else this.addDatesFromDB()
 
-        this.addLinkedAcc()
+        //this.addLinkedAcc()
     }
 
     addDatesFromAPI = () => {
@@ -175,7 +177,7 @@ class ResidentHelper extends BaseCommandHelper {
     }
 
     addDatesFromDB = () => {
-        const lastOnlineTs = this.pInfo?.lastOnline?.nova
+        const lastOnlineTs = this.pInfo?.lastOnline?.aurora
         if (!lastOnlineTs || lastOnlineTs == 0) return
 
         if (this.status == "Offline") {
@@ -184,7 +186,7 @@ class ResidentHelper extends BaseCommandHelper {
     }
 
     tryAddAvatar = () => {
-        if (!this.mcProfile) return
+        if (!this.mcProfile?.id) return
 
         this.embed.setThumbnail(buildSkinURL({ 
             view: SkinType3D.BUST, 
@@ -208,14 +210,12 @@ class ResidentHelper extends BaseCommandHelper {
         this.addField("Balance", `<:gold:1318944918118600764> ${backtick(bal ?? 0)}G`, true)
     }
 
-    addLinkedAcc = () => {
-        if (!this.mcProfile?.name) return
-
-        const disc = this.pInfo?.discord
-        if (disc && disc != "") {
-            this.addField("Linked Account", `<@${disc}>`)
-        }
-    }
+    // addLinkedAcc = () => {
+    //     const disc = this.pInfo?.discord
+    //     if (disc && disc != "") {
+    //         this.addField("Linked Account", `<@${disc}>`)
+    //     }
+    // }
 }
 
 export {
