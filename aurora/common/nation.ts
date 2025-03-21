@@ -134,7 +134,8 @@ class NationHelper extends BaseCommandHelper {
         const mostRecentTimestamp = Math.max(...filteredMessages.map(e => e.createdTimestamp))
 
         // Grab most recent one by comparing timestamps.
-        return new News(filteredMessages?.find(e => e.createdTimestamp === mostRecentTimestamp))
+        const recent = filteredMessages?.find(e => e.createdTimestamp === mostRecentTimestamp)
+        return recent ? new News(recent) : null
     }
 
     /**
@@ -176,6 +177,13 @@ class NationHelper extends BaseCommandHelper {
         const amtAlliances = this.affiliatedAlliances?.length
         if (amtAlliances > 0) {
             this.addField(`Alliances [${amtAlliances}]`, "```" + this.affiliatedAlliances.join(", ") + "```")
+        }
+
+        if (this.recentNews) {
+            const img = this.recentNews?.images ? this.recentNews.images[0] : null
+            const link = img ? ` ([Image](${img}))` : ""
+
+            this.addField("Recent News", this.recentNews.message + link)
         }
     }
 

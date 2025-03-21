@@ -46,18 +46,24 @@ export default {
                 const input = interaction.options.getString("discord_ids", true)
                 const ids = listInputToArr(input)
 
-                // TODO: Validate ids, report any that are invalid in result embed.
-                //       If none are valid, skip sending OAPI req and show error embed.
-
                 const discordUsers = new Map<string, User>()
                 const invalidUsers = new Set<string>()
 
+                //#region Pre-check input IDs.
                 for (const id of ids) {
+                    // Discord UID must be 17 or 18 chars.
+                    if (id.length != 17 && id.length != 18) {
+                        invalidUsers.add(id)
+                        continue
+                    }
+
+                    // Could be valid, check against Discord API.
                     const discordUser = await client.users.fetch(id).catch(() => null)
                     if (discordUser) discordUsers.set(id, discordUser)
                     else invalidUsers.add(id)
                 }
 
+                // No point sending req, OAPI will fail at first bad ID and return an unusable body.
                 if (invalidUsers.size > 0) {
                     return await interaction.editReply({ embeds: [new EmbedBuilder()
                         .setColor(Colors.Red)
@@ -68,17 +74,19 @@ export default {
                         `)
                     ]})
                 }
+                //#endregion
 
+                //#region Send req and err if empty/null.
                 const resObjs = await sendReq('discord', ids)
-                if (resObjs.length < 1) {
+                if (!resObjs || resObjs.length < 1) {
                     return await interaction.editReply({ embeds: [new EmbedBuilder()
                         .setColor(Colors.Red)
                         .setTitle("No valid arguments.")
                         .setDescription("None of the input Discord IDs seem to be valid!")
                     ]})
                 }
+                //#endregion
 
-                // TODO: Get discord names from ids and include them.
                 const allData = resObjs.map(obj => {
                     const discordUser = discordUsers.get(obj.id)
                     return `${backtick(obj.id)} (${discordUser.username}) - ${backtick(obj.uuid || "Not Linked")}`
@@ -112,7 +120,7 @@ export default {
                     discordUsers.set(obj.uuid, discordUser)
                 }
 
-                const allData = resObjs.map(async obj => {
+                const allData = resObjs.map(obj => {
                     // TODO: Get minecraft name from uuid and include it.
                     if (!obj.id) return `${backtick(obj.uuid)} - Not Linked`
 

@@ -145,8 +145,10 @@ export type DBSquaremapNation = SquaremapNation & CustomNationInfo
 export interface SkinOpts {
     view: SkinType2D | SkinType3D
     subject: string | number
-    width?: number
-    height?: number
+    size?: number
+    pitch?: number
+    yaw?: number
+    roll?: number
 }
 
 type SkinType2D = (typeof SkinType2D)[keyof typeof SkinType2D]

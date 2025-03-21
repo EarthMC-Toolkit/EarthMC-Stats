@@ -18,10 +18,10 @@ import {
 } from "../../bot/types.js"
 
 const buildSkinURL = (opts: SkinOpts) => {
-    const domain = "https://visage.surgeplay.com/"
-    const params = `?width=${opts.width ?? 256}&height=${opts.height ?? 256}`
+    const domain = "https://vzge.me/"
+    const params = `y=${opts.yaw ?? -42}&p=${opts.pitch ?? -8}&r=${opts.roll ?? 0}`
 
-    return `${domain}${opts.view}/${opts.subject}.png${params}`
+    return `${domain}${opts.view}/${opts.size ?? 256}/${opts.subject}.png?${params}`
 }
 
 const DEFAULT_ABOUT = "/res set about [msg]"
@@ -118,10 +118,9 @@ class ResidentHelper extends BaseCommandHelper {
         const affiliatedTown = (res.town?.name ?? res.townName) ?? res.town
         const affiliatedNation = (res.nation?.name ?? res.townNation) ?? res.nation
 
+        this.embed.setTitle(`Resident Info | ${backtick(res.name)}`)
         if (this.mcProfile.id) {
-            this.embed.setTitle(`Resident Info | ${backtick(res.name)} | ${backtick(this.mcProfile.id)}`)
-        } else {
-            this.embed.setTitle(`Resident Info | ${backtick(res.name)}`)
+            this.addField("MC UUID", backtick(this.mcProfile.id))
         }
 
         if (res.about && res.about != DEFAULT_ABOUT) {
@@ -139,10 +138,14 @@ class ResidentHelper extends BaseCommandHelper {
         // TODO: mcProfile could be null, handle this case.
         //const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
 
-        this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)} | ${backtick(this.mcProfile.id)}`)
+        this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)}`)
         this.addField("Affiliation", "No Town", true)
 
         this.addCommonFields()
+
+        if (this.mcProfile.id) {
+            this.addField("MC UUID", backtick(this.mcProfile.id))
+        }
     }
 
     addCommonFields() {
