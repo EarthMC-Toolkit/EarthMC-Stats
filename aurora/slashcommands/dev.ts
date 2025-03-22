@@ -88,7 +88,10 @@ export default {
             // }
             case "purge": {
                 const purgeThreshold = interaction.options.getInteger("purge_threshold")
-                const guildsToLeave = client.guilds.cache.filter(g => g.memberCount <= purgeThreshold).values()
+                const guildsToLeave = client.guilds.cache.filter(guild => {
+                    const humanMembers = guild.members.cache.filter(m => !m.user.bot).size
+                    return humanMembers <= purgeThreshold
+                }).values()
 
                 let leftAmt = 0
                 for (const guild of guildsToLeave) {
@@ -105,9 +108,9 @@ export default {
 
                     leftEmbed.setDescription(`
                         Due to low member count, I have left this server: ${backtick(guild.name)}
-                        This was done for two main reasons:
-                        1. To combat abuse, where the goal is to intentionally overwhelm the database.\n
-                        2. To prevent hitting the 2500 shard limit until truly necessary to avoid major refactoring and downtime.
+                        This was done for the following reasons:
+                        - To combat abuse, where the goal is to intentionally overwhelm the database.\n
+                        - To prevent hitting the 2500 shard limit until truly necessary to avoid major refactoring and downtime.
                         
                         It is recommended you use the bot in more established servers like [EMC Toolkit Development](https://discord.gg/yyKkZfmFAK).
                         Sorry for the inconvenience!
