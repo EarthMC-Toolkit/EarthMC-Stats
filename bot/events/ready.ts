@@ -54,7 +54,7 @@ const rdyEvent: DJSEvent = {
             })
     
             lastActivity = randomNum
-        }, 30*1000)
+        }, 60 * 1000)
 
         await initUpdates(prod)
 
@@ -88,15 +88,7 @@ async function registerCommands(client: ExtendedClient) {
         if (cmd.disabled) continue
         client.auroraCommands.set(cmd.name, cmd)
     }
-
-    // for (const file of novaCmds) {
-    //     const commandFile = await import(`../../nova/commands/${file}`)
-    //     const command = commandFile.default
-
-    //     if (!command.disabled) 
-    //         client['novaCommands'].set(command.name, command)
-    // }
-
+    
     const slashCmds = fn.readTsFiles(`aurora/slashcommands`)
     const data: ApplicationCommandDataResolvable[] = []
 
