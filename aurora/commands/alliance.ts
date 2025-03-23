@@ -1424,6 +1424,14 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         typeString == 'mega' ? "Meganation" : "Normal/Pact"
 
     const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
+    
+    let colour: number = Colors.DarkBlue
+    const fill = foundAlliance.colours?.fill
+    if (fill) {
+        const fillHash = fill.startsWith("#") ? fill : "#" + fill
+        colour = parseInt(fillHash.replace('#', '0x'))
+    }
+    
     const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
         .addField("Leader(s)", leadersStr, false)
         .addField("Type", backtick(allianceType), true)
@@ -1431,10 +1439,7 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
         .addField("Towns", backtick(foundAlliance.towns), true)
         .addField("Residents", backtick(foundAlliance.residents), true)
-        .setColor(foundAlliance.colours 
-            ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
-            : Colors.DarkBlue
-        )
+        .setColor(colour)
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setDefaultAuthor(message)
         .setTimestamp()
