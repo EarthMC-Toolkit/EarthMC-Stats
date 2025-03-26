@@ -88,18 +88,25 @@ export const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('auror
 export async function setTowns(towns: DBSquaremapTown[]) {
     cache.set('aurora_towns', towns)
 
-    const dividedTownsArray = divideArray(towns, 6)
+    const dividedTownsArray = divideArray(towns, 8)
     let counter = 0
 
-    const batch = db.batch()
+    const batch1 = db.batch()
+    const batch2 = db.batch()
+
     for (const towns of dividedTownsArray) {
         counter++
 
         const townRef = townDataCollection().doc(`townArray${counter}`)
-        batch.set(townRef, { townArray: towns })
+        if (counter > 4) {
+            batch2.set(townRef, { townArray: towns })
+        } else {
+            batch1.set(townRef, { townArray: towns })
+        }
     }
 
-    await batch.commit()
+    await batch1.commit()
+    await batch2.commit()
 }
 
 const length = (x: unknown[]) => x.length
