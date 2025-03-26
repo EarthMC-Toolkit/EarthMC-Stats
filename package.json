@@ -9,8 +9,8 @@
     "reinstall": "rimraf node_modules && bun install",
     "start": "tsx index.ts",
     "stop": "pm2 stop EMCS",
-    "reload": "pm2 startOrGracefulReload --attach ecosystem.json --env production",
-    "restart": "bun run reinstall && pm2 startOrRestart ecosystem.json --env production",
+    "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
+    "restart": "bun run reinstall && pm2 startOrRestart ecosystem.json",
     "watch": "pm2 start --attach ecosystem.json --watch",
     "deploy": "pm2 deploy production"
   },
