@@ -66,7 +66,7 @@ initializeApp({
 })
 
 const db = getFirestore()
-db.settings({ ignoreUndefinedProperties: true })
+db.settings({ ignoreUndefinedProperties: true, preferRest: true })
 
 setDatabase(db)
 //#endregion
@@ -83,17 +83,19 @@ for (const file of eventFiles) {
 //#endregion
 
 //#region Error Handling
-client.on('error', (err: ErrorWithCode) => {
-    const missingAccess = 50001
-    const missingPerms = 50013
+const IGNORE_ERR_CODES = [50013, 50001]
 
-    if (missingPerms || missingAccess) return
+client.on('error', (err: ErrorWithCode) => {
+    if (IGNORE_ERR_CODES.includes(err.code)) return
     console.error(err)
 })
 
+client.on('warn', console.warn)
+
 process.on('unhandledRejection', (err: ErrorWithCode) => console.error('Unhandled promise rejection: ', err))
 process.on('uncaughtException', (err: ErrorWithCode) => {
-    if (err.code != 50013) console.error('Uncaught Exception!\n', err)
+    if (IGNORE_ERR_CODES.includes(err.code)) return
+    console.error('Uncaught Exception!\n', err)
 })
 //#endregion
 

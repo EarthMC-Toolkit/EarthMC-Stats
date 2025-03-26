@@ -1,7 +1,4 @@
 //#region Imports
-// import dotenv from 'dotenv'
-// dotenv.config()
-
 import * as fn from "../utils/fn.js"
 import { initUpdates } from "../updater.js"
 
@@ -54,7 +51,7 @@ const rdyEvent: DJSEvent = {
             })
     
             lastActivity = randomNum
-        }, 60 * 1000)
+        }, 90 * 1000)
 
         await initUpdates(prod)
 
@@ -79,7 +76,6 @@ const rdyEvent: DJSEvent = {
 
 async function registerCommands(client: ExtendedClient) {
     const auroraCmds = fn.readTsFiles(`aurora/commands`)
-    //const novaCmds = fn.readTsFiles(`nova/commands`)
 
     for (const file of auroraCmds) {
         const commandFile = await import(`../../aurora/commands/${file}`)

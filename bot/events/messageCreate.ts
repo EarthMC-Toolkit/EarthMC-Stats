@@ -18,7 +18,10 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
     const commands = (msg.client as any)[cmdsKey] as Collection<string, MessageCommand>
 
     const command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
-    if (!command) return console.warn(`[${msg.author.displayName}] Could not find command '${commandName}'`)
+    if (!command) {
+        console.warn(`[${msg.author.displayName}] Could not find command '${commandName}'. Likely for another bot.`)
+        return
+    }
     
     const channel = msg.channel
     if (channel.type == ChannelType.GuildText) {
@@ -62,12 +65,6 @@ const msgCreate: DJSEvent = {
     
         if (message.author.bot) return
         if (prefix(message, "/")) return runCmd(message, 1, 'auroraCommands')
-
-        // if (prefix(message, "a/"))
-        //     return runCmd(message, 2, 'auroraCommands')
-
-        //if (prefix(message, "n/")) 
-            //return runCmd(message, 2, 'novaCommands')
     }
 }
 

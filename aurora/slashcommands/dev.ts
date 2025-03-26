@@ -88,14 +88,18 @@ export default {
             // }
             case "purge": {
                 const purgeThreshold = interaction.options.getInteger("purge_threshold")
-                const guildsToLeave = client.guilds.cache.filter(guild => {
-                    const humanMembers = guild.members.cache.filter(m => !m.user.bot).size
-                    return humanMembers <= purgeThreshold
-                }).values()
+                
+                await client.guilds.fetch()
+                const guilds = client.guilds.cache.values()
 
                 let leftAmt = 0
-                for (const guild of guildsToLeave) {
+                for (const guild of guilds) {
                     try {
+                        const members = await guild.members.list()
+                        const humanCount = members.filter(m => !m.user.bot).size
+
+                        if (humanCount > purgeThreshold) continue
+
                         await guild.leave()
                         leftAmt++
                     } catch(e) {
