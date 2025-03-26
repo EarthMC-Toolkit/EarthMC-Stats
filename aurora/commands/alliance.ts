@@ -718,7 +718,7 @@ export default {
 
                 const formattedArgs = new ArgsHelper(args, 2)
                 const nationsToRemove = formattedArgs.asArray()
-                
+
                 if (!nationsToRemove) {
                     console.error(`Failed to remove nations from ${getNameOrLabel(foundAlliance)}`)
 
@@ -734,14 +734,16 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 }
 
+                const nationsRemoved = []
                 const len = nationsToRemove.length
+
                 for (let i = 0; i < len; i++) {
                     const cur = nationsToRemove[i]
                     
                     if (isNumeric(cur)) {
                         return m.edit({embeds: [new EmbedBuilder()
                             .setTitle("Error updating alliance")
-                            .setDescription("Cannot use a number as an nation input! Please try again.")
+                            .setDescription("Cannot use a number as a nation input! Please try again.")
                             .setColor(Colors.Red)
                             .setTimestamp()
                             .setAuthor({ 
@@ -751,20 +753,25 @@ export default {
                         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                     }
 
-                    const foundNationIndex = foundAlliance.nations.findIndex(nation => nation.toLowerCase() == cur?.toLowerCase())
-    
-                    // If the current nation exists in the alliance, remove it.
-                    if (foundNationIndex != -1) {
-                        foundAlliance.nations.splice(foundNationIndex, 1)
-                    } else {
-                        // Remove the current nation and account for it by decrementing 
-                        // so that we correctly check the next nation (now at same index).
-                        nationsToRemove.splice(i, 1)
-                        i--
+                    const foundNation = foundAlliance.nations.find(n => n.toLowerCase() == cur?.toLowerCase())
+                    if (!foundNation) continue
+
+                    const foundNationIndex = foundAlliance.nations.indexOf(foundNation)
+                    if (foundNationIndex == -1) {
+                        console.log(`
+                            Something went wrong getting nation ${cur} within ${foundAlliance.allianceName}.
+                            Somehow we found the nation, but could not get its index.
+                        `)
+
+                        continue
                     }
+
+                    // It exists, we can remove it.
+                    foundAlliance.nations.splice(foundNationIndex, 1)
+                    nationsRemoved.push(foundNation)
                 }
             
-                if (nationsToRemove.length < 1) return m.edit({embeds: [new EmbedBuilder()
+                if (nationsRemoved.length < 1) return m.edit({embeds: [new EmbedBuilder()
                     .setTitle("Error updating alliance")
                     .setDescription("None of the specified nations exist in that alliance!")
                     .setColor(Colors.Red)
@@ -778,12 +785,11 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
 
                 alliances[allianceIndex] = foundAlliance
-                database.Aurora.setAlliances(alliances)
+                database.Aurora.setAlliances(alliances).catch(console.error)
 
-                // TODO: Actually track removed nations instead of just using original input.
                 return m.edit({embeds: [new EmbedBuilder()
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                    .setDescription("The following nation(s) have been removed:\n\n```" + formattedArgs.asString() + "```")
+                    .setDescription("The following nation(s) have been removed:\n\n```" + nationsRemoved.join(", ") + "```")
                     .setColor(Colors.DarkBlue)
                     .setTimestamp()
                     .setAuthor({ 
@@ -842,7 +848,7 @@ export default {
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                     alliances[allianceIndex] = foundAlliance
-                    database.Aurora.setAlliances(alliances)
+                    database.Aurora.setAlliances(alliances).catch(console.error)
                     
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -904,7 +910,7 @@ export default {
                     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                     alliances[allianceIndex] = foundAlliance
 
-                    database.Aurora.setAlliances(alliances)
+                    database.Aurora.setAlliances(alliances).catch(console.error)
 
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
