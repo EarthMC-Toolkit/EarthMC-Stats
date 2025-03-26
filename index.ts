@@ -12,9 +12,9 @@ import { initializeApp, cert } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 
 import { 
-    setClient, 
-    prod, setProduction, 
-    setDatabase 
+    setClient,
+    setProduction, 
+    setDatabase
 } from "./bot/constants.js"
 
 import type { DJSEvent, ErrorWithCode, ExtendedClient } from "./bot/types.js"
@@ -22,7 +22,9 @@ import { readTsFiles } from "./bot/utils/fn.js"
 //#endregion
 
 //#region Check production
-setProduction(process.env.PROD == "true")
+const prod = process.env.PROD == "true"
+setProduction(prod)
+
 console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
 //#endregion
 

@@ -3,7 +3,7 @@ import * as fn from "../utils/fn.js"
 import { initUpdates } from "../updater.js"
 
 import { 
-    prod
+    getProduction
     // queueSubbedChannels,
     // townlessSubbedChannels 
 } from "../constants.js"
@@ -53,7 +53,7 @@ const rdyEvent: DJSEvent = {
             lastActivity = randomNum
         }, 90 * 1000)
 
-        await initUpdates(prod)
+        await initUpdates()
 
         // TODO: Re-enable if live stuff comes back.
         // if (prod) {
@@ -106,7 +106,7 @@ async function registerCommands(client: ExtendedClient) {
         })
     }
 
-    if (prod) await client.application.commands.set(data)
+    if (getProduction()) await client.application.commands.set(data)
     //else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
 
     console.log(`Commands registered.

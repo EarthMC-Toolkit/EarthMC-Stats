@@ -9,9 +9,10 @@ import {
 } from "earthmc"
 
 import { 
-    client, 
-    AURORA, //NOVA
-    lastSeenPlayers
+    getClient, 
+    AURORA,
+    lastSeenPlayers,
+    getProduction
 } from "./constants.js"
 
 import { 
@@ -35,10 +36,10 @@ import { daysBetween, devsFooter } from "../bot/utils/fn.js"
 //#region Call Updates
 const oneMinMs = 60 * 1000
 
-export async function initUpdates(prod = false) {
+export async function initUpdates() {
     await updateLastSeen()
 
-    if (prod) {
+    if (getProduction()) {
         console.log("Production enabled, initializing data updates..")
 
         await updatePlayers(true)
@@ -46,7 +47,7 @@ export async function initUpdates(prod = false) {
         await updateAlliances(AURORA)
 
         await api.sendAuroraAlliances()
-        await api.sendNews(client, 'aurora')
+        await api.sendNews(getClient(), 'aurora')
 
         await sendEmptyAllianceNotif(AURORA)
     }
@@ -61,7 +62,7 @@ export async function initUpdates(prod = false) {
         await api.sendAuroraAlliances()
     }, 1.5 * oneMinMs)
     
-    setInterval(() => api.sendNews(client, 'aurora'), 5 * oneMinMs)
+    setInterval(() => api.sendNews(getClient(), 'aurora'), 5 * oneMinMs)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
@@ -83,7 +84,7 @@ const mapToString = (map: MapInstance, strCase?: 'upper' | 'lower') => {
 }
 
 // The #editor-chat channel in EMC Toolkit Development.
-const getEditorChannel = () => client.channels.cache.get("966398270878392382") as TextChannel
+const getEditorChannel = () => getClient().channels.cache.get("966398270878392382") as TextChannel
 
 async function updateAlliances(map: MapInstance) {
     const mapName = mapToString(map, 'upper')
@@ -110,7 +111,7 @@ async function updateAlliances(map: MapInstance) {
         if (a.discordInvite == noInvite) return
 
         // Invalid or will expire, set it back to none.
-        client.fetchInvite(a.discordInvite)
+        getClient().fetchInvite(a.discordInvite)
             .then(inv => { if (inv.maxAge > 0) a.discordInvite = noInvite })
             .catch(err => { if (err.code == 10006) a.discordInvite = noInvite })
     }
@@ -147,7 +148,7 @@ async function sendEmptyAllianceNotif(map: MapInstance) {
             .setTitle(`Empty alliances - ${mapToString(map)}`)
             .setDescription(emptyAlliances.join(', '))
             .setColor(Colors.Orange)
-            .setFooter(devsFooter(client))
+            .setFooter(devsFooter(getClient()))
             .setTimestamp()
 
         getEditorChannel().send({ embeds: [embed] })

@@ -11,11 +11,20 @@ import {
 
 import TTLCache from '@isaacs/ttlcache'
 
-let prod = false
-const setProduction = (val: boolean) => prod = val
+const state: { prod: boolean, client: Client } = {
+    prod: false,
+    client: null
+}
 
-let client: Client = null
-const setClient = (val: Client) => client = val
+export const getProduction = () => state.prod
+export function setProduction(val: boolean) { 
+    state.prod = val 
+}
+
+export const getClient = () => state.client
+export function setClient(val: Client) {
+    state.client = val
+}
 
 let db: Firestore = null
 let queueSubbedChannels: DocReference = null
@@ -40,8 +49,6 @@ const cache = new TTLCache<string, any>({ ttl: Infinity })
 export const lastSeenPlayers = new Map<string, SeenPlayer>()
 
 export {
-    prod, setProduction,
-    client, setClient, 
     cache, db, setDatabase,
     townlessSubbedChannels,
     queueSubbedChannels,
