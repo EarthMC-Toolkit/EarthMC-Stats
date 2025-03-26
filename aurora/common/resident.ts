@@ -86,30 +86,57 @@ class ResidentHelper extends BaseCommandHelper {
         if (ops) this.onlinePlayer = ops.find(p => p.name.toLowerCase() == searchName.toLowerCase()) 
         //#endregion
 
-        if (apiRes.town?.uuid) {
-            const resTown = await OfficialAPI.V3.towns(apiRes.town.name.toLowerCase()).then(arr => arr[0])
+        if (apiRes) {
+            this.#apiResident = apiRes
 
-            const isMayor = resTown.mayor.name == apiRes.name
-            const rank = isMayor ? (resTown.status.isCapital ? "Nation Leader" : "Mayor") : "Resident"
-            
-            apiRes['rank'] = rank
+            if (apiRes.town?.name) {
+                const resTown = await OfficialAPI.V3.towns(apiRes.town.name.toLowerCase()).then(arr => arr[0])
+
+                const isMayor = resTown.mayor.name == apiRes.name
+                const rank = isMayor ? (resTown.status.isCapital ? "Nation Leader" : "Mayor") : "Resident"
+                
+                apiRes['rank'] = rank
+            }
         }
-
-        this.#apiResident = apiRes
-
+        
+        if (this.dbResident) {
+            this.pInfo = await database.getPlayerInfo(resName).catch(e => console.error(`Database error!\n${e}`))
+        }
+        
         this.status = this.onlinePlayer ? "Online" : "Offline"
-        this.pInfo = await database.getPlayerInfo(resName).catch(e => console.error(`Database error!\n${e}`))
-
         this.tryAddAvatar()
 
         return true
     }
 
     createEmbed() {
-        if (this.apiResident?.town?.uuid) this.#setupResidentEmbed()
-        else this.#setupTownlessEmbed()
+        if (!this.apiResident) {
+            this.#setupMcProfileEmbed()
+        } else {
+            if (this.apiResident.town?.uuid) this.#setupResidentEmbed()
+            else this.#setupTownlessEmbed()
+        }
 
         return this.embed
+    }
+
+    #setupMcProfileEmbed() {
+        this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)}`)
+        this.embed.setDescription(`*This player is not registered on EarthMC.*`)
+
+        if (this.mcProfile.id) {
+            this.addField("Minecraft UUID", backtick(this.mcProfile.id))
+        }
+    }
+
+    #setupTownlessEmbed() {
+        // TODO: mcProfile could be null, handle this case.
+        //const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
+
+        this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)}`)
+        this.addField("Affiliation", "No Town", true)
+
+        this.addCommonFields()
     }
 
     #setupResidentEmbed() {
@@ -121,9 +148,6 @@ class ResidentHelper extends BaseCommandHelper {
         const affiliatedNation = (res.nation?.name ?? res.townNation) ?? res.nation
 
         this.embed.setTitle(`Resident Info | ${backtick(res.name)}`)
-        if (this.mcProfile.id) {
-            this.addField("Minecraft UUID", backtick(this.mcProfile.id))
-        }
 
         if (res.about && res.about != DEFAULT_ABOUT) {
             this.embed.setDescription(`*${res.about}*`)
@@ -136,25 +160,15 @@ class ResidentHelper extends BaseCommandHelper {
         this.addCommonFields()
     }
 
-    #setupTownlessEmbed() {
-        // TODO: mcProfile could be null, handle this case.
-        //const formattedPlayerName = this.mcProfile.name.replace(/_/g, "\\_")
-
-        this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)}`)
-        this.addField("Affiliation", "No Town", true)
-
-        this.addCommonFields()
-
-        if (this.mcProfile.id) {
-            this.addField("MC UUID", backtick(this.mcProfile.id))
-        }
-    }
-
     addCommonFields() {
         if (this.apiResident) {
-            this.addBalance(this.apiResident?.stats?.balance)
+            this.addBalance(this.apiResident.stats?.balance)
             this.addDatesFromAPI()
         } else this.addDatesFromDB()
+
+        if (this.mcProfile.id) {
+            this.addField("Minecraft UUID", backtick(this.mcProfile.id))
+        }
 
         //this.addLinkedAcc()
     }
