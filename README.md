@@ -1,11 +1,8 @@
 # EarthMC Stats
-
-<img width="150" height="150" src="./icon.png" align="right">
+<img width="180" src="./icon.png" align="right">
 
 [![Discord](https://img.shields.io/discord/966271635894190090?style=flat-square&label=Join%20development%20discord&color=%235347f5)](https://discord.com/invite/AVtgkcRgFs)
 [![Static Badge](https://img.shields.io/badge/1.7k_guilds-%23128237?style=flat-square&label=Invite%20the%20bot)](https://emctoolkit.vercel.app/invite)
-
-The most popular Discord bot for **EarthMC** is now open source!
 
 **EarthMC Stats** provides useful commands and info relating to players, towns, nations, alliances and more.
 This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/package/earthmc) which handles the parsing and caching of map data automatically.
