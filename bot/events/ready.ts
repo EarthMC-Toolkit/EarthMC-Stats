@@ -10,7 +10,6 @@ import {
 
 import { 
     ActivityType,
-    Collection,
     type Client,
     type SlashCommandBuilder,
     type ApplicationCommandDataResolvable
@@ -96,7 +95,13 @@ async function registerCommands(client: ExtendedClient) {
         client.slashCommands.set(slashCmd.name, slashCmd)
 
         if (slashCmd.data) {
-            data.push(slashCmd.data.toJSON())
+            try {
+                const json = slashCmd.data.toJSON()
+                if (json) data.push(json)
+            } catch (e) {
+                console.error(`Error registering slash cmd: ${slashCmd.name}\n${e}`)
+            }
+
             continue
         }
         
@@ -116,17 +121,21 @@ async function registerCommands(client: ExtendedClient) {
 }
 
 async function registerButtons(client: ExtendedClient) {
-    client.buttons = new Collection()
-
     const buttonsPath = `aurora/buttons`
-    const buttons = fn.readTsFiles(buttonsPath)
+    const buttons = fn.readTsFiles(buttonsPath) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
 
     for (const file of buttons) {
         const buttonFile = await import(`../../${buttonsPath}/${file}`)
-        const button = buttonFile.default as Button
+        const button: Button = buttonFile.default
+
+        if (!button) {
+            console.log(`Could not register button: ${file}. Default export not found.`)
+            continue
+        }
 
         if (button.id) {
-            (client['buttons'] as Collection<string, Button>).set(button.id, button)
+            console.log("Registering button: " + button.id)
+            client.buttons.set(button.id, button)
         }
     }
 }

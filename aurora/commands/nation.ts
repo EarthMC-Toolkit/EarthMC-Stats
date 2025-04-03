@@ -54,8 +54,8 @@ export default {
         }
 
         return await m.edit({
-            embeds: [nationHelper.createEmbed()],
-            files: [nationHelper.getDownloadAttachment()]
+            //files: [nationHelper.getDownloadAttachment()],
+            embeds: [nationHelper.createEmbed()]
         })
     }
 }

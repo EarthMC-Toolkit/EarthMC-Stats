@@ -48,6 +48,7 @@ const client: ExtendedClient = new Client({
 client.login(process.env.DISCORD_BOT_TOKEN).then(token => {
     client.slashCommands = new Collection()
     client.auroraCommands = new Collection()
+    client.buttons = new Collection()
 
     console.log(`Logged into Discord.\nToken: ${token}`)
 }).catch(console.error)

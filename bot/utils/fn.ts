@@ -51,11 +51,6 @@ export const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable
 export const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
 export const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
-export const embedField = (name: string, value: string, inline = false): APIEmbedField => ({ name, value, inline })
-export const backtick = (value: string | number, opts?: { prefix?: string, postfix?: string }) => {
-    return `${opts?.prefix ?? ""}\`${value.toString()}\`${opts?.postfix ?? ""}`
-}
-
 // TODO: Use this list instead for future-proofing -> https://github.com/jwkerr/staff/blob/master/staff.json
 // Since it uses UUIDs, the OAPI will need to be used to grab the names.
 export const staff = {
@@ -147,21 +142,21 @@ export const paginator = async(
     msg: Message, 
     embeds: EmbedBuilder[], 
     currentPage: number
-    // TODO: Implement this
+    // TODO: Implement this. For running specified method on fwd/back.
     // _forward: ForwardCallback
 ) => {
     // DM messages don't work with component collectors right now
-    if (msg?.channel?.type == ChannelType.DM) 
+    if (msg?.channel?.type == ChannelType.DM) {
         return await msg.edit("DMs do not support buttons yet! Try again in a server.")
-
-    // Create collector which will listen for a button interaction. (If it passes the filter)
-    const filter = (i: ButtonInteraction) => { 
-        i.deferUpdate()
-        return i.user.id === author
     }
 
+    // Create collector which will listen for a button interaction. (If it passes the filter)
     const collector = msg.createMessageComponentCollector({ 
-        filter, componentType: ComponentType.Button,
+        filter: (i: ButtonInteraction) => { 
+            i.deferUpdate()
+            return i.user.id === author // Only the original sender is allowed to press buttons.
+        },
+        componentType: ComponentType.Button,
         time: fiveMin
     })
 
@@ -185,12 +180,18 @@ export const paginator = async(
 
 /** Helper method to create a paginator on an interaction. */
 export const paginatorInteraction = async(
-    interaction: CommandInteraction,
+    interaction: CommandInteraction | ButtonInteraction,
     embeds: EmbedBuilder[],
     currentPage: number
 ) => {
-    const msg = await interaction.fetchReply().catch(console.log) as Message
-    paginator(interaction.user.id, msg, embeds, currentPage)
+    try {
+        const msg: Message = await interaction.fetchReply()
+        if (!msg) throw new Error("Received null from fetchReply")
+
+        paginator(interaction.user.id, msg, embeds, currentPage)
+    } catch(e) {
+        console.warn("Failed to paginate. Message could not be fetched from interaction.\n" + e)
+    }
 }
 
 const buildButtons = (currentPage: number, lastPage: number) => {
@@ -428,7 +429,7 @@ export class ArgsHelper<T extends string> {
 
 export const inWorldBorder = (x: number, z: number) => {
     const [numX, numZ] = [x, z]
-    return numX >= 33081 || numX < -33280 || 
+    return numX >= 33080 || numX < -33280 || 
            numZ >= 16508 || numZ < -16640
 }
 
@@ -455,10 +456,18 @@ export const fastMergeByKey = <T>(original: T[], arr: any[], key: string) => {
 // The unary plus operator here coerces the value into a number.
 // This apparentely mitigates some pitfalls of `isNaN()` and should be more reliable.
 export const isNumeric = <T>(val: T) => Number.isFinite(+val)
+export const safeParseInt = (num: number | string) => typeof num === "number" ? num : parseInt(num)
 
 /**
  * Inserts three backticks on either end of a string.\
  * Shortform for "\`\`\`someString\`\`\`" in Discord, but avoids us escaping them for JS every time.
- * @param value 
+ * @param value
  */
 export const backticks = <T extends string>(value: T): `\`\`\`${T}\`\`\`` => `\`\`\`${value}\`\`\``
+export const backtick = (value: string | number, opts?: { prefix?: string, postfix?: string }) => {
+    return `${opts?.prefix ?? ""}\`${value.toString()}\`${opts?.postfix ?? ""}`
+}
+
+export function embedField(name: string, value: string, inline = false): APIEmbedField {
+    return { name, value, inline }
+}

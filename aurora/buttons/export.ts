@@ -1,13 +1,13 @@
 import {
     type Client,
-    type ChatInputCommandInteraction
+    type ButtonInteraction
 } from "discord.js"
 
 import type { Button } from "../../bot/types.js"
 
 const exportBtn: Button = {
     id: "export",
-    execute: (_: Client, interaction: ChatInputCommandInteraction) => {
+    execute: (_: Client, interaction: ButtonInteraction) => {
         return interaction.reply({
             content: "Your exported content is attached below.",
             ephemeral: true,

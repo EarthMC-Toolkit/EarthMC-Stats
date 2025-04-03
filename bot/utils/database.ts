@@ -17,15 +17,6 @@ import type { DBPlayer } from '../types.js'
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
-const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
-    const skip = !skipCache ? cache.get('players') : null
-    if (skip) return skip
-
-    return skip ?? db.collection("players").get().then(async snapshot => { 
-        return snapshot.docs.flatMap(doc => doc.data().playerArray)
-    }).catch(() => null)
-}
-
 type PlayerInfo = {
     discord: string | number
     lastOnline?: {
@@ -52,6 +43,15 @@ const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().t
     return playerInfo
 })
 
+const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
+    const skip = !skipCache ? cache.get('players') : null
+    if (skip) return skip
+
+    return skip ?? db.collection("players").get().then(async snapshot => { 
+        return snapshot.docs.flatMap(doc => doc.data().playerArray)
+    }).catch(() => null)
+}
+
 // FIRESTORE LIMITS:
 // - 500 writes (set, update, delete)
 // - 10MB per transaction
@@ -75,7 +75,7 @@ async function setPlayers(players: DBPlayer[]) {
         }
     }
 
-    // TODO: Check if Promise.all would keep document order 1-8.
+    // TODO: Check if Promise.all would keep document order 1-8. My guess is no bc why tf would it.
     //await Promise.all([batch1.commit(), batch2.commit()])
 
     await batch1.commit()

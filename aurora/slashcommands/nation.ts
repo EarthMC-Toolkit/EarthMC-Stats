@@ -31,6 +31,8 @@ import type {
     NationItem, TownItem 
 } from '../../bot/types.js'
 
+import { cache } from "../../bot/constants.js"
+
 const slashCmdData = new SlashCommandBuilder()
     .setName("nation")
     .setDescription("Displays info for a nation.")
@@ -275,12 +277,12 @@ export default {
                     : nationResLength >= 0 ? "Leader " : ""
                 
                 // Includes prefix
-                const nationLabel = nationResLength >= 60 ? "The " + nation.name + " Realm"
-                    : nationResLength >= 40 ? "The " + nation.name + " Empire"
-                    : nationResLength >= 30 ? "Kingdom of " + nation.name
-                    : nationResLength >= 20 ? "Dominion of " + nation.name
-                    : nationResLength >= 10 ? "Federation of " + nation.name
-                    : "Land of " + nation.name
+                const nationLabel = nationResLength >= 60 ? `The ${nation.name} Realm`
+                    : nationResLength >= 40 ? `The ${nation.name} Empire`
+                    : nationResLength >= 30 ? `Kingdom of ${nation.name}`
+                    : nationResLength >= 20 ? `Dominion of ${nation.name}`
+                    : nationResLength >= 10 ? `Federation of ${nation.name}`
+                    : `Land of ${nation.name}`
                 //#endregion
     
                 nations = defaultSort(nations)
@@ -298,7 +300,7 @@ export default {
                 const area = Math.round(nation.area)
                 const chunksStr = `<:chunk:1318944677562679398> \`${area.toString()}\` Chunks`
 
-                // TODO: Implement as `/nation worth <nation` instead.
+                // TODO: Implement as `/nation worth <name>` instead.
                 //const worth = Math.round(nation.area * 16)
                 //const goldStr = `<:gold:1318944918118600764> \`${worth}\`G`
 
@@ -365,7 +367,7 @@ export default {
                 const alliances = await database.Aurora.getAlliances()
                 if (alliances) {
                     const nationAlliances = alliances
-                        .filter(A => A.nations.map(e => e.toLowerCase()).includes(nation.name.toLowerCase()))
+                        .filter(a => a.nations.map(e => e.toLowerCase()).includes(nation.name.toLowerCase()))
                         .map(a => a.allianceName)
     
                     const len = nationAlliances?.length
@@ -385,6 +387,11 @@ export default {
                     ))
                 }
     
+                // Add this nation to cache so we can reference it elsewhere like 
+                // if a button is pressed and we need the original nation data.
+                const msg = await interaction.fetchReply()
+                cache.set(`nation_lookup_${msg.id}`, nation)
+
                 const thumbnail = nation.flag ? [] : [AURORA.thumbnail] 
                 return nationEmbed
                     .setFiles(thumbnail)

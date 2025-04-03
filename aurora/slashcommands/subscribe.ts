@@ -116,7 +116,7 @@ export default {
                     townlessSubbedChannelArray.push(channelID)
     
                     subscriptionSuccess.setDescription(`<@${memberID}> has successfully subscribed this channel to receive live townless players.`)
-                    return interaction.reply({embeds: [subscriptionSuccess]})
+                    return interaction.reply({ embeds: [subscriptionSuccess] })
                 }).catch(err => console.error("Error getting document: \n", err))
 
                 break
