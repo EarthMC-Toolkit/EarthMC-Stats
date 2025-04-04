@@ -110,7 +110,7 @@ async function updateAlliances(map: MapInstance) {
     const nations = await map.emc.Nations.all()
     if (!nations) return console.warn(`[${mapName}] Couldn't update alliances, failed to fetch nations.`)
 
-    const alliances = await map.db.getAlliances(true) as DBAlliance[]
+    const alliances: DBAlliance[] = await map.db.getAlliances(true)
     if (!alliances) return console.warn(`[${mapName}] Couldn't update alliances, failed to fetch from DB.`)
 
     const alliancesAmt = alliances.length
@@ -230,7 +230,7 @@ async function updateMapData(map: MapInstance) {
     const nations = await map.emc.Nations.all(towns).catch(console.error)
     if (!nations) return console.warn(`[${mapName}] Could not update map data! 'nations' is null or undefined.`)
 
-    console.log(`[${mapName}] Updating data..`)
+    console.log(`[${mapName}] Updating map data..`)
 
     //#region Town Logic
     const townsArray = towns.map(t => {
@@ -352,100 +352,6 @@ async function updateLastSeen() {
 
 //     newEmbed.setDescription(desc)
 //     msg.edit({ embeds: [newEmbed] }).catch(err => console.error(err))
-// }
-
-// async function liveTownless() {
-//     const townlessSubbedChannelIDs = fn.townlessSubbedChannelArray
-//     const len = townlessSubbedChannelIDs.length
-
-//     const auroraTownless = await Aurora.Players.townless()
-//     if (!auroraTownless) return
-
-//     // For every townless subbed channel
-//     for (let i = 0; i < len; i++) {
-//         const cur = townlessSubbedChannelIDs[i]
-//         if (!cur || cur == '') continue
- 
-//         const curChannel = await client.channels.fetch(cur).catch(() => {}) as TextChannel
-//         if (!curChannel) {
-//             if (!prod) continue
-
-//             console.log(`${fn.time()} | Deleting unavailable channel '${cur}' in townless subs array!`)
-
-//             townlessSubbedChannels.update({ channelIDs: FieldValue.arrayRemove(cur) })
-//             townlessSubbedChannelIDs.splice(i, 1)
-
-//             fn.setTownlessSubbedChannels(townlessSubbedChannelIDs)
-//         } else {
-//             if (!fn.canViewAndSend(curChannel)) continue
-            
-//             // Fetch the channel's messages.
-//             const msgs = await curChannel.messages.fetch().catch(e => { console.error(e); return null })
-//             if (!msgs) return
-
-//             const auroraEmbeds = filterLiveEmbeds(msgs, 'Aurora')
-//             if (auroraTownless) auroraEmbeds.forEach(msg => editEmbed(msg, auroraTownless, 'Aurora'))
-
-//             // if (novaTownless) {
-//             //     const novaEmbeds = filterLiveEmbeds(msgs, 'Nova')
-//             //     if (novaTownless) novaEmbeds.forEach(msg => editEmbed(msg, novaTownless, 'Nova'))
-//             // }
-//         }
-//     }
-// }
-
-// async function liveQueue() {              
-//     const server = await MojangLib.servers.get("join.earthmc.net").catch(() => {})
-//     const aurora = server ? await database.Aurora.getOnlinePlayerData() : null
-//     //const nova   = server ? await database.Nova.getOnlinePlayerData() : null
-
-//     const queue = new Queue(server, aurora)
-//     await queue.init()
-
-//     const embed = new EmbedBuilder()
-//         .setTitle("Queue & Player Info | Live")
-//         .setThumbnail(client.user.avatarURL())
-//         .setColor(Colors.Green)
-
-//     const totalMax = queue.aurora.config?.maxcount ?? 200
-//     embed.addFields(
-//         fn.embedField("Total Queue Count", queue.get(), true),
-//         fn.embedField("Total Server Count", `${queue.totalPlayers}/${totalMax}`, true),
-//         fn.embedField("Aurora", queue.aurora.formatted)
-//         //fn.embedField("Nova", queue.nova.formatted)
-//     )
-    
-//     const queueSubbedChannelIDs = fn.queueSubbedChannelArray
-//     const len = queueSubbedChannelIDs.length
-
-//     for (let i = 0; i < len; i++) {
-//         const cur = queueSubbedChannelIDs[i]
-
-//         if (!cur || cur == '') continue
-//         const currentQueueSubbedChannel = client.channels.cache.get(cur) as TextChannel
-
-//         if (!currentQueueSubbedChannel) {
-//             if (!prod) continue
-
-//             // Delete unavailable channel
-//             await queueSubbedChannels.update({ channelIDs: FieldValue.arrayRemove(cur) })
-//             queueSubbedChannelIDs.splice(i, 1)
-
-//             fn.setQueueSubbedChannels(queueSubbedChannelIDs)
-//         } else {
-//             if (!fn.canViewAndSend(currentQueueSubbedChannel)) continue
-
-//             currentQueueSubbedChannel.messages.fetch().then(async msgs => {
-//                 const queueEmbedArray = msgs.filter(msg =>
-//                     msg.embeds.length >= 1 && 
-//                     msg.embeds[0].title.includes('Queue') && 
-//                     msg.author.id == "656231016385478657"
-//                 )
-
-//                 queueEmbedArray.forEach(m => m.edit({ embeds: [embed] }).catch(() => {}))
-//             }).catch(() => {})
-//         }
-//     }
 // }
 
 // let townsCache = []

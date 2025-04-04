@@ -1,6 +1,6 @@
 import { request } from "undici"
 
-import { Aurora, Nova } from "./database.js"
+import { Aurora } from "./database.js"
 import { 
     AURORA,
     unixFromDate
@@ -44,19 +44,11 @@ async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora')
     console.log(`Sent POST request to ${route}`)
 }
 
-export async function sendNovaAlliances() {
-    const novaAlliances = await Nova.getAlliances()
-    if (novaAlliances) {
-        await sendRequest('nova/alliances', 'PUT', novaAlliances)
-        console.log('[Nova] Sent PUT requests to alliances')
-    }
-}
-
 export async function sendAuroraAlliances() {
     const auroraAlliances = await Aurora.getAlliances()
     if (auroraAlliances) {
         await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
-        console.log('[Aurora] Sent PUT requests to alliances')
+        console.log('[Aurora] Sent PUT request to alliances')
     }
 }
 

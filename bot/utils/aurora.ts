@@ -194,11 +194,14 @@ export function getAllianceRank(allianceName: string, alliances: DBAlliance[], n
 
 export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
     const cached: DBAlliance[] = cache.get('aurora_alliances')
-    const skip = !skipCache ? cached : null
+    if (cached && !skipCache) {
+        console.log(`Got ${cached.length} alliances from cache.`) 
+        return cached
+    }
 
-    return skip ?? allianceCollection().get().then(async doc => { 
+    return allianceCollection().get().then(async doc => { 
         return doc.data().allianceArray
-    }).catch(() => null)
+    }).catch(e => { console.warn(`Error getting alliances:\n` + e); return null })
 }
 
 export async function setAlliances(alliances: DBAlliance[]) {
@@ -206,6 +209,7 @@ export async function setAlliances(alliances: DBAlliance[]) {
     return allianceCollection().set({ allianceArray: alliances })
 }
 
+//#region Player Stats
 export async function getPlayerStats(skipCache = false): Promise<RawPlayerStatsV3> {
     const cached: RawPlayerStatsV3 = cache.get('aurora_player_stats')
     const skip = !skipCache ? cached : null
@@ -219,3 +223,4 @@ export async function setPlayerStats(playerStats: RawPlayerStatsV3) {
     cache.set('aurora_alliances', playerStats)
     return playerStatsDataCollection().set(playerStats)
 }
+//#endregion
