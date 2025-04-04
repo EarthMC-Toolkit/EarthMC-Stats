@@ -97,9 +97,9 @@ async function updatePlayerStats(map: MapInstance) {
         return null
     })
 
-    if (!pStats || Object.keys(pStats).length < 1) {
-        map.db.setPlayerStats(pStats)
-    }
+    if (!pStats || Object.keys(pStats).length < 1) return
+    
+    map.db.setPlayerStats(pStats)
 }
 
 async function updateAlliances(map: MapInstance) {
