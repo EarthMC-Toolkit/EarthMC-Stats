@@ -28,7 +28,7 @@ const slashCmdData = new SlashCommandBuilder()
 // 2. Seperate by new lines.
 // 3. Make into arr where each element holds X amount of lines.
 const blackMagic = (obj: Record<string, number>) => Object.entries(obj)
-    .map(e => e.toString().replace(",", ": ")).join('\n')
+    .map(e => `${e[0]}: ${e[1].toLocaleString()}`).join('\n')
     .match(/(?:^.*$\n?){1,20}/mg) // TODO: Support dynamic lines per page instead of hardcoding it.
 
 const playerStatsCmd: SlashCommand<typeof slashCmdData> = {
