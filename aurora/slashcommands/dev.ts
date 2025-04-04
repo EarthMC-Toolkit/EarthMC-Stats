@@ -8,6 +8,7 @@ import {
 
 import { backtick, botDevs } from '../../bot/utils/fn.js'
 import { getPlayers, setPlayers } from "../../bot/utils/database.js"
+import { cache } from "../../bot/constants.js"
 
 // import dotenv from 'dotenv'
 // dotenv.config()
@@ -24,6 +25,7 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
     //.addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
     //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
     .addSubcommand(subCmd => subCmd.setName('fixonline').setDescription('Fixes errors in DB player entries.'))
+    .addSubcommand(subCmd => subCmd.setName('clearcache').setDescription('Regenerates the cache to fix potential issues.'))
     .addSubcommand(subCmd => subCmd.setName('purge')
         .setDescription('Leaves all guilds with the specified amount of members or less.')
         .addIntegerOption(opt => opt.setName("purge_threshold")
@@ -161,6 +163,10 @@ export default {
                 await setPlayers(dbPlayers.filter(p => !toRemove.includes(p.name)))
 
                 return await interaction.editReply({ content: `Corrected DB errors for ${fixedPlayersAmt} players.` })
+            }
+            case "clearcache": {
+                cache.clear()
+                return await interaction.editReply({ content: `Cache has been cleared.` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Colors.Red)
