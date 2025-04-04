@@ -1,6 +1,6 @@
 import { 
     Aurora, OfficialAPI,
-    type RawLocationResponseV3
+    type LocationResObjectV3
 } from 'earthmc'
 
 import {
@@ -84,7 +84,7 @@ export default {
 }
 
 // Only use when town name is available
-const buildAffiliation = (loc: RawLocationResponseV3) => {
+const buildAffiliation = (loc: LocationResObjectV3) => {
     const affiliation = `Belongs to: ${backtick(loc.town.name)}`
     return loc.nation?.name ? `${affiliation} (${backtick(loc.nation.name)})` : affiliation
 }
