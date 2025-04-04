@@ -60,7 +60,7 @@ class ResidentHelper extends BaseCommandHelper {
             const players = await OfficialAPI.V3.players(arg1)
             apiRes = players[0]
 
-            if (!apiRes) throw new Error(`Official API could not find resident: ${arg1}`)
+            console.warn(`Official API could not find resident: ${arg1}`)
         } catch(e: any) {
             console.error(e)
             //return false // TODO: Just serve player embed without OAPI info if db fallback found.
