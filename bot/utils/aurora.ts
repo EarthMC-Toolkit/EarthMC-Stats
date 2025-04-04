@@ -206,8 +206,8 @@ export async function setAlliances(alliances: DBAlliance[]) {
     return allianceCollection().set({ allianceArray: alliances })
 }
 
-export async function getPlayerStats(skipCache = false) {
-    const cached: DBAlliance[] = cache.get('aurora_player_stats')
+export async function getPlayerStats(skipCache = false): Promise<RawPlayerStatsV3> {
+    const cached: RawPlayerStatsV3 = cache.get('aurora_player_stats')
     const skip = !skipCache ? cached : null
 
     return skip ?? playerStatsDataCollection().get().then(async doc => { 

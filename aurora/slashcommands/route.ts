@@ -88,9 +88,16 @@ export default {
             .setTitle(`Route to ${backtick(x)}, ${backtick(z)}`)
             .setDescription(`**TLDR**: /n spawn ${backtick(nation.name)} and head ${backtick(directionStr)} for ${backtick(distanceStr)} blocks.`)
             .setFields(
-                embedField("Nearest Nation", nation.name, true),
-                embedField("Capital", `Name: ${capital.name}\nLocation: ${capital.x}, ${capital.z}`, true),
-                embedField("Route (Nation -> Point)", `Distance: ${distanceStr} blocks\nDirection: ${directionStr}\n\nTravel Times: ${travelTimesArr.join("\n")}`, true)
+                embedField(
+                    "Nearest Nation",
+                    `Name: ${nation.name}\nCapital: ${capital.name}\nCapital Location: ${capital.x}, ${capital.z}`, 
+                    true
+                ),
+                embedField(
+                    "Route (Nation -> Point)", 
+                    `Distance: ${distanceStr} blocks\nDirection: ${directionStr}\n\nTravel Times:\n${travelTimesArr.join("\n")}`, 
+                    true
+                )
             )
 
         return interaction.reply({ embeds: [embed] })

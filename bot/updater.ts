@@ -5,6 +5,7 @@ import * as database from "../bot/utils/database.js"
 import { 
     formatString,
     OfficialAPI,
+    type RawPlayerStatsV3,
     type SquaremapOnlinePlayer
 } from "earthmc"
 
@@ -45,6 +46,7 @@ export async function initUpdates() {
         await updatePlayers(true)
         await updateMapData(AURORA)
         await updateAlliances(AURORA)
+        await updatePlayerStats(AURORA)
 
         await api.sendAuroraAlliances()
         await api.sendNews(getClient(), 'aurora')
@@ -60,9 +62,12 @@ export async function initUpdates() {
 
         await updateAlliances(AURORA)
         await api.sendAuroraAlliances()
-    }, 1.5 * oneMinMs)
+    }, 2 * oneMinMs)
     
-    setInterval(() => api.sendNews(getClient(), 'aurora'), 5 * oneMinMs)
+    setInterval(async () => {
+        await updatePlayerStats(AURORA)
+        await api.sendNews(getClient(), 'aurora')
+    }, 5 * oneMinMs)
 
     // setInterval(async () => {
     //     await updateFallenTowns(AURORA)
@@ -85,6 +90,17 @@ const mapToString = (map: MapInstance, strCase?: 'upper' | 'lower') => {
 
 // The #editor-chat channel in EMC Toolkit Development.
 const getEditorChannel = () => getClient().channels.cache.get("966398270878392382") as TextChannel
+
+async function updatePlayerStats(map: MapInstance) {
+    const pStats: RawPlayerStatsV3 = await OfficialAPI.V3.playerStats().catch(e => { 
+        console.error("Error getting player stats from the Official API:\n" + e)
+        return null
+    })
+
+    if (!pStats || Object.keys(pStats).length < 1) {
+        map.db.setPlayerStats(pStats)
+    }
+}
 
 async function updateAlliances(map: MapInstance) {
     const mapName = mapToString(map, 'upper')
