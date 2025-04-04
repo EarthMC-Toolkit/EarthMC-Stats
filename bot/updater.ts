@@ -97,9 +97,11 @@ async function updatePlayerStats(map: MapInstance) {
         return null
     })
 
-    if (!pStats || Object.keys(pStats).length < 1) return
-    
-    map.db.setPlayerStats(pStats)
+    if (!pStats || Object.keys(pStats).length < 1) {
+        return console.warn(`[${mapToString(map)}] Couldn't update player stats. Failed to fetch from OAPI.`)
+    }
+
+    await map.db.setPlayerStats(pStats)
 }
 
 async function updateAlliances(map: MapInstance) {
@@ -132,7 +134,7 @@ async function updateAlliances(map: MapInstance) {
             .catch(err => { if (err.code == 10006) a.discordInvite = noInvite })
     }
 
-    map.db.setAlliances(alliances)
+    await map.db.setAlliances(alliances)
 }
 
 async function sendEmptyAllianceNotif(map: MapInstance) {
