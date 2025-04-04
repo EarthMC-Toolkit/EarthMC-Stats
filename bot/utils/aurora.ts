@@ -3,6 +3,7 @@ import { request } from "undici"
 
 import  { 
     endpoint,
+    type RawPlayerStatsV3,
     type SquaremapMapResponse, 
     type SquaremapPlayersResponse
 } from "earthmc"
@@ -25,7 +26,9 @@ const auroraDoc = () => db.collection("aurora").doc("data")
 const residentDataCollection = () => auroraDoc().collection("residentData")
 const nationDataCollection = () => auroraDoc().collection("nationData")
 const townDataCollection = () => auroraDoc().collection("townData")
+
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
+const playerStatsDataCollection = () => auroraDoc().collection("playerStats").doc("playerStatsDoc")
 
 const auroraUrl = 'https://map.earthmc.net'
 
@@ -62,9 +65,11 @@ export async function setResidents(residents: DBResident[]) {
     await batch.commit()
 }
 
-export const getNations = async (): Promise<DBSquaremapNation[]> => cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot => {
-    return snapshot.docs.flatMap(doc => doc.data().nationArray)
-})
+export const getNations = async (): Promise<DBSquaremapNation[]> => {
+    return cache.get('aurora_nations') ?? nationDataCollection().get().then(async snapshot =>
+        snapshot.docs.flatMap(doc => doc.data().nationArray)
+    )
+}
 
 export const getNation = (nationName: string): Promise<DBSquaremapNation> => getNations().then(arr => { 
     const nation = arr.find(n => n.name.toLowerCase() == nationName.toLowerCase())
@@ -82,8 +87,11 @@ export async function setNations(nations: DBSquaremapNation[]) {
         .set({ nationArray: nations })
 }
 
-export const getTowns = async (): Promise<DBSquaremapTown[]> => cache.get('aurora_towns') ?? townDataCollection().get()
-    .then(async snapshot => snapshot.docs.flatMap(doc => doc.data().townArray))
+export const getTowns = async (): Promise<DBSquaremapTown[]> => {
+    return cache.get('aurora_towns') ?? townDataCollection().get().then(async snapshot => 
+        snapshot.docs.flatMap(doc => doc.data().townArray)
+    )
+}
 
 export async function setTowns(towns: DBSquaremapTown[]) {
     cache.set('aurora_towns', towns)
@@ -196,4 +204,18 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
 export async function setAlliances(alliances: DBAlliance[]) {
     cache.set('aurora_alliances', alliances)
     return allianceCollection().set({ allianceArray: alliances })
+}
+
+export async function getPlayerStats(skipCache = false): Promise<RawPlayerStatsV3> {
+    const cached: RawPlayerStatsV3 = cache.get('aurora_player_stats')
+    const skip = !skipCache ? cached : null
+
+    return skip ?? playerStatsDataCollection().get().then(async doc => { 
+        return doc.data()
+    }).catch(() => null)
+}
+
+export async function setPlayerStats(playerStats: RawPlayerStatsV3) {
+    cache.set('aurora_alliances', playerStats)
+    return allianceCollection().set(playerStats)
 }

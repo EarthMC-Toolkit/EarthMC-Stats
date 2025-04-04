@@ -38,7 +38,7 @@ class NationHelper extends BaseCommandHelper {
 
     constructor(client: Client) {
         super(client)
-        this.embed.setColor(Colors.Aqua)
+        this.embed.setColor(Colors.Aqua) // Default, overriden if nation has a custom one
     }
 
     async init(input: string) {
@@ -91,6 +91,10 @@ class NationHelper extends BaseCommandHelper {
             : `Land of ${nationName}`
     }
 
+    /**
+     * Creates a buffer from the raw embed data and returns it as an attachment.\
+     * The result of this method can be passed to the `files` Discord message option to attach it as a JSON file.
+     */
     getDownloadAttachment() {
         const buf = Buffer.from(this.raw())
         return new AttachmentBuilder(buf, { 

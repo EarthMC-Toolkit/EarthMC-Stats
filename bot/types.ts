@@ -9,7 +9,8 @@ import type {
 
 import type { 
     Squaremap, SquaremapOnlinePlayer, 
-    SquaremapTown, SquaremapNation
+    SquaremapTown, SquaremapNation,
+    RawPlayerStatsV3
 } from "earthmc"
 
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
@@ -85,6 +86,8 @@ export interface MapDB {
     setTowns(towns: DBSquaremapTown[]): Promise<void>
     getNations(): Promise<DBSquaremapNation[]>
     setNations(nations: DBSquaremapNation[]): Promise<void>
+    getPlayerStats(): Promise<RawPlayerStatsV3>
+    setPlayerStats(nations: RawPlayerStatsV3): Promise<WriteResult>
 }
 
 export type AllianceType = 'sub' | 'mega' | 'normal'

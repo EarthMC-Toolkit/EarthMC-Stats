@@ -40,7 +40,7 @@ export default {
         if (!exists || !resHelper.apiResident) {
             await interaction.deleteReply()
             return interaction.followUp({embeds: [new EmbedBuilder()
-                .setTitle(name + " isn't a registered player name, please try again.")
+                .setTitle(`${name} isn't a registered player name, please try again.`)
                 .setColor(Colors.Red)
                 .setFooter(devsFooter(client))
                 .setTimestamp()

@@ -150,12 +150,14 @@ export default {
             })
 
             const allData = town.residents.map(resident => {
-                const residentInPlayers = players.find(p => p.name == resident)
+                const residentPlayer = players.find(p => p.name == resident)
 
-                if (residentInPlayers && residentInPlayers.lastOnline != null) 
-                    return "``" + resident + "`` - " + `<t:${unixFromDate(residentInPlayers.lastOnline.aurora)}:R>`
+                if (residentPlayer && residentPlayer.lastOnline != null) {
+                    const ts = unixFromDate(residentPlayer.lastOnline.aurora)
+                    return "``" + resident + "`` - " + `<t:${ts}:R>`
+                }
 
-                return "" + resident + " | Unknown"
+                return `${resident} | Unknown`
             }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
             return new CustomEmbed(client, "Town Information | Activity in " + town.name)

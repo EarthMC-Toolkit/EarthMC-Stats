@@ -11,6 +11,8 @@
     "stop": "pm2 stop EMCS",
     "reload": "pm2 startOrGracefulReload --attach ecosystem.json",
     "restart": "bun run reinstall && pm2 startOrRestart ecosystem.json",
+    "reload-dev": "pm2 startOrGracefulReload --attach ecosystem.json --env development",
+    "restart-dev": "bun run reinstall && pm2 startOrRestart ecosystem.json --env development",
     "watch": "pm2 start --attach ecosystem.json --watch",
     "deploy": "pm2 deploy production"
   },
@@ -18,7 +20,7 @@
     "@isaacs/ttlcache": "^1.4.1",
     "discord.js": "14.18.0",
     "dotenv": "^16.4.7",
-    "earthmc": "^10.1.2",
+    "earthmc": "^10.3.1",
     "firebase": "11.5.0",
     "firebase-admin": "13.2.0",
     "moment": "2.30.1",

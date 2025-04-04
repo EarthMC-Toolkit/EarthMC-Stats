@@ -133,7 +133,7 @@ export default class CustomEmbed extends EmbedBuilder {
     /**
      * Indicates that the data should be paginated, AKA split across multiple embeds.\
      * This allows the user to switch back and forth between "pages" using buttons that are automatically added.
-     * @param data The data/list to paginate (will be displayed in 3 backticks).
+     * @param data The data/list to paginate.
      * @param dataPrefix The content before the data, like a description.
      * @param dataPostfix The content after the data, like a footer.
      */
