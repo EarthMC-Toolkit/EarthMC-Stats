@@ -1,4 +1,7 @@
-import { Aurora, OfficialAPI } from 'earthmc'
+import { 
+    Aurora, OfficialAPI,
+    type RawLocationResponseV3
+} from 'earthmc'
 
 import {
     type Client, 
@@ -11,11 +14,10 @@ import {
 import { 
     backtick,
     devsFooter, 
-    embedField, 
     inWorldBorder
 } from '../../bot/utils/fn.js'
 
-const embed = (
+const defaultEmbed = (
     client: Client, 
     title = "Error while using /location:", 
     colour: ColorResolvable = Colors.Red
@@ -25,9 +27,10 @@ const embed = (
     .setFooter(devsFooter(client))
     .setTimestamp()
 
+const desc = "Utility commands for all things location related."
 const slashCmdData = new SlashCommandBuilder()
     .setName("location")
-    .setDescription("Utility commands for all things location related.")
+    .setDescription(desc)
     .addSubcommand(subCmd => subCmd.setName("check")
         .setDescription("Is this wilderness or is this divine intellect?")
         .addIntegerOption(option => option
@@ -64,7 +67,7 @@ const slashCmdData = new SlashCommandBuilder()
 export default {
     name: "location",
     data: slashCmdData,
-    description: "",
+    description: desc,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const subCmd = interaction.options.getSubcommand()
 
@@ -80,19 +83,25 @@ export default {
     }
 }
 
+// Only use when town name is available
+const buildAffiliation = (loc: RawLocationResponseV3) => {
+    const affiliation = `Belongs to: ${backtick(loc.town.name)}`
+    return loc.nation?.name ? `${affiliation} (${backtick(loc.nation.name)})` : affiliation
+}
+
 const runCheck = async (client: Client, interaction: ChatInputCommandInteraction) => {
     const xCoord = interaction.options.getInteger("x")
     const zCoord = interaction.options.getInteger("z")
 
     //#region Validate X and Z coords.
     if (!xCoord || !zCoord) {
-        return interaction.reply({embeds: [embed(client)
+        return interaction.reply({embeds: [defaultEmbed(client)
             .setDescription("Invalid arguments!\n\nUsage: `/loc <x> <z>`")
         ], ephemeral: true})
     }
 
     if (inWorldBorder(xCoord, zCoord)) {
-        return interaction.reply({embeds: [embed(client)
+        return interaction.reply({embeds: [defaultEmbed(client)
             .setDescription("Specified coordinates are not inside EarthMC's world border!")
         ]}).then(m => setTimeout(() => m.delete(), 10000))
     }
@@ -102,18 +111,26 @@ const runCheck = async (client: Client, interaction: ChatInputCommandInteraction
     await interaction.deferReply()
 
     const coords: [number, number] = [xCoord, zCoord]
-    const loc = await OfficialAPI.V3.location(coords)
+    const loc = await OfficialAPI.V3.location(coords).then(arr => arr[0])
     
-    const { town, nation } = loc
-
-    cosnt embed = new EmbedBuilder()
+    const embed = new EmbedBuilder()
         .setColor(Colors.Green)
         .setTitle(`Location Info | ${backtick(xCoord)}, ${backtick(zCoord)}`)
-        .addFields(
-            embedField("Wilderness", loc.isWilderness ? "Yes" : "No")
-        )
 
-    return interaction.editReply()
+    const townName = loc.town?.name
+    if (loc.isWilderness) {
+        embed.setDescription(townName
+            ? `Location is marked as wilderness but a town is provided. *Schrödinger's location..*\n\n${buildAffiliation(loc)}`
+            : `This location is wilderness and does not belong to a town.`
+        )
+    } else {
+        embed.setDescription(townName 
+            ? buildAffiliation(loc)
+            : `This location doesn't belong to a town yet isn't wilderness.\nThe Official API hurt itself in it's own confusion.`
+        )
+    }
+
+    return interaction.editReply({ embeds: [embed] })
 }
 
 const runMapLink = (client: Client, interaction: ChatInputCommandInteraction) => {
@@ -122,26 +139,25 @@ const runMapLink = (client: Client, interaction: ChatInputCommandInteraction) =>
 
     //#region Validate X and Z coords.
     if (!xCoord || !zCoord) {
-        return interaction.reply({embeds: [embed(client)
+        return interaction.reply({embeds: [defaultEmbed(client)
             .setDescription("Invalid arguments!\n\nUsage: `/loc <x> <z>` or `/loc <x> <z> <zoom>`")
         ], ephemeral: true})
     }
 
     if (inWorldBorder(xCoord, zCoord)) {
-        return interaction.reply({embeds: [embed(client)
+        return interaction.reply({embeds: [defaultEmbed(client)
             .setDescription("Specified coordinates are not inside EarthMC's world border!")
         ]}).then(m => setTimeout(() => m.delete(), 10000))
     }
     //#endregion
 
     const zoom = interaction.options.getInteger("zoom")
-
     const mapUrl = new Aurora.URLBuilder({ x: xCoord, z: zCoord }, zoom)
 
     let reqDetails = `Coordinates: ${xCoord}, ${zCoord}`
     if (zoom) reqDetails += `\nZoom: ${zoom}x`
 
-    const mapLinkEmbed = embed(client, `Location Info | Map Link`)
+    const mapLinkEmbed = defaultEmbed(client, `Location Info | Map Link`)
         .setDescription(`Here is the [map link](${mapUrl.getAsString()}) for the your request:\n\n${reqDetails}`)
         .setColor(Colors.Green)
 
