@@ -205,7 +205,7 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
 }
 
 export async function setAlliances(alliances: DBAlliance[]) {
-    cache.set('aurora_player_stats', alliances)
+    cache.set('aurora_alliances', alliances)
     return allianceCollection().set({ allianceArray: alliances })
 }
 
@@ -220,7 +220,7 @@ export async function getPlayerStats(skipCache = false): Promise<RawPlayerStatsV
 }
 
 export async function setPlayerStats(playerStats: RawPlayerStatsV3) {
-    cache.set('aurora_alliances', playerStats)
+    cache.set('aurora_player_stats', playerStats)
     return playerStatsDataCollection().set(playerStats)
 }
 //#endregion
