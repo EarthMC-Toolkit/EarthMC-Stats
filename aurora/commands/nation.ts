@@ -30,8 +30,8 @@ export default {
 
         const req = args.join(" ")
         const m = await message.reply({embeds: [new EmbedBuilder()
-            .setTitle("<a:loading:966778243615191110> Fetching resident data, this might take a moment.")
-            .setColor(Colors.DarkPurple)
+            .setTitle("<a:loading:966778243615191110> Fetching nation data, this might take a moment.")
+            .setColor(Colors.Aqua)
         ]})
 
         //#region Pre-check errors to prevent unnecessary calls.
