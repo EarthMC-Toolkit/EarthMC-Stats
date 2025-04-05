@@ -204,15 +204,38 @@ export default {
                     return await interaction.editReply({ content: `Failed to parse JSON.` })
                 }
 
-                return await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
+                await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
 
-                // const alliances = await Aurora.getAlliances(true)
-                // if (!alliances) {
-                //     return await interaction.reply({ content: `Failed to fetch alliances.`, ephemeral: true })
-                // }
+                const alliances = await Aurora.getAlliances(true)
+                if (!alliances) {
+                    return await interaction.reply({ content: `Failed to fetch alliances.`, ephemeral: true })
+                }
 
-                //await Aurora.setAlliances(alliances)
-                //return await interaction.editReply({ content: `Successfully rebuilt ${alliances.length} alliances.` })
+                const skip = [
+                    "Holy Roman Empire", 
+                    "Organization of Free Nations", 
+                    "Realm of South Africa and Antartica",
+                    "United Aurora Accord",
+                    "Realm of South Africa",
+                    "Federation Of Uzbekistan",
+                    "American Liberty Coalition"
+                ]
+                
+                for (const cachedAlliance of cachedAlliances) {
+                    if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
+
+                    alliances.push({
+                        allianceName: cachedAlliance.name.replaceAll(" ", "_"),
+                        fullName: cachedAlliance.name,
+                        type: "normal",
+                        nations: cachedAlliance.nations,
+                        leaderName: "None",
+                        colours: cachedAlliance.colours
+                    })
+                }
+
+                await Aurora.setAlliances(alliances)
+                return await interaction.followUp({ content: `Successfully rebuilt alliances.` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Colors.Red)
