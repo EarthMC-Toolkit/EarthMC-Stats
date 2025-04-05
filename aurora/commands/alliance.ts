@@ -12,11 +12,11 @@ import type { AllianceType, DBAlliance } from "../../bot/types.js"
 
 import { 
     ArgsHelper,
-    AURORA, botDevs, 
+    AURORA, botDevs,
     defaultSortAlliance,
     fastMerge, isNumeric,
     backtick, backticks,
-    jsonReq, paginator, 
+    jsonReq, paginator,
     removeDuplicates
 } from "../../bot/utils/fn.js"
 
@@ -95,7 +95,11 @@ const SCORE_WEIGHTS = {
     //wealth: 0.1
 }
 
-const devArgs = ["backup", "new", "create", "delete", "disband", "add", "remove", "set", "merge", "rename", "wizard"]
+const editorArgs = [
+    "backup", "new", "create", "delete", "disband", "add", 
+    "remove", "set", "merge", "rename", "wizard", "validate", "kill"
+]
+
 const subCmds = ["list", "wizard", "score"]
 const cmdArray = [
     "alliances", "meganations", "submeganations", "pacts",
@@ -145,7 +149,7 @@ export default {
         }
 
         // There is an argument, but not an editor one, must be a sub cmd.
-        if (arg1Lower && !devArgs.includes(arg1Lower)) {
+        if (arg1Lower && !editorArgs.includes(arg1Lower)) {
             if (arg1Lower == "online") {
                 // TODO: Do this in getAlliance() so we dont req ops twice. 
                 const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]

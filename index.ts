@@ -106,31 +106,31 @@ process.on('uncaughtException', (err: ErrorWithCode) => {
 //#endregion
 
 //#region ANTI-PING SPAM
-const replies = [
-    "no.", "be fucking patient moron", "I DO NOT CARE", "Do it again, I dare you.", "you have severe brain damage.", 
-    "shutup and smd", "You have been automatically reported to Discord.", "Please hold. Currently doing your mother.",
-    "imagine being this impatient", "suck a dick.", "want something? wait nicely like a good dog", 
-    "emc is not that important brother", "☝ everyone laugh at this dipshit"
-]
+// const replies = [
+//     "no.", "be fucking patient moron", "I DO NOT CARE", "Do it again, I dare you.", "you have severe brain damage.", 
+//     "shutup and smd", "You have been automatically reported to Discord.", "Please hold. Currently doing your mother.",
+//     "imagine being this impatient", "suck a dick.", "want something? wait nicely like a good dog", 
+//     "emc is not that important brother", "☝ everyone laugh at this dipshit"
+// ]
 
-const myID = "263377802647175170"
-const editorID = "263377802647175170"
+// const myID = "263377802647175170"
+// const editorID = "263377802647175170"
 
-client.on('messageCreate', async msg => {
-    if (msg.author.bot) return
+// client.on('messageCreate', async msg => {
+//     if (msg.author.bot) return
     
-    const { guild, member, mentions } = msg
+//     const { guild, member, mentions } = msg
 
-    if (guild.id != "966271635894190090") return // Ensure toolkit discord
-    if (member.roles.cache.has(editorID)) return // Ensure not editor
+//     if (guild.id != "966271635894190090") return // Ensure toolkit discord
+//     if (member.roles.cache.has(editorID)) return // Ensure not editor
     
-    // Hasn't mentioned me (@ or reply with @ on)
-    if (!mentions.has(myID)) return
+//     // Hasn't mentioned me (@ or reply with @ on)
+//     if (!mentions.has(myID)) return
 
-    // Allow mention if its a reply to me.
-    if (mentions.repliedUser?.id == myID) return
+//     // Allow mention if its a reply to me.
+//     if (mentions.repliedUser?.id == myID) return
 
-    await msg.reply(replies[Math.floor(Math.random() * replies.length)])
-    member.timeout(10 * 60 * 1000)
-})
+//     await msg.reply(replies[Math.floor(Math.random() * replies.length)])
+//     member.timeout(10 * 60 * 1000)
+// })
 //#endregion
