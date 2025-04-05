@@ -1230,7 +1230,10 @@ async function checkPlayersExist(playerNames: string[]) {
     return playerNames.filter(name => !apiPlayers.some(p => p.name.toLowerCase() == name.toLowerCase()))
 }
 
-const hasDiscord = (a: DBAlliance) => a.discordInvite?.startsWith("https://") && a.discordInvite?.includes("discord.")
+const hasDiscord = (a: DBAlliance) => {
+    if (!a.discordInvite) return false
+    return a.discordInvite.startsWith("https://") && a.discordInvite.includes("discord.")
+}
 
 async function sendAllianceList(message: Message, m: Message, args: string[], type: string) {
     let alliances = await database.Aurora.getAlliances()
