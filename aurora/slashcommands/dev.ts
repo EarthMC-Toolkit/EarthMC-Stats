@@ -223,6 +223,7 @@ export default {
                 
                 for (const cachedAlliance of cachedAlliances) {
                     if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
+                    if (alliances.some(a => a.fullName.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
 
                     alliances.push({
                         allianceName: cachedAlliance.name.replaceAll(" ", "_"),
