@@ -113,9 +113,9 @@ async function updateAlliances(map: MapInstance) {
     const alliances: DBAlliance[] = await map.db.getAlliances(true)
     if (!alliances) return console.warn(`[${mapName}] Couldn't update alliances, failed to fetch from DB.`)
 
-    const alliancesAmt = alliances.length
-    for (let index = 0; index < alliancesAmt; index++) {
-        const a = alliances[index]
+    const len = alliances.length
+    for (let i = 0; i < len; i++) {
+        const a = alliances[i]
 
         const existing = nations.filter(n => a.nations.includes(n.name))
         if (existing.length > 1) a.nations = existing.map(n => n.name)

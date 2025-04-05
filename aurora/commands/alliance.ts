@@ -79,11 +79,11 @@ const setAddedNationsInfo = (
         } else { // All skipped, none added.
             allianceEmbed.setColor(Colors.Red)
                 .setTitle(`Error ${type} alliance | ${allianceName}`)
-                .setDescription("The following nations do not exist:\n\n```" + skippedStr + "```")
+                .setDescription(`The following nations do not exist:\n\n${backticks(skippedStr)}`)
         }
     } else if (amtAdded >= 1) { // All added, none skipped.
         allianceEmbed.setColor(Colors.DarkBlue)
-            .setDescription("The following nations have been added:\n\n```" + nationsAdded.join(", ") + "```")
+            .setDescription(`The following nations have been added:\n\n${backticks(nationsAdded.join(", "))}`)
     }
 }
 
@@ -251,14 +251,51 @@ export default {
         const arg1 = args[0]?.toLowerCase() // /a <arg1>
         const arg2 = args[1]?.toLowerCase() // /a <arg1> <arg2>
 
-        if (arg1 == "check") {
+        // Checks the given alliances for non-existent nations.
+        if (arg1 == "validate") {
             const foundAlliance = await database.Aurora.getAlliance(arg2)
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                 .setTitle("Error fetching alliance")
                 .setDescription("That alliance does not exist! Please try again.")
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-            
+            const nations = await database.Aurora.getNations()
+            const existing = nations.filter(n => foundAlliance.nations.includes(n.name))
+
+            const nationsLen = foundAlliance.nations.length
+            const existingLen = existing.length
+
+            if (existingLen == nationsLen) {
+                return m.edit({embeds: [successEmbed(message)
+                    .setTitle(`Alliance Validation | ${getNameOrLabel(foundAlliance)}`)
+                    .setDescription(`All ${backtick(nationsLen)} nations in this alliance exist :)`)
+                ]})
+            }
+
+            if (existingLen == 1) {
+                return m.edit({embeds: [successEmbed(message)
+                    .setTitle(`Alliance Validation | ${getNameOrLabel(foundAlliance)}`)
+                    .setDescription(`Only a single nation (${existing[0].name}) exists in this alliance.\nWhere did the rest go?`)
+                    .setImage("https://cdn.7tv.app/emote/01F6FTE8B80008E39HFFQJ7MWS/4x.gif") // modCheck
+                ]})
+            }
+
+            if (existingLen == 0) {
+                const scoobyGif = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXVlaHVoZGRxYXBvNGNqbnFzdW5ka25zOHJmM2E1NnE4YTh3dXZxdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SRcORaJ95epQzgjLEw/giphy.gif"
+                return m.edit({embeds: [successEmbed(message)
+                    .setTitle(`Alliance Validation | ${getNameOrLabel(foundAlliance)}`)
+                    .setDescription("What the fuck? None of the nations in this alliance even exist.\nThis is a mystery...")
+                    .setImage(scoobyGif)
+                ]})
+            }
+
+            const existingNations = existing.map(n => n.name)
+            const missingNations = foundAlliance.nations.filter(n => !existingNations.includes(n))
+
+            return m.edit({embeds: [successEmbed(message)
+                .setTitle(`Alliance Validation | ${getNameOrLabel(foundAlliance)}`)
+                .setDescription(`The following nations do not exist:\n\n${backticks(missingNations.join(", "))}`)
+            ]})
         }
 
         // Creating an alliance
@@ -396,7 +433,7 @@ export default {
                 if (missingPlayers.length > 0) {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Failed to update alliance`)
-                        .setDescription(`The following leaders do not exist: ${backtick(missingPlayers.join(", "))}`)
+                        .setDescription(`The following leaders do not exist:\n\n${backticks(missingPlayers.join(", "))}`)
                         .setColor(Colors.Orange)
                         .setTimestamp()
                         .setAuthor({
@@ -514,7 +551,7 @@ export default {
             ]})
         }
         
-        if (arg1 == "delete" || arg1 == "disband") {
+        if (arg1 == "delete" || arg1 == "disband" || arg1 == "kill") {
             if (!botDev && !isEditor) return sendDevsOnly(m)
             if (isEditor && !seniorEditor) return m.edit({embeds: [successEmbed(message)
                 .setTitle("Silly editor!")
@@ -686,7 +723,7 @@ export default {
 
             return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                .setDescription("The following nation(s) have been removed:\n\n```" + nationsRemoved.join(", ") + "```")
+                .setDescription(`The following nation(s) have been removed:\n\n${backticks(nationsRemoved.join(", "))}`)
             ]})
         }
         
@@ -716,7 +753,7 @@ export default {
                     const missingPlayers = await checkPlayersExist(playerArgs)
                     if (missingPlayers.length > 0) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Failed to update alliance`)
-                        .setDescription(`The following leaders do not exist: ${backtick(missingPlayers.join(", "))}`)
+                        .setDescription(`The following leaders do not exist:\n\n${backticks(missingPlayers.join(", "))}`)
                         .setColor(Colors.Orange)
                         .setTimestamp()
                         .setAuthor({
@@ -962,7 +999,7 @@ export default {
         
             return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                .setDescription("The following alliances have been merged:\n\n```" + alliancesToMerge.join(", ").toString() + "```")
+                .setDescription(`The following alliances have been merged:\n\n${backticks(alliancesToMerge.join(", "))}`)
             ]})
         }
 
@@ -993,7 +1030,7 @@ export default {
                     
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Backup Successful")
-                .setDescription('The following alliances have been restored:\n\n```' + restored.join(", ") + '```') 
+                .setDescription(`The following alliances have been restored:\n\n${backticks(restored.join(", "))}`) 
             ]}).catch(() => {})
         }
         
@@ -1232,7 +1269,7 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         if (allianceNationsLen < 1) {
             allianceEmbed.addField("Nations [0]", "There are no nations in this alliance.")
         }
-        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, "```" + nationsString + "```")
+        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsString))
     }
     else {
         allianceEmbed.addField(

@@ -41,14 +41,14 @@ async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora')
     const all = msgs.sort((a, b) => b.createdTimestamp - a.createdTimestamp).map(m => new News(m))
 
     await sendRequest(route, 'POST', all)
-    console.log(`Sent POST request to ${route}`)
+    console.log(`[${mapName.toUpperCase()}] Sent POST request to ${route}`)
 }
 
 export async function sendAuroraAlliances() {
     const auroraAlliances = await Aurora.getAlliances()
     if (auroraAlliances) {
         await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
-        console.log('[Aurora] Sent PUT request to alliances')
+        console.log('[AURORA] Sent PUT request to alliances')
     }
 }
 
