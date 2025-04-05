@@ -194,10 +194,7 @@ export function getAllianceRank(allianceName: string, alliances: DBAlliance[], n
 
 export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
     const cached: DBAlliance[] = cache.get('aurora_alliances')
-    if (cached && !skipCache) {
-        console.log(`Got alliances from cache. Length: \n${cached.length}`) 
-        return cached
-    }
+    if (cached && !skipCache) return cached
 
     return allianceCollection().get().then(async doc => { 
         return doc.data().allianceArray

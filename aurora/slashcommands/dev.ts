@@ -7,8 +7,11 @@ import {
 } from "discord.js"
 
 import { backtick, botDevs } from '../../bot/utils/fn.js'
-import { getPlayers, setPlayers } from "../../bot/utils/database.js"
+//import { getPlayers, setPlayers } from "../../bot/utils/database.js"
+
 import { cache } from "../../bot/constants.js"
+import { Aurora } from "../../bot/utils/database.js"
+import { request } from "undici"
 
 // import dotenv from 'dotenv'
 // dotenv.config()
@@ -24,8 +27,13 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
     //.addSubcommand(subCmd => subCmd.setName('restart').setDescription('Automatically redeploy the bot service.'))
     //.addSubcommand(subCmd => subCmd.setName('pause').setDescription('Pause the bot service.'))
     //.addSubcommand(subCmd => subCmd.setName('resume').setDescription('Resume the bot service.'))
-    .addSubcommand(subCmd => subCmd.setName('fixonline').setDescription('Fixes errors in DB player entries.'))
-    .addSubcommand(subCmd => subCmd.setName('clearcache').setDescription('Regenerates the cache to fix potential issues.'))
+    //.addSubcommand(subCmd => subCmd.setName('fixonline').setDescription('Fixes errors in DB player entries.'))
+    .addSubcommand(subCmd => subCmd.setName('clearcache')
+        .setDescription('Empties the cache so it will regenerate. May fix potential issues.')
+    )
+    .addSubcommand(subCmd => subCmd.setName('rebuild_alliances')
+        .setDescription('Recreates all alliances (that dont yet exist) from based 3merald cache.')
+    )
     .addSubcommand(subCmd => subCmd.setName('purge')
         .setDescription('Leaves all guilds with the specified amount of members or less.')
         .addIntegerOption(opt => opt.setName("purge_threshold")
@@ -34,6 +42,16 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
             .setMaxValue(10)
         )
     )
+
+interface CachedAlliance {
+    name: string
+    type: "alliances" | "meganations" // Doesn't matter for now
+    nations: string[]
+    colours: {
+        fill: string
+        outline: string
+    }
+}
 
 export default {
     name: "dev",
@@ -55,8 +73,6 @@ export default {
                 })
             ]}).then(m => setTimeout(() => m.delete(), 10000))
         }
-
-        await interaction.deferReply()
 
         const subCmdName = interaction.options.getSubcommand().toLowerCase()
         switch(subCmdName) {
@@ -89,6 +105,8 @@ export default {
             //     ]})
             // }
             case "purge": {
+                await interaction.deferReply()
+
                 const purgeThreshold = interaction.options.getInteger("purge_threshold")
                 
                 await client.guilds.fetch()
@@ -127,46 +145,70 @@ export default {
 
                 return await interaction.editReply({ content: `Left ${leftAmt} guilds.` })
             }
-            case "fixonline": {
-                let fixedPlayersAmt = 0
+            // case "fixonline": {
+            //     let fixedPlayersAmt = 0
 
-                const dbPlayers = await getPlayers(true)
-                const toRemove = []
+            //     const dbPlayers = await getPlayers(true)
+            //     const toRemove = []
 
-                for (const player of dbPlayers) {
-                    if (!player.lastOnline) {
-                        toRemove.push(player.name)
-                        fixedPlayersAmt++
+            //     for (const player of dbPlayers) {
+            //         if (!player.lastOnline) {
+            //             toRemove.push(player.name)
+            //             fixedPlayersAmt++
 
-                        continue
-                    }
+            //             continue
+            //         }
 
-                    delete player.lastOnline['nova']
-                    delete player.linkedID
+            //         delete player.lastOnline['nova']
+            //         delete player.linkedID
 
-                    const badAurora = player.lastOnline['Aurora']
-                    if (badAurora) {
-                        player.lastOnline.aurora = badAurora
-                        delete player.lastOnline['Aurora']
-                    }
+            //         const badAurora = player.lastOnline['Aurora']
+            //         if (badAurora) {
+            //             player.lastOnline.aurora = badAurora
+            //             delete player.lastOnline['Aurora']
+            //         }
 
-                    const missingOnlineDates = !player.lastOnline.aurora
-                    if (missingOnlineDates) {
-                        toRemove.push(player.name)
-                    }
+            //         const missingOnlineDates = !player.lastOnline.aurora
+            //         if (missingOnlineDates) {
+            //             toRemove.push(player.name)
+            //         }
 
-                    if (missingOnlineDates || badAurora) {
-                        fixedPlayersAmt++
-                    }
+            //         if (missingOnlineDates || badAurora) {
+            //             fixedPlayersAmt++
+            //         }
+            //     }
+
+            //     await setPlayers(dbPlayers.filter(p => !toRemove.includes(p.name)))
+
+            //     return await interaction.editReply({ content: `Corrected DB errors for ${fixedPlayersAmt} players.` })
+            // }
+            case "clearcache": {
+                await interaction.deferReply()
+
+                cache.clear()
+
+                return await interaction.editReply({ content: `Cache has been cleared.` })
+            }
+            case "rebuild_alliances": {
+                await interaction.deferReply()
+
+                const inputFile = await interaction.options.getAttachment("cache_file")
+                if (!inputFile) return await interaction.editReply({ content: `Something went wrong with the input file.` })
+
+                const cachedAlliances = (await request(inputFile.url).then(res => res.body.json())) as CachedAlliance[]
+                if (!cachedAlliances || cachedAlliances.length < 0) {
+                    return await interaction.editReply({ content: `Failed to parse JSON.` })
                 }
 
-                await setPlayers(dbPlayers.filter(p => !toRemove.includes(p.name)))
+                return await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
 
-                return await interaction.editReply({ content: `Corrected DB errors for ${fixedPlayersAmt} players.` })
-            }
-            case "clearcache": {
-                cache.clear()
-                return await interaction.editReply({ content: `Cache has been cleared.` })
+                // const alliances = await Aurora.getAlliances(true)
+                // if (!alliances) {
+                //     return await interaction.reply({ content: `Failed to fetch alliances.`, ephemeral: true })
+                // }
+
+                //await Aurora.setAlliances(alliances)
+                //return await interaction.editReply({ content: `Successfully rebuilt ${alliances.length} alliances.` })
             }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Colors.Red)
