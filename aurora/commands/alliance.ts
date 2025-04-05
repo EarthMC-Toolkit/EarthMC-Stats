@@ -23,6 +23,14 @@ import {
 import { Aurora, OfficialAPI, type SquaremapPlayer } from "earthmc"
 import { request } from "undici"
 
+const successEmbed = (msg: Message) => new EmbedBuilder()
+    .setColor(Colors.DarkBlue)
+    .setTimestamp()
+    .setAuthor({
+        name: msg.author.username, 
+        iconURL: msg.author.displayAvatarURL()
+    })
+
 const errorEmbed = (msg: Message) => new EmbedBuilder()
     .setColor(Colors.Red)
     .setTimestamp()
@@ -154,11 +162,9 @@ export default {
                 const name = getNameOrLabel(foundAlliance)
                 
                 const allianceOps = ops.filter(op => foundAlliance.online.some(p => p == op.name)) ?? []
-                if (allianceOps.length < 1) return m.edit({embeds: [new EmbedBuilder()
+                if (allianceOps.length < 1) return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Online in ${name} [0]`)
                     .setDescription("No players are online in this alliance :(")
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
                 const embeds: EmbedBuilder[] = []
@@ -168,19 +174,13 @@ export default {
             
                 const len = allData.length
                 for (let i = 0; i < len; i++) {
-                    embeds[i] = new EmbedBuilder()
-                    .setTitle(`Online in ${name} [${allianceOps.length}]`)
-                    .setDescription("```" + allData[i] + "```")
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
-                    .setAuthor({ 
-                        name: message.author.username, 
-                        iconURL: message.author.displayAvatarURL() 
-                    })
-                    .setFooter({ 
-                        text: `Page ${i+1}/${allData.length}`, 
-                        iconURL: client.user.avatarURL() 
-                    })
+                    embeds[i] = successEmbed(message)
+                        .setTitle(`Online in ${name} [${allianceOps.length}]`)
+                        .setDescription("```" + allData[i] + "```")
+                        .setFooter({ 
+                            text: `Page ${i+1}/${allData.length}`, 
+                            iconURL: client.user.avatarURL() 
+                        })
                 }
 
                 return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
@@ -308,11 +308,11 @@ export default {
 
             return m.edit({embeds: [embed
                 .setTitle("Alliance Created")
+                .setColor(Colors.DarkBlue)
                 .setDescription(`
                     The alliance \`${allianceName}\` has been created.
                     For future reference, this alliance exists at index ${backtick(index)} in the database.
                 `)
-                .setColor(Colors.DarkBlue)
             ]})
         } 
         
@@ -508,26 +508,18 @@ export default {
             
             database.Aurora.setAlliances(alliances)
 
-            return m.edit({embeds: [new EmbedBuilder()
+            return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Renamed")
                 .setDescription(`The alliance ${backticks(oldName)} has been renamed to ${backticks(args[2])}`)
-                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                .setColor(Colors.DarkBlue)
-                .setTimestamp()
             ]})
         }
         
         if (arg1 == "delete" || arg1 == "disband") {
             if (!botDev && !isEditor) return sendDevsOnly(m)
-            if (isEditor && !seniorEditor) return m.edit({embeds: [new EmbedBuilder()
+            if (isEditor && !seniorEditor) return m.edit({embeds: [successEmbed(message)
                 .setTitle("Silly editor!")
                 .setDescription("Only senior editors have permissions to delete alliances.")
                 .setColor(Colors.Orange)
-                .setTimestamp()
-                .setAuthor({
-                    name: message.author.username, 
-                    iconURL: message.author.displayAvatarURL()
-                })
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
             const alliances = await database.Aurora.getAlliances()
@@ -545,15 +537,9 @@ export default {
             alliances.splice(allianceIndex, 1)
             database.Aurora.setAlliances(alliances)
         
-            return m.edit({embeds: [new EmbedBuilder()
+            return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Disbanded")
                 .setDescription(`The alliance ${backtick(getNameOrLabel(foundAlliance))} has been disbanded.`)
-                .setColor(Colors.DarkBlue)
-                .setTimestamp()
-                .setAuthor({
-                    name: message.author.username,
-                    iconURL: message.author.displayAvatarURL()
-                })
             ]})
         }
         
@@ -698,24 +684,16 @@ export default {
             alliances[allianceIndex] = foundAlliance
             database.Aurora.setAlliances(alliances).catch(console.error)
 
-            return m.edit({embeds: [new EmbedBuilder()
+            return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                 .setDescription("The following nation(s) have been removed:\n\n```" + nationsRemoved.join(", ") + "```")
-                .setColor(Colors.DarkBlue)
-                .setTimestamp()
-                .setAuthor({ 
-                    name: message.author.username, 
-                    iconURL: message.author.displayAvatarURL() 
-                })
             ]})
         }
         
         // TODO: Use switch case for set options?
         if (arg1 == "set") {
-            if (!arg2) return m.edit({embeds: [new EmbedBuilder()
+            if (!arg2) return m.edit({embeds: [errorEmbed(message)
                 .setTitle(`Please provide a valid option for this command.\nChoices: Leader, Discord, Type or Image/Flag.`)
-                .setTimestamp()
-                .setColor(Colors.Red)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             
             //#region /a set leader
@@ -755,15 +733,9 @@ export default {
                 alliances[allianceIndex] = foundAlliance
                 database.Aurora.setAlliances(alliances).catch(console.error)
                 
-                return m.edit({embeds: [new EmbedBuilder()
+                return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                     .setDescription(`The alliance leader has been set to: ${backtick(foundAlliance.leaderName)}`)
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
-                    .setAuthor({
-                        name: message.author.username,
-                        iconURL: message.author.displayAvatarURL() 
-                    })
                 ]})
             }
             //#endregion
@@ -805,18 +777,13 @@ export default {
 
                 database.Aurora.setAlliances(alliances).catch(console.error)
 
-                return m.edit({embeds: [new EmbedBuilder()
-                    .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                return m.edit({embeds: [successEmbed(message)
                     .setColor(removing ? Colors.Orange : Colors.DarkBlue)
-                    .setTimestamp()
+                    .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                     .setDescription(removing ? 
                         "The discord invite for this alliance has been removed." :
                         `The discord invite for this alliance has been set to: ${foundAlliance.discordInvite}`
                     )
-                    .setAuthor({
-                        name: message.author.username,
-                        iconURL: message.author.displayAvatarURL()
-                    })
                 ]})
             }
             //#endregion
@@ -840,16 +807,10 @@ export default {
 
                 database.Aurora.setAlliances(alliances)
                 
-                return m.edit({embeds: [new EmbedBuilder()
+                return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                     .setDescription("The alliance image has been set to:") 
                     .setImage(args[3])
-                    .setAuthor({
-                        name: message.author.username,
-                        iconURL: message.author.displayAvatarURL()
-                    })
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
                 ]}).catch(() => {})
             }
             //#endregion                
@@ -884,15 +845,9 @@ export default {
                 alliances[allianceIndex] = foundAlliance   
                 database.Aurora.setAlliances(alliances)
                 
-                return m.edit({embeds: [new EmbedBuilder()
+                return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                     .setDescription(desc)
-                    .setAuthor({
-                        name: message.author.username, 
-                        iconURL: message.author.displayAvatarURL()
-                    })
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
                 ]}).catch(() => {})
             }
             //#endregion
@@ -926,15 +881,9 @@ export default {
 
                 database.Aurora.setAlliances(alliances)
                 
-                return m.edit({embeds: [new EmbedBuilder()
+                return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                     .setDescription(`The alliance colours have been ${change}`)
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
-                    .setAuthor({
-                        name: message.author.username, 
-                        iconURL: message.author.displayAvatarURL()
-                    })
                 ]}).catch(() => {})                 
             }
             //#endregion
@@ -963,15 +912,9 @@ export default {
 
                 database.Aurora.setAlliances(alliances)
                 
-                return m.edit({embeds: [new EmbedBuilder()
+                return m.edit({embeds: [successEmbed(message)
                     .setTitle("Alliance Updated | " + foundAlliance.allianceName)
                     .setDescription(`The alliance's full name has been ${change}`) 
-                    .setColor(Colors.DarkBlue)
-                    .setTimestamp()
-                    .setAuthor({
-                        name: message.author.username,
-                        iconURL: message.author.displayAvatarURL()
-                    })
                 ]}).catch(() => {})
             }
             //#endregion
@@ -1017,12 +960,9 @@ export default {
             alliances[allianceIndex] = foundAlliance
             database.Aurora.setAlliances(alliances)
         
-            return m.edit({embeds: [new EmbedBuilder()
+            return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                 .setDescription("The following alliances have been merged:\n\n```" + alliancesToMerge.join(", ").toString() + "```")
-                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                .setColor(Colors.DarkBlue)
-                .setTimestamp()
             ]})
         }
 
@@ -1051,12 +991,9 @@ export default {
 
             await database.Aurora.setAlliances(alliances)
                     
-            return m.edit({embeds: [new EmbedBuilder()
+            return m.edit({embeds: [successEmbed(message)
                 .setTitle("Backup Successful")
                 .setDescription('The following alliances have been restored:\n\n```' + restored.join(", ") + '```') 
-                .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                .setColor(Colors.DarkBlue)
-                .setTimestamp()
             ]}).catch(() => {})
         }
         
@@ -1184,15 +1121,9 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
     
         const len = allData.length
         for (let i = 0; i < len; i++) {
-            embeds[i] = new EmbedBuilder()
-            .setColor(Colors.DarkBlue)
-            .setTitle("List of Alliances")
-            .setDescription(allData[i])
-            .setTimestamp()
-            .setAuthor({
-                name: message.author.username, 
-                iconURL: message.author.displayAvatarURL()
-            })
+            embeds[i] = successEmbed(message)
+                .setTitle("List of Alliances")
+                .setDescription(allData[i])
         }
 
         return await m.edit({ embeds: [embeds[0]] })
@@ -1217,15 +1148,9 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
 
     const len = allData.length
     for (let i = 0; i < len; i++) {
-        embeds[i] = new EmbedBuilder()
-        .setColor(Colors.DarkBlue)
-        .setTitle("List of Alliances")
-        .setDescription(allData[i])
-        .setTimestamp()
-        .setAuthor({
-            name: message.author.username, 
-            iconURL: message.author.displayAvatarURL()
-        })
+        embeds[i] = successEmbed(message)
+            .setTitle("List of Alliances")
+            .setDescription(allData[i])
     }
 
     return await m.edit({ embeds: [embeds[0]] })
