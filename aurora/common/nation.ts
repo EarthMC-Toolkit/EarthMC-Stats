@@ -67,8 +67,8 @@ class NationHelper extends BaseCommandHelper {
         const [locX, locZ] = [Number(apiLoc.x), Number(apiLoc.z)]
 
         return {
-            x: truncX ? Math.trunc(locX) : locX,
-            z: truncZ ? Math.trunc(locZ) : locZ
+            x: truncX ? ~~locX : locX,
+            z: truncZ ? ~~locZ : locZ
         }
     }
 
