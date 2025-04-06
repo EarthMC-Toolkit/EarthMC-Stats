@@ -4,25 +4,22 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import { Aurora } from "earthmc"
-
 import { 
-    devsFooter, fetchError, 
-    staff, staffListEmbed 
+    devsFooter, 
+    staffListEmbed,
+    getStaff
 } from '../../bot/utils/fn.js'
 
-import * as database from "../../bot/utils/database.js"
+// const getStaff = async (activeOnly: boolean) => {
+//     const players = await database.getPlayers()
+//     const staffList = activeOnly ? staff.active : staff.all()
 
-const getStaff = async(activeOnly: boolean) => {
-    const players = await database.getPlayers()
-    const staffList = activeOnly ? staff.active : staff.all()
-
-    const staffPlayers = players.filter(p => staffList.some(sm => sm.toLowerCase() == p.name.toLowerCase()))
-    return staffPlayers.map(player => {
-        const id = player?.linkedID
-        return (!id || id == '') ? player.name.replace(/_/g, "\\_") : `<@${id}>`
-    })
-}
+//     const staffPlayers = players.filter(p => staffList.some(sm => sm.toLowerCase() == p.name.toLowerCase()))
+//     return staffPlayers.map(player => {
+//         const id = player?.linkedID
+//         return (!id || id == '') ? player.name.replace(/_/g, "\\_") : `<@${id}>`
+//     })
+// }
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("staff")
@@ -35,20 +32,21 @@ export default {
     description: "Sends a list of current server staff",
     data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        //await interaction.deferReply()
+        await interaction.deferReply()
 
-        switch (interaction.options.getSubcommand().toLowerCase()) {
+        const subCmd = interaction.options.getSubcommand()
+        switch (subCmd) {
             case "online": {
-                const ops = await Aurora.Players.online().catch(() => {})
-                if (!ops) return await interaction.reply({ 
-                    embeds: [fetchError]
-                    //ephemeral: true
-                })
+                // const ops = await Aurora.Players.online().catch(() => {})
+                // if (!ops) return await interaction.reply({ 
+                //     embeds: [fetchError]
+                //     //ephemeral: true
+                // })
 
-                const onlineStaff = staff.all().filter(sm => ops.some(op => op.name.toLowerCase() == sm.toLowerCase()))
+                const onlineStaff = (await getStaff()).filter(sm => sm.player.status.isOnline).map(sm => sm.player.name)
                 const list = "```" + onlineStaff.join(", ").toString() + "```"
 
-                return await interaction.reply({embeds: [new EmbedBuilder()
+                return await interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle("Online Activity | Staff")
                     .setDescription(onlineStaff.length < 1 ? "No staff are online right now! Try again later." : list)
                     .setThumbnail(client.user.avatarURL())
@@ -58,10 +56,10 @@ export default {
                 ]})
             }
             case "list": {
-                const staff = await getStaff(true)
-                return await interaction.reply({ embeds: [staffListEmbed(client, staff)] })
+                const staff = (await getStaff()).map(sm => sm.player.name)
+                return await interaction.editReply({ embeds: [staffListEmbed(client, staff)] })
             }
-            default: return await interaction.reply({ embeds: [new EmbedBuilder()
+            default: return await interaction.editReply({ embeds: [new EmbedBuilder()
                 .setTitle("Invalid Arguments!")
                 .setDescription("Usage: `/staff list` or `/staff online`")
                 .setColor(Colors.Red)
