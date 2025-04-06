@@ -1,8 +1,7 @@
 import { Aurora } from "earthmc"
 
-import type { Client } from "discord.js"
 import type { Firestore } from "firebase-admin/firestore"
-import type { MapInstance, SeenPlayer } from "./types.js"
+import type { ExtendedClient, MapInstance, SeenPlayer } from "./types.js"
 
 import { 
     type DocReference, 
@@ -11,7 +10,7 @@ import {
 
 import TTLCache from '@isaacs/ttlcache'
 
-const state: { prod: boolean, client: Client } = {
+const state: { prod: boolean, client: ExtendedClient } = {
     prod: false,
     client: null
 }
@@ -22,7 +21,7 @@ export function setProduction(val: boolean) {
 }
 
 export const getClient = () => state.client
-export function setClient(val: Client) {
+export function setClient(val: ExtendedClient) {
     state.client = val
 }
 

@@ -10,7 +10,8 @@ import type {
 import type { 
     Squaremap, SquaremapOnlinePlayer, 
     SquaremapTown, SquaremapNation,
-    RawPlayerStatsV3
+    RawPlayerStatsV3,
+    RawPlayerV3
 } from "earthmc"
 
 import type { Timestamp, WriteResult } from "firebase-admin/firestore"
@@ -125,7 +126,6 @@ export interface DBPlayer {
     linkedID?: string | number
     lastOnline: {
         aurora?: Timestamp
-        //nova?: Timestamp
     }
 }
 
@@ -196,15 +196,22 @@ export interface SeenPlayer extends SquaremapOnlinePlayer {
     timestamp: number
 }
 
-// type OfflineEstimateType = typeof OFFLINE_ESTIMATE
-// export type OfflineEstimate = OfflineEstimateType[keyof OfflineEstimateType]
+//#region Staff
+export const staffResponse = {
+    owner: [] as string[],
+    admin: [] as string[],
+    developer: [] as string[],
+    staffmanager: [] as string[],
+    moderator: [] as string[],
+    helper: [] as string[]
+} as const
 
-// export const OFFLINE_ESTIMATE = {
-//     Possibly: 5,
-//     Likely: 10,
-//     VeryLikely: 20,
-//     Certain: 40,
-//     Definitely: 80
-// } as const
+export type StaffResponse = typeof staffResponse
+export type StaffRole = keyof StaffResponse
+export type StaffRoleOrUnknown = StaffRole | "unknown"
 
-// export const OFFLINE_ESTIMATES = Object.values(OFFLINE_ESTIMATE)
+export interface StaffMember {
+    player: RawPlayerV3
+    role: StaffRoleOrUnknown
+}
+//#endregion

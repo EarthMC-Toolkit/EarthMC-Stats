@@ -1,4 +1,8 @@
-import type { DBAlliance } from "../types.js"
+import type { 
+    DBAlliance,
+    StaffResponse,
+    StaffMember, StaffRoleOrUnknown
+} from "../types.js"
 
 import type { 
     Channel, Message,
@@ -21,7 +25,7 @@ import {
     PermissionFlagsBits
 } from "discord.js"
 
-import { OfficialAPI, type RawPlayerV3 } from "earthmc"
+import { OfficialAPI } from "earthmc"
 
 import { request } from "undici"
 import { Timestamp } from "firebase-admin/firestore"
@@ -53,38 +57,6 @@ export const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable
 export const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
 export const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
-// TODO: Use this list instead for future-proofing -> https://github.com/jwkerr/staff/blob/master/staff.json
-// Since it uses UUIDs, the OAPI will need to be used to grab the names.
-// export const staff = {
-//     all: () => fastMerge(staff.active, staff.inactive),
-//     active: [
-//         "Fix", "KarlOfDuty", "CorruptedGreed", "1212ra", "PolkadotBlueBear", "RlZ58", "Ebola_chan",
-//         "Fruitloopins", "Shia_Chan", "Professor__Pro", "Barbay1", "WTDpuddles", "Coblobster",
-//         "aas5aa_OvO", "Fijiloopins", "Masrain", "linkeron1", "Warriorrr", "AD31", "Proser",
-//         "Fu_Mu", "Mednis", "yellune", "XxSlayerMCxX", "32Andrew", "KeijoDPutt", "SuperHappyBros", 
-//         "knowlton", "32Basileios", "Shirazmatas", "YellowVictini", "UncleSn", "Zackaree", "_Precise_",
-//         "cactusinapumpkin", "Arkbomb", "Hodin", "BusDuster", "RoseBrugs", "FBI_Bro"
-//     ],
-//     inactive: [
-//         "Mihailovic", "kiadmowi", "Scorpionzzx",
-//         "BigshotWarrior", "TheAmazing_Moe", "jkmartindale"
-//     ]
-// }
-
-interface StaffResponse {
-    owner: string[]
-    admin: string[]
-    developer: string[]
-    staffmanager: string[]
-    moderator: string[]
-    helper: string[]
-}
-
-interface StaffMember {
-    player: RawPlayerV3
-    role: string
-}
-
 export const getStaff = async (): Promise<StaffMember[]> => {
     const res = await request("https://raw.githubusercontent.com/jwkerr/staff/master/staff.json")
         .then(res => res.body.json()) as StaffResponse
@@ -95,13 +67,8 @@ export const getStaff = async (): Promise<StaffMember[]> => {
     // TODO: Store in DB in case OAPI goes down.
     // Re-associate the roles with the UUID and also provide the name.
     return staff.map(player => {
-        const role = Object.keys(res).find(key => res[key].includes(player.uuid)) ?? "Unknown"
-        const sm: StaffMember = { 
-            player,
-            role
-        }
-
-        return sm
+        const role = Object.keys(res).find(key => res[key].includes(player.uuid)) ?? "unknown"
+        return { role: role as StaffRoleOrUnknown, player } satisfies StaffMember
     })
 }
 

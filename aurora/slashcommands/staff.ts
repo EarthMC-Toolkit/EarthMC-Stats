@@ -12,13 +12,22 @@ import {
     paginatorInteraction
 } from '../../bot/utils/fn.js'
 
+import { 
+    staffResponse,
+    type StaffRole, type StaffRoleOrUnknown
+} from "../../bot/types.js"
+
 const slashCmdData = new SlashCommandBuilder()
     .setName("staff")
     .setDescription("Show a list of either active or online staff.")
     .addSubcommand(subCmd => subCmd.setName('list').setDescription('List of all active staff members.'))
     .addSubcommand(subCmd => subCmd.setName('online').setDescription('List of staff currently online.'))
 
-const roleOrder = ["owner", "admin", "developer", "staffmanager", "moderator", "helper"]
+// All roles as array with extra 'unknown' role last in case of OAPI failure.
+export const roleOrder: StaffRoleOrUnknown[] = [
+    ...Object.keys(staffResponse) as StaffRole[], 
+    "unknown"
+]
 
 export async function displayStaff(
     client: Client, interaction: ChatInputCommandInteraction, 
@@ -38,7 +47,7 @@ export async function displayStaff(
         const town = sm.player.town?.name
         const nation = sm.player.nation?.name
 
-        const role = sm.role == "Unknown" ? "Unknown Role" : sm.role
+        const role = sm.role == "unknown" ? "Unknown Role" : sm.role
         const capitalizedRole = role == "staffmanager" ? "Staff Manager" : role.charAt(0).toUpperCase() + role.slice(1)
 
         const affiliation = !town ? "Townless" : (nation ? `${town} (${nation})` : town)
