@@ -182,9 +182,9 @@ export const paginator = async(
     // _forward: ForwardCallback
 ) => {
     // DM messages don't work with component collectors right now
-    if (msg?.channel?.type == ChannelType.DM) {
-        return await msg.edit("DMs do not support buttons yet! Try again in a server.")
-    }
+    // if (msg?.channel?.type == ChannelType.DM) {
+    //     return await msg.edit("DMs do not support buttons yet! Try again in a server.")
+    // }
 
     // Create collector which will listen for a button interaction. (If it passes the filter)
     const collector = msg.createMessageComponentCollector({ 

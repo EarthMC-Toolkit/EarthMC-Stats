@@ -11,23 +11,13 @@ import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import { 
     backtick,
-    devsFooter, fetchError, sortByKey, 
-    getStaff
+    fetchError, sortByKey
 } from '../../bot/utils/fn.js'
+
 import { EMOJI_GOLD } from '../../bot/utils/discord.js'
+import { displayStaff } from './staff.js'
 
 const EMBED_COLOUR = "#d67a82"
-
-async function displayOnlineStaff(client: Client, interaction: ChatInputCommandInteraction) {
-    const onlineStaff = (await getStaff()).filter(sm => sm.player.status.isOnline).map(sm => sm.player.name)
-    return interaction.editReply({embeds: [new EmbedBuilder()
-        .setTitle("Online Activity | Staff")
-        .setDescription(onlineStaff.length >= 1 ? "```" + onlineStaff.join(", ").toString() + "```" : "No staff are online right now! Try again later.")
-        .setColor(EMBED_COLOUR)
-        .setTimestamp()
-        .setFooter(devsFooter(client))
-    ]})
-}
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("online")
@@ -64,7 +54,7 @@ export default {
             }
             case "mods":
             case "staff":
-                displayOnlineStaff(client, interaction)
+                displayStaff(client, interaction, EMBED_COLOUR, true)
                 break
             case "mayors": {
                 const allTowns = await Aurora.Towns.all().catch(() => {})

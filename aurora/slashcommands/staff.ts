@@ -1,31 +1,59 @@
 import {
     type Client,
     type ChatInputCommandInteraction,
+    type ColorResolvable,
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
 import { 
     devsFooter, 
-    staffListEmbed,
-    getStaff
+    getStaff,
+    backtick,
+    paginatorInteraction
 } from '../../bot/utils/fn.js'
-
-// const getStaff = async (activeOnly: boolean) => {
-//     const players = await database.getPlayers()
-//     const staffList = activeOnly ? staff.active : staff.all()
-
-//     const staffPlayers = players.filter(p => staffList.some(sm => sm.toLowerCase() == p.name.toLowerCase()))
-//     return staffPlayers.map(player => {
-//         const id = player?.linkedID
-//         return (!id || id == '') ? player.name.replace(/_/g, "\\_") : `<@${id}>`
-//     })
-// }
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("staff")
     .setDescription("Show a list of either active or online staff.")
     .addSubcommand(subCmd => subCmd.setName('list').setDescription('List of all active staff members.'))
     .addSubcommand(subCmd => subCmd.setName('online').setDescription('List of staff currently online.'))
+
+export async function displayStaff(
+    client: Client, interaction: ChatInputCommandInteraction, 
+    embedColour: ColorResolvable,
+    online: boolean
+) {
+    let onlineStaff = (await getStaff())
+    if (online) onlineStaff = onlineStaff.filter(sm => sm.player.status.isOnline)
+
+    // Alphabetical
+    const sorted = onlineStaff.sort((sm1, sm2) => sm1.player.name.localeCompare(sm2.player.name))
+
+    const data = sorted.map(sm => {
+        const town = sm.player.town?.name
+        const nation = sm.player.nation?.name
+
+        const role = sm.role == "Unknown" ? "**Unknown Role**" : `**${sm.role}**`
+        const affiliation = !town ? "Townless" : (nation ? `${town} (${nation})` : town)
+
+        return `${role} | ${backtick(sm.player.name)} - ${affiliation}`
+    }).join("\n").match(/(?:^.*$\n?){1,10}/mg)
+
+    const embeds: EmbedBuilder[] = []
+
+    const len = data.length
+    for (let i = 0; i < len; i++) {
+        embeds[i] = new EmbedBuilder()
+            .setTitle("Online Activity | Staff")
+            .setDescription(data[i])
+            .setColor(embedColour)
+            .setFooter(devsFooter(client))
+            .setTimestamp()
+    }
+
+    return await interaction.editReply({ embeds: [embeds[0]] })
+        .then(() => paginatorInteraction(interaction, embeds, 0))
+}
 
 export default {
     name: "staff",
@@ -37,27 +65,12 @@ export default {
         const subCmd = interaction.options.getSubcommand()
         switch (subCmd) {
             case "online": {
-                // const ops = await Aurora.Players.online().catch(() => {})
-                // if (!ops) return await interaction.reply({ 
-                //     embeds: [fetchError]
-                //     //ephemeral: true
-                // })
-
-                const onlineStaff = (await getStaff()).filter(sm => sm.player.status.isOnline).map(sm => sm.player.name)
-                const list = "```" + onlineStaff.join(", ").toString() + "```"
-
-                return await interaction.editReply({embeds: [new EmbedBuilder()
-                    .setTitle("Online Activity | Staff")
-                    .setDescription(onlineStaff.length < 1 ? "No staff are online right now! Try again later." : list)
-                    .setThumbnail(client.user.avatarURL())
-                    .setFooter(devsFooter(client))
-                    .setColor("Random")
-                    .setTimestamp()
-                ]})
+                displayStaff(client, interaction, "Random", true)
+                break
             }
             case "list": {
-                const staff = (await getStaff()).map(sm => sm.player.name)
-                return await interaction.editReply({ embeds: [staffListEmbed(client, staff)] })
+                displayStaff(client, interaction, "Random", false)
+                break
             }
             default: return await interaction.editReply({ embeds: [new EmbedBuilder()
                 .setTitle("Invalid Arguments!")
