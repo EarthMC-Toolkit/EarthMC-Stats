@@ -94,12 +94,6 @@ const runCheck = async (client: Client, interaction: ChatInputCommandInteraction
     const zCoord = interaction.options.getInteger("z")
 
     //#region Validate X and Z coords.
-    if (!xCoord || !zCoord) {
-        return interaction.reply({embeds: [defaultEmbed(client)
-            .setDescription("Invalid arguments!\n\nUsage: `/loc <x> <z>`")
-        ], ephemeral: true})
-    }
-
     if (inWorldBorder(xCoord, zCoord)) {
         return interaction.reply({embeds: [defaultEmbed(client)
             .setDescription("Specified coordinates are not inside EarthMC's world border!")
@@ -138,12 +132,6 @@ const runMapLink = (client: Client, interaction: ChatInputCommandInteraction) =>
     const zCoord = interaction.options.getInteger("z")
 
     //#region Validate X and Z coords.
-    if (!xCoord || !zCoord) {
-        return interaction.reply({embeds: [defaultEmbed(client)
-            .setDescription("Invalid arguments!\n\nUsage: `/loc <x> <z>` or `/loc <x> <z> <zoom>`")
-        ], ephemeral: true})
-    }
-
     if (inWorldBorder(xCoord, zCoord)) {
         return interaction.reply({embeds: [defaultEmbed(client)
             .setDescription("Specified coordinates are not inside EarthMC's world border!")

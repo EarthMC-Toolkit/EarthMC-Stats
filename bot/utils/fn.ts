@@ -36,14 +36,14 @@ import path from "path"
 
 export const botDevs = ["Owen3H", "263377802647175170"]
 
-export let queueSubbedChannelArray: string[] = []
-export const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
+// export let queueSubbedChannelArray: string[] = []
+// export const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
 
-export let newsSubbedChannelArray: string[] = []
-export const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
+// export let newsSubbedChannelArray: string[] = []
+// export const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
 
-export let townlessSubbedChannelArray: string[] = []
-export const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
+// export let townlessSubbedChannelArray: string[] = []
+// export const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
 
 export const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
     .setTitle(title)
@@ -51,33 +51,28 @@ export const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
     .setColor(Colors.Red)
     .setTimestamp()
 
-export const serverIssues = errorEmbed("Server Issues", "We are currently unable to reach EarthMC, it's most likely down.")
-export const townyIssues = errorEmbed("Towny Issues", "We are currently unable to fetch Towny data, try again later!" )
-export const dynmapIssues = errorEmbed("Dynmap Issues", "We are currently unable to fetch Dynmap data, try again later!")
+export const serverIssues = errorEmbed("Server Issues", "Currently unable to reach EarthMC, it's most likely down.")
+export const townyIssues = errorEmbed("Towny Issues", "Currently unable to fetch Towny data, try again later!" )
+export const dynmapIssues = errorEmbed("Dynmap Issues", "Currently unable to fetch Dynmap data, try again later!")
 export const databaseError = errorEmbed("Database Error", "An error occurred requesting custom database info!")
 export const fetchError = errorEmbed("Fetch Error", "Unable to fetch required data, please try again!")
 
+const STAFF_LIST_URL = "https://raw.githubusercontent.com/jwkerr/staff/master/staff.json"
 export const getStaff = async (): Promise<StaffMember[]> => {
-    const res = await request("https://raw.githubusercontent.com/jwkerr/staff/master/staff.json")
-        .then(res => res.body.json()) as StaffResponse
+    const staffListRes = await request(STAFF_LIST_URL).then(res => res.body.json()) as StaffResponse
 
-    const staffUuids = Object.values(res).flat()
-    const staff = await OfficialAPI.V3.players(...staffUuids)
+    const staffUuids = Object.values(staffListRes).flat()
+    const staff = await OfficialAPI.V3.players(...staffUuids) // Send a single req with all staff UUIDs.
 
     // TODO: Store in DB in case OAPI goes down.
-    // Re-associate the roles with the UUID and also provide the name.
+    // Re-associate the staff with their role from the list and provide their player data.
     return staff.map(player => {
-        const role = Object.keys(res).find(key => res[key].includes(player.uuid)) ?? "unknown"
+        const keys = Object.keys(staffListRes)
+        const role = keys.find(key => staffListRes[key].includes(player.uuid)) ?? "unknown"
+
         return { role: role as StaffRoleOrUnknown, player } satisfies StaffMember
     })
 }
-
-export const staffListEmbed = (client: Client, arr: string[], active = true) => new EmbedBuilder({
-    title: `Staff List (${active ? "Active" : "Inactive"})`,
-    description: sortAlphabetical(arr).join(", "),
-    footer: devsFooter(client),
-    color: Colors.Green
-}).setThumbnail(client.user.avatarURL()).setTimestamp()
 
 export const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 100
     : residentAmt >= 120 ? 80
@@ -86,17 +81,17 @@ export const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 1
     : residentAmt >= 40 ? 30
     : residentAmt >= 20 ? 10 : 0
 
-export const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
-    : residentAmt >= 40 ? 100
-    : residentAmt >= 30 ? 60
-    : residentAmt >= 20 ? 40
-    : residentAmt >= 10 ? 20
-    : residentAmt < 10 ? 10 : 0
+// export const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
+//     : residentAmt >= 40 ? 100
+//     : residentAmt >= 30 ? 60
+//     : residentAmt >= 20 ? 40
+//     : residentAmt >= 10 ? 20
+//     : residentAmt < 10 ? 10 : 0
 
-export const NOVA = {
-    thumbnail: attachmentFromFile('/bot/images/nova.png', 'nova.png'),
-    newsChannel: "970962923285540915"
-}
+// export const NOVA = {
+//     thumbnail: attachmentFromFile('/bot/images/nova.png', 'nova.png'),
+//     newsChannel: "970962923285540915"
+// }
 
 export const AURORA = {
     thumbnail: attachmentFromFile('/bot/images/aurora.png', 'aurora.png'),

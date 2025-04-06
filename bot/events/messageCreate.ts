@@ -53,16 +53,6 @@ const prefix = (message: Message, str: string) => message.content.startsWith(str
 const msgCreate: DJSEvent = {
     name: 'messageCreate',
     async execute(message: Message) {
-        // TODO: Who does ID belong to? Start labelling what's what you moron.
-        // if (message.author.id == '970963659109060640') {
-        //     const channelID = message.channel.id
-        //     const mapName = 
-        //         channelID == NOVA.newsChannel ? 'nova' : 
-        //         channelID == AURORA.newsChannel ? 'aurora' : null
-                
-        //     if (mapName) return sendNews(message.client, mapName)
-        // }
-    
         if (message.author.bot) return
         if (prefix(message, "/")) return runCmd(message, 1, 'auroraCommands')
     }
