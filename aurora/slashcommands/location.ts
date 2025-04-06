@@ -95,9 +95,11 @@ const runCheck = async (client: Client, interaction: ChatInputCommandInteraction
 
     //#region Validate X and Z coords.
     if (inWorldBorder(xCoord, zCoord)) {
-        return interaction.reply({embeds: [defaultEmbed(client)
+        const embed = defaultEmbed(client)
             .setDescription("Specified coordinates are not inside EarthMC's world border!")
-        ]}).then(m => setTimeout(() => m.delete(), 10000))
+
+        return interaction.reply({ embeds: [embed], ephemeral: true })
+            .then(m => setTimeout(() => m.delete(), 10000))
     }
     //#endregion
 
@@ -106,23 +108,62 @@ const runCheck = async (client: Client, interaction: ChatInputCommandInteraction
 
     const coords: [number, number] = [xCoord, zCoord]
     const loc = await OfficialAPI.V3.location(coords).then(arr => arr[0])
-    
+    if (!loc) return interaction.editReply({embeds: [defaultEmbed(client)
+        .setDescription("Failed to fetch location from the Official API.")
+    ]})  
+
     const embed = new EmbedBuilder()
         .setColor(Colors.Green)
         .setTitle(`Location Info | ${backtick(xCoord)}, ${backtick(zCoord)}`)
 
     const townName = loc.town?.name
+    let desc = ""
+
     if (loc.isWilderness) {
-        embed.setDescription(townName
+        desc = townName
             ? `Location is marked as wilderness but a town is provided. *Schrödinger's location..*\n\n${buildAffiliation(loc)}`
             : `This location is wilderness and does not belong to a town.`
-        )
     } else {
-        embed.setDescription(townName 
+        desc = townName 
             ? buildAffiliation(loc)
             : `This location doesn't belong to a town yet isn't wilderness.\nThe Official API hurt itself in it's own confusion.`
-        )
     }
+
+    // This is pretty much the whole map, there should be some town(s) within this.
+    const radius = { x: 30000, z: 15000 }
+    const nearbyTowns = (await Aurora.Towns.nearby({ x: xCoord, z: zCoord }, radius)).sort((a, b) => {
+        const distA = Math.abs(a.x - xCoord) + Math.abs(a.z - zCoord)
+        const distB = Math.abs(b.x - xCoord) + Math.abs(b.z - zCoord)
+        
+        // The result array isn't sorted by closest, so we have to do it. 
+        return distA - distB
+    })
+
+    // Only provide extra info in the case we got nearby towns. Though it is rare we wouldn't.
+    if (nearbyTowns.length > 0) {
+        desc += "\n\n**Closest Towns**:\n"
+        
+        // Limit to 5 items and avoid OOB if arr has less than 5 already.
+        nearbyTowns.length = Math.min(nearbyTowns.length, 5)
+
+        // We just rawdoggin strings :^)
+        for (let i = 0; i < nearbyTowns.length; i++) {
+            const town = nearbyTowns[i]
+            const dist = Math.abs(town.x - xCoord) + Math.abs(town.z - zCoord)
+
+            let str = town.nation ? `${town.name} (${town.nation})` : town.name
+            str += ` - ${backtick(dist)}m | ${backtick(town.x)}, ${backtick(town.z)}`
+
+            // Don't add new line to last town string.
+            if (i < nearbyTowns.length - 1) { 
+                str += "\n"
+            }
+
+            desc += str
+        }
+    }
+
+    embed.setDescription(desc)
 
     return interaction.editReply({ embeds: [embed] })
 }
