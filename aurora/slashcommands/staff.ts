@@ -18,6 +18,8 @@ const slashCmdData = new SlashCommandBuilder()
     .addSubcommand(subCmd => subCmd.setName('list').setDescription('List of all active staff members.'))
     .addSubcommand(subCmd => subCmd.setName('online').setDescription('List of staff currently online.'))
 
+const roleOrder = ["owner", "admin", "developer", "staffmanager", "moderator", "helper"]
+
 export async function displayStaff(
     client: Client, interaction: ChatInputCommandInteraction, 
     embedColour: ColorResolvable,
@@ -26,17 +28,21 @@ export async function displayStaff(
     let onlineStaff = (await getStaff())
     if (online) onlineStaff = onlineStaff.filter(sm => sm.player.status.isOnline)
 
-    // Alphabetical
-    const sorted = onlineStaff.sort((sm1, sm2) => sm1.player.name.localeCompare(sm2.player.name))
+    // Sort alphabetically
+    //const sorted = onlineStaff.sort((sm1, sm2) => sm1.player.name.localeCompare(sm2.player.name))
+
+    // Sort by role
+    const sorted = onlineStaff.sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role))
 
     const data = sorted.map(sm => {
         const town = sm.player.town?.name
         const nation = sm.player.nation?.name
 
-        const role = sm.role == "Unknown" ? "**Unknown Role**" : `**${sm.role}**`
-        const affiliation = !town ? "Townless" : (nation ? `${town} (${nation})` : town)
+        const role = sm.role == "Unknown" ? "Unknown Role" : sm.role
+        const capitalizedRole = role == "staffmanager" ? "Staff Manager" : role.charAt(0).toUpperCase() + role.slice(1)
 
-        return `${role} | ${backtick(sm.player.name)} - ${affiliation}`
+        const affiliation = !town ? "Townless" : (nation ? `${town} (${nation})` : town)
+        return `**${capitalizedRole}** | ${backtick(sm.player.name)} - ${affiliation}`
     }).join("\n").match(/(?:^.*$\n?){1,10}/mg)
 
     const embeds: EmbedBuilder[] = []
@@ -44,7 +50,7 @@ export async function displayStaff(
     const len = data.length
     for (let i = 0; i < len; i++) {
         embeds[i] = new EmbedBuilder()
-            .setTitle("Online Activity | Staff")
+            .setTitle(online ? "Online Activity | Staff" : "Staff List")
             .setDescription(data[i])
             .setColor(embedColour)
             .setFooter(devsFooter(client))
