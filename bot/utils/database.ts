@@ -1,6 +1,6 @@
 import { cache } from '../constants.js'
 
-import { unixFromDate, divideArray } from "./fn.js"
+import { divideArray } from "./fn.js"
 
 import * as Aurora from "./aurora.js"
 import * as Nova from "./nova.js"
@@ -17,31 +17,42 @@ import type { DBPlayer } from '../types.js'
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
-type PlayerInfo = {
-    discord: string | number
-    lastOnline?: {
-        aurora: number
-    }
-}
+// type PlayerInfo = {
+//     //discord: string | number
+//     name: string
+//     lastOnline?: {
+//         aurora: number
+//     }
+// }
 
-const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
-    if (!players) return null
+// const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
+//     if (!players) return null
+
+//     const player: DBPlayer = players.find(p => p.name.toLowerCase() == name.toLowerCase())
+//     if (!player) return null
+
+//     const playerInfo: PlayerInfo = {
+//         name: player.name
+//     }
+
+//     if (includeTimestamps) {
+//         playerInfo.lastOnline = {
+//             aurora: unixFromDate(player.lastOnline.aurora)
+//         }
+//     }
+    
+//     return playerInfo
+// })
+
+export async function getPlayer(name: string) {
+    const players = await getPlayers()
+    if (!players) throw new Error('Players array could not be found!?')
 
     const player: DBPlayer = players.find(p => p.name.toLowerCase() == name.toLowerCase())
     if (!player) return null
 
-    const playerInfo: PlayerInfo = {
-        discord: player.linkedID
-    }
-
-    if (includeTimestamps) {
-        playerInfo.lastOnline = {
-            aurora: unixFromDate(player.lastOnline.aurora)
-        }
-    }
-    
-    return playerInfo
-})
+    return player
+}
 
 const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
     const skip = !skipCache ? cache.get('players') : null
@@ -83,7 +94,6 @@ async function setPlayers(players: DBPlayer[]) {
 }
 
 export {
-    getPlayerInfo, 
     getPlayers, setPlayers, 
     Aurora, Nova
 }

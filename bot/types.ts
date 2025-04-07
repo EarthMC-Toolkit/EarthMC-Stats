@@ -123,7 +123,6 @@ export interface DBResident {
 
 export interface DBPlayer {
     name: string
-    linkedID?: string | number
     lastOnline: {
         aurora?: Timestamp
     }

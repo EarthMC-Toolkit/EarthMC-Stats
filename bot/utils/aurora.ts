@@ -203,6 +203,12 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
 
 export async function setAlliances(alliances: DBAlliance[]) {
     cache.set('aurora_alliances', alliances)
+
+    // TODO: Add validation to avoid accidental overwrites.
+    // 1. Ensure array type.
+    // 2. Ensure not empty.
+    // 3. Ensure first (or every?) element satisfies DBAlliance.
+
     return allianceCollection().set({ allianceArray: alliances })
 }
 

@@ -205,8 +205,8 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
         
         player.lastOnline[mapName] = now
 
-        const linkedID = opInDB?.linkedID
-        if (linkedID) player.linkedID = linkedID
+        // const linkedID = opInDB?.linkedID
+        // if (linkedID) player.linkedID = linkedID
 
         // Not in DB, add them.
         if (!opInDB) players.push(player)

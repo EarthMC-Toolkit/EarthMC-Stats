@@ -5,12 +5,13 @@ import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
 
 import BaseCommandHelper from "./base.js"
-import { backtick, secToMs } from "../../bot/utils/fn.js"
+import { backtick, secToMs, unixFromDate } from "../../bot/utils/fn.js"
 
 import * as MC from '../../bot/utils/minecraft.js'
 import * as database from '../../bot/utils/database.js'
 
 import { 
+    type DBPlayer,
     type DBResident,
     type MCSessionProfile,
     type SkinOpts,
@@ -30,12 +31,13 @@ const DEFAULT_ABOUT = "/res set about [msg]"
 
 class ResidentHelper extends BaseCommandHelper {
     dbResident: DBResident | Resident = null
+    dbPlayer: DBPlayer
     
     #apiResident: RawPlayerV3 = null
     get apiResident() { return this.#apiResident }
 
     onlinePlayer: { name: string } = null
-    pInfo: any = null
+
     mcProfile: MCSessionProfile = null
     status: "Online" | "Offline"
 
@@ -100,7 +102,10 @@ class ResidentHelper extends BaseCommandHelper {
         }
         
         if (this.dbResident) {
-            this.pInfo = await database.getPlayerInfo(resName).catch(e => console.error(`Database error!\n${e}`))
+            this.dbPlayer = await database.getPlayer(resName).catch(e => {
+                console.error(`DB error occurred getting resident ${resName}:\n${e}`)
+                return null
+            })
         }
         
         this.status = this.onlinePlayer ? "Online" : "Offline"
@@ -191,11 +196,14 @@ class ResidentHelper extends BaseCommandHelper {
     }
 
     addDatesFromDB = () => {
-        const lastOnlineTs = this.pInfo?.lastOnline?.aurora
-        if (!lastOnlineTs || lastOnlineTs == 0) return
+        const lastOnline = this.dbPlayer?.lastOnline
+        if (!lastOnline) return
+
+        const auroraLoTimestamp = unixFromDate(lastOnline.aurora)
+        if (auroraLoTimestamp == 0) return
 
         if (this.status == "Offline") {
-            this.addField("Last Online", `<t:${lastOnlineTs}:R>`, true)
+            this.addField("Last Online", `<t:${auroraLoTimestamp}:R>`, true)
         }
     }
 
