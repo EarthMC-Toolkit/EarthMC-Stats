@@ -32,6 +32,9 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
     .addSubcommand(subCmd => subCmd.setName('clearcache')
         .setDescription('Empties the cache so it will regenerate. May fix potential issues.')
     )
+    .addSubcommand(subCmd => subCmd.setName('backup_alliances')
+        .setDescription('Creates and sends a backup (JSON file) of all alliances currently in the database.')
+    )
     .addSubcommand(subCmd => subCmd.setName('rebuild_alliances')
         .setDescription('Recreates all alliances (that dont yet exist) from based 3merald cache.')
         .addAttachmentOption(opt => opt.setName("cache_file")
@@ -203,7 +206,7 @@ export default {
                     ephemeral: true
                 })
 
-                const json = JSON.stringify(alliances)
+                const json = JSON.stringify(alliances, null, 2) // Pretty print with 2 spaces
                 const buf = Buffer.from(json)
 
                 const file = new AttachmentBuilder(buf, { 
