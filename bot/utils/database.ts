@@ -17,33 +17,6 @@ import type { DBPlayer } from '../types.js'
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
-// type PlayerInfo = {
-//     //discord: string | number
-//     name: string
-//     lastOnline?: {
-//         aurora: number
-//     }
-// }
-
-// const getPlayerInfo = (name: string, includeTimestamps = true) => getPlayers().then(players => {
-//     if (!players) return null
-
-//     const player: DBPlayer = players.find(p => p.name.toLowerCase() == name.toLowerCase())
-//     if (!player) return null
-
-//     const playerInfo: PlayerInfo = {
-//         name: player.name
-//     }
-
-//     if (includeTimestamps) {
-//         playerInfo.lastOnline = {
-//             aurora: unixFromDate(player.lastOnline.aurora)
-//         }
-//     }
-    
-//     return playerInfo
-// })
-
 export async function getPlayer(name: string) {
     const players = await getPlayers()
     if (!players) throw new Error('Players array could not be found!?')

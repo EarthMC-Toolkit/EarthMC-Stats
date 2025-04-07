@@ -28,7 +28,7 @@ const nationDataCollection = () => auroraDoc().collection("nationData")
 const townDataCollection = () => auroraDoc().collection("townData")
 
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
-const playerStatsDataCollection = () => auroraDoc().collection("playerStats").doc("playerStatsDoc")
+const playerStatsCollection = () => auroraDoc().collection("playerStats").doc("playerStatsDoc")
 
 const auroraUrl = 'https://map.earthmc.net'
 
@@ -202,13 +202,19 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
 }
 
 export async function setAlliances(alliances: DBAlliance[]) {
+    if (!Array.isArray(alliances)) {
+        console.warn("Attempted to overwrite alliances with non-array type.")
+        return
+    }
+
+    if (alliances.length < 1) {
+        console.warn("Attempted to overwrite alliances with empty array!")
+        return
+    }
+
+    // TODO: Ensure first (or every?) element satisfies DBAlliance.
+
     cache.set('aurora_alliances', alliances)
-
-    // TODO: Add validation to avoid accidental overwrites.
-    // 1. Ensure array type.
-    // 2. Ensure not empty.
-    // 3. Ensure first (or every?) element satisfies DBAlliance.
-
     return allianceCollection().set({ allianceArray: alliances })
 }
 
@@ -217,13 +223,13 @@ export async function getPlayerStats(skipCache = false): Promise<RawPlayerStatsV
     const cached: RawPlayerStatsV3 = cache.get('aurora_player_stats')
     const skip = !skipCache ? cached : null
 
-    return skip ?? playerStatsDataCollection().get().then(async doc => { 
+    return skip ?? playerStatsCollection().get().then(async doc => { 
         return doc.data()
     }).catch(() => null)
 }
 
 export async function setPlayerStats(playerStats: RawPlayerStatsV3) {
     cache.set('aurora_player_stats', playerStats)
-    return playerStatsDataCollection().set(playerStats)
+    return playerStatsCollection().set(playerStats)
 }
 //#endregion
