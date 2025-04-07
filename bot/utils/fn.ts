@@ -36,15 +36,6 @@ import path from "path"
 
 export const botDevs = ["Owen3H", "263377802647175170"]
 
-// export let queueSubbedChannelArray: string[] = []
-// export const setQueueSubbedChannels = (arr: string[]) => queueSubbedChannelArray = arr
-
-// export let newsSubbedChannelArray: string[] = []
-// export const setNewsSubbedChannels = (arr: string[]) => newsSubbedChannelArray = arr
-
-// export let townlessSubbedChannelArray: string[] = []
-// export const setTownlessSubbedChannels = (arr: string[]) => townlessSubbedChannelArray = arr
-
 export const errorEmbed = (title: string, desc: string) => new EmbedBuilder()
     .setTitle(title)
     .setDescription(desc)
@@ -80,18 +71,6 @@ export const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 1
     : residentAmt >= 60 ? 50
     : residentAmt >= 40 ? 30
     : residentAmt >= 20 ? 10 : 0
-
-// export const novaNationBonus = (residentAmt: number) => residentAmt >= 60 ? 140
-//     : residentAmt >= 40 ? 100
-//     : residentAmt >= 30 ? 60
-//     : residentAmt >= 20 ? 40
-//     : residentAmt >= 10 ? 20
-//     : residentAmt < 10 ? 10 : 0
-
-// export const NOVA = {
-//     thumbnail: attachmentFromFile('/bot/images/nova.png', 'nova.png'),
-//     newsChannel: "970962923285540915"
-// }
 
 export const AURORA = {
     thumbnail: attachmentFromFile('/bot/images/aurora.png', 'aurora.png'),

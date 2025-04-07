@@ -1,6 +1,6 @@
 //#region Imports
-import * as api from "../bot/utils/api.js"
-import * as database from "../bot/utils/database.js"
+import * as api from "./utils/api.js"
+import * as database from "./utils/database.js"
 
 import { 
     formatString,
@@ -31,7 +31,7 @@ import {
     type SeenPlayer
 } from "./types.js"
 
-import { daysBetween, devsFooter } from "../bot/utils/fn.js"
+import { daysBetween, devsFooter } from "./utils/fn.js"
 //#endregion
 
 //#region Call Updates

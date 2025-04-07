@@ -3,7 +3,7 @@ import type {
     MCUserProfile 
 } from '../types.js'
 
-import { jsonReq } from "../utils/fn.js"
+import { jsonReq } from "./fn.js"
 
 class Players {
     static async nameToUUID(name: string) {

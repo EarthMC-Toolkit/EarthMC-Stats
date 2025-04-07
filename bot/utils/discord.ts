@@ -1,4 +1,4 @@
-import { secToMs } from "../../bot/utils/fn.js"
+import { secToMs } from "./fn.js"
 
 //#region Discord Timestamp Formatting
 // Cheat Sheet: https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa

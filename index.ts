@@ -25,9 +25,8 @@ import { readTsFiles } from "./bot/utils/fn.js"
 const prod = process.env.NODE_ENV == "production"
 setProduction(prod)
 
-// NOTE:
-// PM2 ecosystem file sets NODE_ENV depending on how we started it.
-// Our .env and .env.dev files should always have NODE_ENV set to "development" for starting without PM2.
+// NOTE: PM2 ecosystem file sets NODE_ENV depending on how we started it.
+//       Any local .env files should always have NODE_ENV set to "development" for starting without PM2.
 console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
 //#endregion
 
@@ -72,15 +71,20 @@ initializeApp({
 })
 
 const db = getFirestore()
-db.settings({ ignoreUndefinedProperties: true, preferRest: true })
+db.settings({
+    ignoreUndefinedProperties: true,
+    preferRest: true
+})
 
 setDatabase(db)
 //#endregion
 
 //#region Event Handler
-const eventFiles = readTsFiles(`bot/events`)
-for (const file of eventFiles) {
-    const eventFile = await import(`./bot/events/${file}`)
+const EVENTS_PATH = `bot/events`
+const EVENT_FILES = readTsFiles(EVENTS_PATH)
+
+for (const file of EVENT_FILES) {
+    const eventFile = await import(`./${EVENTS_PATH}/${file}`)
     const event = eventFile.default as DJSEvent
 
     if (event.once) client.once(event.name, (...args) => event.execute(...args)) 

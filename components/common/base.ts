@@ -12,7 +12,6 @@ export default abstract class BaseCommandHelper {
     constructor(client: Client) {
         this.client = client
         this.embed.setFooter(fn.devsFooter(client)).setTimestamp()
-        //this.isNova = isNova
     }
 
     abstract init(input: string): Promise<boolean>;

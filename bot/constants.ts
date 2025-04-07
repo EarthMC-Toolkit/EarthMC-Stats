@@ -6,7 +6,7 @@ import type { ExtendedClient, MapInstance, SeenPlayer } from "./types.js"
 import { 
     type DocReference, 
     Aurora as AuroraDB
-} from "../bot/utils/database.js"
+} from "./utils/database.js"
 
 import TTLCache from '@isaacs/ttlcache'
 

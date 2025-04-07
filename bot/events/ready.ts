@@ -4,8 +4,6 @@ import { initUpdates } from "../updater.js"
 
 import { 
     getProduction
-    // queueSubbedChannels,
-    // townlessSubbedChannels 
 } from "../constants.js"
 
 import { 
@@ -53,42 +51,30 @@ const rdyEvent: DJSEvent = {
         }, 90 * 1000)
 
         await initUpdates()
-
-        // TODO: Re-enable if live stuff comes back.
-        // if (prod) {
-        //     queueSubbedChannels.get().then(doc => { 
-        //         const { channelIDs } = doc.data()
-        //         fn.setQueueSubbedChannels(channelIDs)
-    
-        //         console.log(`${fn.time()} | Queue subbed channels retrieved. Length: ${channelIDs.length}`)
-        //     })
-    
-        //     townlessSubbedChannels.get().then(doc => { 
-        //         const { channelIDs } = doc.data()
-        //         fn.setTownlessSubbedChannels(channelIDs)
-    
-        //         console.log(`${fn.time()} | Townless subbed channels retrieved. Length: ${channelIDs.length}`)
-        //     })
-        // }
     }
 }
 
+const CMDS_PATH = `components/commands`
+const SLASH_CMDS_PATH = `components/slashcommands`
+const BUTTONS_PATH = `components/buttons`
+//const MODALS_PATH = `components/modals`
+
 async function registerCommands(client: ExtendedClient) {
-    const auroraCmds = fn.readTsFiles(`aurora/commands`)
+    const auroraCmds = fn.readTsFiles(CMDS_PATH)
 
     for (const file of auroraCmds) {
-        const commandFile = await import(`../../aurora/commands/${file}`)
+        const commandFile = await import(`../../${CMDS_PATH}/${file}`)
         const cmd = commandFile.default as BaseCommand
 
         if (cmd.disabled) continue
         client.auroraCommands.set(cmd.name, cmd)
     }
     
-    const slashCmds = fn.readTsFiles(`aurora/slashcommands`)
+    const slashCmds = fn.readTsFiles(SLASH_CMDS_PATH)
     const data: ApplicationCommandDataResolvable[] = []
 
     for (const file of slashCmds) {
-        const commandFile = await import(`../../aurora/slashcommands/${file}`)
+        const commandFile = await import(`../../${SLASH_CMDS_PATH}/${file}`)
         const slashCmd = commandFile.default as SlashCommand<SlashCommandBuilder>
 
         if (slashCmd.disabled) continue
@@ -121,11 +107,10 @@ async function registerCommands(client: ExtendedClient) {
 }
 
 async function registerButtons(client: ExtendedClient) {
-    const buttonsPath = `aurora/buttons`
-    const buttons = fn.readTsFiles(buttonsPath) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
+    const buttons = fn.readTsFiles(BUTTONS_PATH) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
 
     for (const file of buttons) {
-        const buttonFile = await import(`../../${buttonsPath}/${file}`)
+        const buttonFile = await import(`../../${BUTTONS_PATH}/${file}`)
         const button: Button = buttonFile.default
 
         if (!button) {
