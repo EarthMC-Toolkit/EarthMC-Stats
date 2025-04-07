@@ -37,8 +37,7 @@ const rdyEvent: DJSEvent = {
             `${client.guilds.cache.size} Servers`, 'towns being created.',
             'emctoolkit.vercel.app', 'for map updates', 'for /help', 
             'nations die', 'Wales boat sink', 'towns fall', 'players travel',
-            'admin abuse', 'alliances form', 'the queue grow',
-            'Fix sleep', 'townless players struggle'
+            'admin abuse', 'alliances form', 'Fix sleep', 'townless players struggle'
         ]
     
         setInterval(() => {

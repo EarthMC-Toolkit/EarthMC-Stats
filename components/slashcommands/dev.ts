@@ -3,7 +3,8 @@ import {
     type ChatInputCommandInteraction, 
     type GuildMember, 
     Colors, EmbedBuilder,
-    SlashCommandBuilder
+    SlashCommandBuilder,
+    AttachmentBuilder
 } from "discord.js"
 
 import { backtick, botDevs } from '../../bot/utils/fn.js'
@@ -193,6 +194,27 @@ export default {
 
                 return await interaction.editReply({ content: `Cache has been cleared.` })
             }
+            case "backup_alliances": {
+                await interaction.deferReply()
+
+                const alliances = await Aurora.getAlliances(true)
+                if (!alliances) return await interaction.reply({
+                    content: `Failed to fetch alliances.`,
+                    ephemeral: true
+                })
+
+                const json = JSON.stringify(alliances)
+                const buf = Buffer.from(json)
+
+                const file = new AttachmentBuilder(buf, { 
+                    name: `alliances-${new Date().toISOString()}.json` 
+                })
+
+                return await interaction.followUp({
+                    content: `Successfully created a backup of alliances.`,
+                    files: [file]
+                })
+            }
             case "rebuild_alliances": {
                 await interaction.deferReply()
 
@@ -207,24 +229,30 @@ export default {
                 await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
 
                 const alliances = await Aurora.getAlliances(true)
-                if (!alliances) {
-                    return await interaction.reply({ content: `Failed to fetch alliances.`, ephemeral: true })
-                }
+                if (!alliances) return await interaction.reply({
+                    content: `Failed to fetch alliances.`,
+                    ephemeral: true
+                })
 
                 const skip = [
-                    "Holy Roman Empire", 
-                    "Organization of Free Nations", 
-                    "Realm of South Africa and Antartica",
-                    "United Aurora Accord",
-                    "Realm of South Africa",
-                    "Federation Of Uzbekistan",
-                    "American Liberty Coalition"
+                    "HRE", "Holy Roman Empire", 
+                    "OFN", "Organization of Free Nations", 
+                    "RSAA", "Realm of South Africa and Antartica",
+                    "UAA", "United Aurora Accord",
+                    "RSA", "Realm of South Africa",
+                    "Uzbek", "Federation Of Uzbekistan",
+                    "ALC", "American Liberty Coalition",
+                    "Africa"
                 ]
                 
                 for (const cachedAlliance of cachedAlliances) {
                     if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
                     if (alliances.some(a => a.fullName.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
 
+                    // Exists already
+
+
+                    // Doesn't exist already
                     alliances.push({
                         allianceName: cachedAlliance.name.replaceAll(" ", "_"),
                         fullName: cachedAlliance.name,

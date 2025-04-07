@@ -1,18 +1,17 @@
-//@ts-nocheck
-import { cache, db } from '../constants.js'
+// import { cache, db } from '../constants.js'
 
-export async function getAlliances() {
-    const cachedAlliances = cache.get('alliances')
-    if (!cachedAlliances) {
-        const allianceDoc = db.collection("alliances").doc("alliancesDoc")
+// export async function getAlliances() {
+//     const cachedAlliances = cache.get('alliances')
+//     if (!cachedAlliances) {
+//         const allianceDoc = db.collection("alliances").doc("alliancesDoc")
 
-        return allianceDoc.get()
-            .then(async doc => doc.data().allianceArray)
-            .catch(console.log)
-    }
+//         return allianceDoc.get()
+//             .then(async doc => doc.data().allianceArray)
+//             .catch(console.log)
+//     }
 
-    return cachedAlliances
-}
+//     return cachedAlliances
+// }
 
 //#region OLD & UNUSED. COMMENTED FOR ARCHIVE PURPOSES.
 // const novaUrl = 'https://earthmc.net/map/nova/'

@@ -4,7 +4,6 @@ import type { Firestore } from "firebase-admin/firestore"
 import type { ExtendedClient, MapInstance, SeenPlayer } from "./types.js"
 
 import { 
-    type DocReference, 
     Aurora as AuroraDB
 } from "./utils/database.js"
 
@@ -26,15 +25,15 @@ export function setClient(val: ExtendedClient) {
 }
 
 let db: Firestore = null
-let queueSubbedChannels: DocReference = null
-let townlessSubbedChannels: DocReference = null
+//let queueSubbedChannels: DocReference = null
+//let townlessSubbedChannels: DocReference = null
 
 const setDatabase = (instance: Firestore) => {
     db = instance
 
-    const subsCollection = db.collection("subs")
-    queueSubbedChannels = subsCollection.doc("queue")
-    townlessSubbedChannels = subsCollection.doc("townless")
+    //const subsCollection = db.collection("subs")
+    //queueSubbedChannels = subsCollection.doc("queue")
+    //townlessSubbedChannels = subsCollection.doc("townless")
 }
 
 const AURORA: MapInstance = { 
@@ -43,13 +42,11 @@ const AURORA: MapInstance = {
 }
 
 // We update this every x seconds, so expiry isn't needed.
-const cache = new TTLCache<string, any>({ ttl: Infinity })
+export const cache = new TTLCache<string, any>({ ttl: Infinity })
 
 export const lastSeenPlayers = new Map<string, SeenPlayer>()
 
 export {
-    cache, db, setDatabase,
-    townlessSubbedChannels,
-    queueSubbedChannels,
+    db, setDatabase,
     AURORA
 }
