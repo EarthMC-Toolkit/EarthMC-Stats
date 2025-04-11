@@ -328,7 +328,7 @@ export const defaultSort = <V extends object>(arr: V[]) => sortByOrder(arr, [{
     callback: (k: string) => k.toLowerCase()
 }])
 
-export const defaultSortAlliance = (arr: DBAlliance[]) => sortByOrder(arr, [{ 
+export const defaultSortAlliances = (arr: DBAlliance[]) => sortByOrder(arr, [{ 
     key: "residents"
 }, { 
     key: "area"

@@ -13,7 +13,7 @@ import type { AllianceType, DBAlliance } from "../../bot/types.js"
 import { 
     ArgsHelper,
     AURORA, botDevs,
-    defaultSortAlliance,
+    defaultSortAlliances,
     fastMerge, isNumeric,
     backtick, backticks,
     jsonReq, paginator,
@@ -1096,9 +1096,11 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
     const arg2 = args[1]?.toLowerCase()
     const arg3 = args[2]?.toLowerCase()
 
+    let key = ""
+
     // /alliances <option>
-    if (!arg2) defaultSortAlliance(alliances)
-    else if (arg2 == "towns") {
+    if (!arg2) defaultSortAlliances(alliances)
+    if (arg2 == "towns") {
         alliances.sort((a, b) => {
             if (b.towns > a.towns) return 1
             if (b.towns < a.towns) return -1
@@ -1119,19 +1121,22 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
             if (b.area < a.area) return -1
         })
     } else { // /alliances <option> <option> ... ...
-        defaultSortAlliance(alliances)
-
-        const arg1 = args[0]?.toLowerCase()
         const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => 
             a.allianceName.toLowerCase().includes(key) ||
             a.fullName.toLowerCase().includes(key)
         )
 
-        if (arg1 && arg1 == "search") {
-            foundAlliances = filterAlliances(alliances, arg2)
-            searching = true
-        } else if (arg2 == "search") { // /alliance list search
-            foundAlliances = filterAlliances(alliances, arg3)
+        // Everything after "search" arg must be key.
+        const searchArgIdx = args.findIndex(a => a.toLowerCase() == "search")
+        if (searchArgIdx > -1) {
+            key = args.slice(searchArgIdx + 1).join(" ").toLowerCase() // Ex: `/alliances search Union of` -> `Union of`
+            if (key == "") return m.edit({embeds: [errorEmbed(message)
+                .setTitle("Searching unsuccessful")
+                .setDescription("No key was specified. I can't search without one :)")
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+            
+            // At this point we have a search arg and a key, begin searching.
+            foundAlliances = filterAlliances(alliances, key)
             searching = true
         }
     }
@@ -1140,12 +1145,17 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
     const embeds: EmbedBuilder[] = []
 
     //#region Search or send all
+    // TODO: Maybe just place this where `searching = true` is to get rid of this check.
     if (searching) {
         if (foundAlliances.length == 0) return m.edit({embeds: [errorEmbed(message)
             .setTitle("Searching unsuccessful")
             .setDescription("Could not find any alliances matching that key.")
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
+        defaultSortAlliances(foundAlliances)
+
+        // TODO: Fix the possibility where current .match logic could causes issues.
+        //       If something happens to get wrapped, the alliance could span onto another page.
         const allData = foundAlliances.map((alliance, index) => {
             const nameStr = hasDiscord(alliance) 
                 ? `[${getNameOrLabel(alliance)}](${alliance.discordInvite})` 
@@ -1165,7 +1175,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
         const len = allData.length
         for (let i = 0; i < len; i++) {
             embeds[i] = successEmbed(message)
-                .setTitle("List of Alliances")
+                .setTitle(`List of Alliances | Filtered by key: ${backtick(key)}`)
                 .setDescription(allData[i])
         }
 
