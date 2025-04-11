@@ -1122,8 +1122,10 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
         defaultSortAlliance(alliances)
 
         const arg1 = args[0]?.toLowerCase()
-        const filterAlliances = (arr: DBAlliance[], key: string) => 
-            arr.filter(a => a.allianceName.toLowerCase().includes(key))
+        const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => 
+            a.allianceName.toLowerCase().includes(key) ||
+            a.fullName.toLowerCase().includes(key)
+        )
 
         if (arg1 && arg1 == "search") {
             foundAlliances = filterAlliances(alliances, arg2)
@@ -1144,7 +1146,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
             .setDescription("Could not find any alliances matching that key.")
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-        const allData = alliances.map((alliance, index) => {
+        const allData = foundAlliances.map((alliance, index) => {
             const nameStr = hasDiscord(alliance) 
                 ? `[${getNameOrLabel(alliance)}](${alliance.discordInvite})` 
                 : `**${getNameOrLabel(alliance)}**`
