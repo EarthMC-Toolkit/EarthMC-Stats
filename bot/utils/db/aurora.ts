@@ -1,6 +1,3 @@
-import { cache } from '../constants.js'
-import { request } from "undici"
-
 import  { 
     endpoint,
     type RawPlayerStatsV3,
@@ -8,18 +5,19 @@ import  {
     type SquaremapPlayersResponse
 } from "earthmc"
 
-import type { 
-    DBAlliance, DBResident, 
-    DBSquaremapNation, DBSquaremapTown
-} from '../types.js'
+import { request } from "undici"
+import { db, cache } from '../../constants.js'
 
 import { 
     divideArray, 
     fastMerge,
     sortByOrder 
-} from "./fn.js"
+} from "../fn.js"
 
-import { db } from "../constants.js"
+import type {
+    DBAlliance, DBResident, 
+    DBSquaremapNation, DBSquaremapTown
+} from '../../types.js'
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -30,12 +28,12 @@ const townDataCollection = () => auroraDoc().collection("townData")
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
 const playerStatsCollection = () => auroraDoc().collection("playerStats").doc("playerStatsDoc")
 
-const auroraUrl = 'https://map.earthmc.net'
+export const AURORA_MAP_URL = 'https://map.earthmc.net'
 
 export const getMapData = () => endpoint.mapData<SquaremapMapResponse>('aurora')
 
 export const getOnlinePlayerData = async () => {
-    const res = await request(`${auroraUrl}/tiles/players.json`)
+    const res = await request(`${AURORA_MAP_URL}/tiles/players.json`)
     return await res.body.json() as SquaremapPlayersResponse
 }
 
@@ -51,10 +49,9 @@ export async function setResidents(residents: DBResident[]) {
     cache.set('aurora_residents', residents)
 
     const dividedResidentsArray = divideArray(residents, 3)
-    let counter = 0
-
     const batch = db.batch()
 
+    let counter = 0
     for (const resident of dividedResidentsArray) {      
         counter++
 

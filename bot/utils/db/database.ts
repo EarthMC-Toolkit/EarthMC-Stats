@@ -1,18 +1,13 @@
-import { cache } from '../constants.js'
-
-import { divideArray } from "./fn.js"
-
-import * as Aurora from "./aurora.js"
-import * as Nova from "./nova.js"
-
-import { db } from "../constants.js"
 import type { 
     DocumentReference, 
     DocumentSnapshot, 
     DocumentData 
 } from "firebase-admin/firestore"
 
-import type { DBPlayer } from '../types.js'
+import { divideArray } from "../fn.js"
+import { db, cache } from '../../constants.js'
+
+import type { DBPlayer } from '../../types.js'
 
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
@@ -66,7 +61,8 @@ async function setPlayers(players: DBPlayer[]) {
     await batch2.commit()
 }
 
+export * as Aurora from "./aurora.js"
+
 export {
-    getPlayers, setPlayers, 
-    Aurora, Nova
+    getPlayers, setPlayers
 }

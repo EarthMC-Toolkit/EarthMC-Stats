@@ -7,7 +7,7 @@ import {
 import { Aurora } from 'earthmc'
 import { fastMerge, fetchError, paginatorInteraction } from '../../bot/utils/fn.js'
 import { lastSeenPlayers } from "../../bot/constants.js"
-import { getResidents } from "../../bot/utils/aurora.js"
+import { getResidents } from "../../bot/utils/db/aurora.js"
 
 const embed = (len: number, desc: string, footer?: { text: string, iconURL?: string }) => {
     const builder = new EmbedBuilder()
