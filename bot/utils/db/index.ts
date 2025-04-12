@@ -12,6 +12,7 @@ import type { DBPlayer } from '../../types.js'
 export type DocSnapshot = DocumentSnapshot<DocumentData>
 export type DocReference = DocumentReference
 
+//#region Map-independent
 export async function getPlayer(name: string) {
     const players = await getPlayers()
     if (!players) throw new Error('Players array could not be found!?')
@@ -22,7 +23,7 @@ export async function getPlayer(name: string) {
     return player
 }
 
-const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
+export async function getPlayers(skipCache = false): Promise<DBPlayer[]> {
     const skip = !skipCache ? cache.get('players') : null
     if (skip) return skip
 
@@ -34,7 +35,7 @@ const getPlayers = async (skipCache = false): Promise<DBPlayer[]> => {
 // FIRESTORE LIMITS:
 // - 500 writes (set, update, delete)
 // - 10MB per transaction
-async function setPlayers(players: DBPlayer[]) {
+export async function setPlayers(players: DBPlayer[]) {
     cache.set('players', players, { ttl: 298 * 1000 }) // TODO: ttl could be Infinity since we calling this on interval anyway.
 
     const dividedPlayerArray = divideArray(players, 8)
@@ -60,9 +61,6 @@ async function setPlayers(players: DBPlayer[]) {
     await batch1.commit()
     await batch2.commit()
 }
+//#endregion
 
-export * as Aurora from "./aurora.js"
-
-export {
-    getPlayers, setPlayers
-}
+export * as AuroraDB from "./aurora.js"

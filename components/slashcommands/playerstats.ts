@@ -10,7 +10,7 @@ import {
 } from "discord.js"
 
 import type { SlashCommand } from "../../bot/types.js"
-import * as database from "../../bot/utils/database.js"
+import * as database from "../../bot/utils/db/index.js"
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
 
 const desc = "Displays various total stats by players over the servers lifetime. Kills/deaths, play time etc."
@@ -46,7 +46,7 @@ const playerStatsCmd: SlashCommand<typeof slashCmdData> = {
 
         // Try fall back to DB or show err embed as last resort.
         if (!pStats || Object.keys(pStats).length < 1) {
-            pStats = await database.Aurora.getPlayerStats().catch(e => { 
+            pStats = await database.AuroraDB.getPlayerStats().catch(e => { 
                 console.error("Error getting player stats from the DB:\n" + e)
                 return null
             })

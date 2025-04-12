@@ -7,7 +7,7 @@ import {
 
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
-import * as database from "../../bot/utils/database.js"
+import * as database from "../../bot/utils/db/index.js"
 import type { AllianceType, DBAlliance } from "../../bot/types.js"
 
 import { 
@@ -131,10 +131,12 @@ export default {
         if (commandName == "/meganations" || commandName == "meganations") return sendAllianceList(message, m, args, 'mega')
         if (commandName == "/pacts" || commandName == "pacts") return sendAllianceList(message, m, args, 'normal') // Normal/pacts only.
 
-        const arg1Lower = args[0]?.toLowerCase()
+        // These are subcmds after the actual /alliance or /a cmd.
+        const arg1 = args[0]?.toLowerCase() // /a <arg1>
+        const arg2 = args[1]?.toLowerCase() // /a <arg1> <arg2>
 
         // /alliances or /alliance list
-        if (commandName == "/alliances" || commandName == "alliances" || arg1Lower == "list") {
+        if (commandName == "/alliances" || commandName == "alliances" || arg1 == "list") {
             return sendAllianceList(message, m, args, 'all') // Includes all types.
         }
         
@@ -144,20 +146,20 @@ export default {
         }
 
         // /alliance <allianceName>
-        if (args.length == 1 && !subCmds.includes(arg1Lower)) {
+        if (args.length == 1 && !subCmds.includes(arg1)) {
             return sendSingleAlliance(client, message, m, args)
         }
 
         // There is an argument, but not an editor one, must be a sub cmd.
-        if (arg1Lower && !editorArgs.includes(arg1Lower)) {
-            if (arg1Lower == "online") {
+        if (arg1 && !editorArgs.includes(arg1)) {
+            if (arg1 == "online") {
                 // TODO: Do this in getAlliance() so we dont req ops twice. 
                 const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
                 if (!ops) return m.edit({embeds: [errorEmbed(message)
                     .setTitle(`Error fetching online players`)
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const foundAlliance = await database.Aurora.getAlliance(args[1])
+                const foundAlliance = await database.AuroraDB.getAlliance(arg2)
                 if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                     .setTitle("Error fetching alliance")
                     .setDescription("That alliance does not exist! Please try again.")
@@ -190,8 +192,8 @@ export default {
                 return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
             }
 
-            if (arg1Lower == "score") {
-                const foundAlliance = await database.Aurora.getAlliance(args[1])
+            if (arg1 == "score") {
+                const foundAlliance = await database.AuroraDB.getAlliance(args[1])
                 if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                     .setTitle("Error fetching alliance")
                     .setDescription("That alliance does not exist! Please try again.")
@@ -251,19 +253,15 @@ export default {
 
         const seniorEditor = message.member.roles.cache.has(seniorEditorID)
 
-        // These are subcmds after the actual /alliance or /a cmd.
-        const arg1 = args[0]?.toLowerCase() // /a <arg1>
-        const arg2 = args[1]?.toLowerCase() // /a <arg1> <arg2>
-
         // Checks the given alliances for non-existent nations.
         if (arg1 == "validate") {
-            const foundAlliance = await database.Aurora.getAlliance(arg2)
+            const foundAlliance = await database.AuroraDB.getAlliance(arg2)
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                 .setTitle("Error fetching alliance")
                 .setDescription("That alliance does not exist! Please try again.")
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-            const nations = await database.Aurora.getNations()
+            const nations = await database.AuroraDB.getNations()
             const existing = nations.filter(n => foundAlliance.nations.includes(n.name))
 
             const nationsLen = foundAlliance.nations.length
@@ -312,7 +310,7 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
             }
             
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
 
             const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
             if (foundAlliance) return m.edit({embeds: [errorEmbed(message)
@@ -336,7 +334,7 @@ export default {
             })
 
             try {
-                await database.Aurora.setAlliances(alliances)
+                await database.AuroraDB.setAlliances(alliances)
             } catch(err: any) {
                 console.error(`[/a new] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -398,7 +396,7 @@ export default {
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             //#endregion
 
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
             
             const allianceExists = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
             if (allianceExists) return m.edit({embeds: [errorEmbed(message)
@@ -462,7 +460,7 @@ export default {
             }
 
             //#region Nations
-            const nations = await database.Aurora.getNations()
+            const nations = await database.AuroraDB.getNations()
 
             const nationsSkipped = []
             const nationsAdded = []
@@ -503,7 +501,7 @@ export default {
 
             try {
                 alliances.push(alliance)
-                await database.Aurora.setAlliances(alliances)
+                await database.AuroraDB.setAlliances(alliances)
             } catch(err: any) {
                 console.error(`[/a wizard] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -531,7 +529,7 @@ export default {
         }
         
         if (arg1 == "rename") {
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
 
             const allianceName = arg2
             const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
@@ -547,7 +545,7 @@ export default {
             foundAlliance.allianceName = args[2]
             alliances[allianceIndex] = foundAlliance
             
-            database.Aurora.setAlliances(alliances)
+            database.AuroraDB.setAlliances(alliances)
 
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Renamed")
@@ -563,7 +561,7 @@ export default {
                 .setColor(Colors.Orange)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
 
             const allianceName = arg2
             const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
@@ -576,7 +574,7 @@ export default {
             const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
 
             alliances.splice(allianceIndex, 1)
-            database.Aurora.setAlliances(alliances)
+            database.AuroraDB.setAlliances(alliances)
         
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Disbanded")
@@ -585,7 +583,7 @@ export default {
         }
         
         if (arg1 == "add") { // Adding nation(s) to an alliance
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
             const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
             
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
@@ -618,7 +616,7 @@ export default {
                 foundAlliance.nations = []
             }
 
-            const nations = await database.Aurora.getNations()
+            const nations = await database.AuroraDB.getNations()
 
             const nationsSkipped: string[] = []
             const nationsAdded: string[] = []
@@ -646,7 +644,7 @@ export default {
             alliances[allianceIndex] = foundAlliance
 
             if (nationsAdded.length > 0) {
-                await database.Aurora.setAlliances(alliances)
+                await database.AuroraDB.setAlliances(alliances)
             }
             
             const name = getNameOrLabel(foundAlliance)
@@ -664,7 +662,7 @@ export default {
         } 
         
         if (arg1 == "remove") {
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
             const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
             
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
@@ -723,7 +721,7 @@ export default {
             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
 
             alliances[allianceIndex] = foundAlliance
-            database.Aurora.setAlliances(alliances).catch(console.error)
+            database.AuroraDB.setAlliances(alliances).catch(console.error)
 
             return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -739,7 +737,7 @@ export default {
             
             //#region /a set leader
             if (arg2 == "leader") {
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
                 const allianceName = args[2]
 
                 const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -772,7 +770,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                 alliances[allianceIndex] = foundAlliance
-                database.Aurora.setAlliances(alliances).catch(console.error)
+                database.AuroraDB.setAlliances(alliances).catch(console.error)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -783,7 +781,7 @@ export default {
 
             //#region /a set discord
             if (arg2 == "discord" || arg2 == "invite") {
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
                 const allianceName = args[2]
 
                 const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -816,7 +814,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
-                database.Aurora.setAlliances(alliances).catch(console.error)
+                database.AuroraDB.setAlliances(alliances).catch(console.error)
 
                 return m.edit({embeds: [successEmbed(message)
                     .setColor(removing ? Colors.Orange : Colors.DarkBlue)
@@ -831,7 +829,7 @@ export default {
 
             //#region /a set flag
             if (arg2 == "image" || arg2 == "flag") {
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
 
                 const allianceName = args[2]
                 const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -846,7 +844,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance   
 
-                database.Aurora.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -858,7 +856,7 @@ export default {
 
             //#region /a set type
             if (arg2 == "type") { 
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
 
                 const allianceName = args[2]
                 const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -884,7 +882,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
                 alliances[allianceIndex] = foundAlliance   
-                database.Aurora.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -895,7 +893,7 @@ export default {
             
             //#region /a set colours
             if (arg2 == "colours" || arg2 == "colors") {
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
 
                 const allianceName = args[2]
                 const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -920,7 +918,7 @@ export default {
                 } 
                 else alliances[allianceIndex] = foundAlliance
 
-                database.Aurora.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -931,7 +929,7 @@ export default {
             
             //#region /a set fullname
             if (arg2 == "fullname" || arg2 == "label") {
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
 
                 const allianceName = args[2]
                 const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -951,7 +949,7 @@ export default {
                 }
                 else alliances[allianceIndex] = foundAlliance
 
-                database.Aurora.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle("Alliance Updated | " + foundAlliance.allianceName)
@@ -966,7 +964,7 @@ export default {
         }
         
         if (arg1 == "merge") {
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
 
             const allianceName = arg2
             const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
@@ -999,7 +997,7 @@ export default {
             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
             alliances[allianceIndex] = foundAlliance
-            database.Aurora.setAlliances(alliances)
+            database.AuroraDB.setAlliances(alliances)
         
             return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -1018,7 +1016,7 @@ export default {
             const len = backupData.length
             const restored = []
             
-            const alliances = await database.Aurora.getAlliances()
+            const alliances = await database.AuroraDB.getAlliances()
 
             for (let i = 0; i < len; i++) { 
                 const alliance = backupData[i]
@@ -1030,7 +1028,7 @@ export default {
                 }
             }
 
-            await database.Aurora.setAlliances(alliances)
+            await database.AuroraDB.setAlliances(alliances)
                     
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Backup Successful")
@@ -1064,10 +1062,10 @@ const hasDiscord = (a: DBAlliance) => {
 }
 
 async function sendAllianceList(message: Message, m: Message, args: string[], type: string) {
-    let alliances = await database.Aurora.getAlliances()
+    let alliances = await database.AuroraDB.getAlliances()
     alliances = type.toLowerCase() == 'all' ? alliances : alliances.filter(a => !!a.type && (a.type.toLowerCase() == type.toLowerCase()))
 
-    const nations = await database.Aurora.getNations()
+    const nations = await database.AuroraDB.getNations()
     const alliancesLen = alliances.length
 
     for (let i = 0; i < alliancesLen; i++) {
@@ -1212,7 +1210,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
 }
 
 async function sendSingleAlliance(client: Client, message: Message, m: Message, args: string[]) {
-    const foundAlliance = await database.Aurora.getAlliance(args[0])
+    const foundAlliance = await database.AuroraDB.getAlliance(args[0])
     if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
         .setTitle("Error fetching alliance")
         .setDescription("That alliance does not exist! Please try again.")

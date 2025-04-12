@@ -21,7 +21,7 @@ import {
 import { AURORA, auroraNationBonus, backtick } from "../../bot/utils/fn.js"
 
 import * as DiscordUtils from "../../bot/utils/discord.js"
-import * as database from "../../bot/utils/database.js"
+import * as database from "../../bot/utils/db/index.js"
 
 import News from "../../bot/objects/News.js"
 import BaseCommandHelper from "./base.js"
@@ -119,7 +119,7 @@ class NationHelper extends BaseCommandHelper {
     }
 
     async fetchAffiliatedAlliances() {
-        const alliances = await database.Aurora.getAlliances()
+        const alliances = await database.AuroraDB.getAlliances()
         if (alliances) {
             console.error("Failed to fetch alliances.")
             return []

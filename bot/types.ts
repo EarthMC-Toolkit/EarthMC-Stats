@@ -114,7 +114,7 @@ export type DBAlliance = {
 }>
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
-export interface DBResident {
+export type DBResident = {
     name: string
     townName: string
     townNation: string
@@ -144,7 +144,7 @@ export type DBSquaremapTown = SquaremapTown & TownInfo
 //export type DBNation = Nation & CustomNationInfo
 export type DBSquaremapNation = SquaremapNation & CustomNationInfo
 
-export interface SkinOpts {
+export type SkinOpts = {
     view: SkinType2D | SkinType3D
     subject: string | number
     size?: number
@@ -167,14 +167,14 @@ export const SkinType3D = {
     FULL: 'full'
 } as const
 
-export interface TownDataItem {
+export type TownDataItem = {
     name: string
     nation: string
     residents?: string[]
     onlineResidents: string[]
 }
 
-export interface TownItem {
+export type TownItem = {
     name: string
     nation: string
     chunks: number
@@ -182,14 +182,14 @@ export interface TownItem {
     onlineResidents?: string[]
 }
 
-export interface NationItem {
+export type NationItem = {
     name: string
     residents: string[]
     onlineResidents: string[]
     chunks: number
 }
 
-export interface SeenPlayer extends SquaremapOnlinePlayer {
+export type SeenPlayer = SquaremapOnlinePlayer & {
     timesVanished: number
     online: boolean
     timestamp: number
@@ -209,7 +209,7 @@ export type StaffResponse = typeof staffResponse
 export type StaffRole = keyof StaffResponse
 export type StaffRoleOrUnknown = StaffRole | "unknown"
 
-export interface StaffMember {
+export type StaffMember = {
     player: RawPlayerV3
     role: StaffRoleOrUnknown
 }

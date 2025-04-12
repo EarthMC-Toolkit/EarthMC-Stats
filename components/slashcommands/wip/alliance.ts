@@ -5,7 +5,7 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import * as database from '../../../bot/utils/database.js'
+import * as database from '../../../bot/utils/db/index.js'
 import { botDevs } from '../../../bot/utils/fn.js'
 
 import AllianceModal from '../../../bot/objects/AllianceModal.js'
@@ -33,7 +33,7 @@ const getAlliance = async (options: CommandInteractionOptionResolver, skipCache 
     //const map = options.getString('map').toLowerCase() == 'nova' ? database.Nova : database.Aurora
     const input = options.getString('name').toLowerCase()
 
-    const alliances = await database.Aurora.getAlliances(skipCache)
+    const alliances = await database.AuroraDB.getAlliances(skipCache)
     return alliances?.find(a => a.allianceName.toLowerCase() == input) ?? null
 }
 

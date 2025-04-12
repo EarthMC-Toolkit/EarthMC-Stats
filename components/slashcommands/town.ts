@@ -1,4 +1,4 @@
-import * as database from "../../bot/utils/database.js"
+import * as database from "../../bot/utils/db/index.js"
 
 import {
     type Client,
@@ -87,7 +87,7 @@ export default {
 
         await interaction.deferReply()
 
-        let towns = await database.Aurora.getTowns()
+        let towns = await database.AuroraDB.getTowns()
         if (!towns) return await interaction.editReply({ embeds: [databaseError] })
             .then(m => setTimeout(() => m.delete(), 10000))
             .catch(() => {})
@@ -328,7 +328,8 @@ async function sendSingle(
         townEmbed.setDescription(`*${town.board}*`)
     }
 
-    let townNation = (await database.Aurora.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBSquaremapNation
+    // TODO: Wtf is this abomination? Make it more readable please, thanks.
+    let townNation = (await database.AuroraDB.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBSquaremapNation
     if (townNation instanceof NotFoundError) {
         townNation = null
     }

@@ -1,5 +1,3 @@
-//@ts-nocheck
-
 import {
     type Message, 
     type Client,
@@ -12,10 +10,13 @@ import {
     OfficialAPI
 } from "earthmc"
 
-import * as fn from '../../bot/utils/fn.js'
-import * as db from "../../bot/utils/database.js"
+import { botDevs } from '../../bot/utils/fn.js'
+import { AuroraDB } from '../../bot/utils/db/index.js'
 
-import type { SlashCommand } from "../../bot/types.js"
+import type { 
+    DBSquaremapNation,
+    SlashCommand
+} from "../../bot/types.js"
 
 const desc = "Used by the nation leader to set custom nation options. (Discord, Flag, Prefix)"
 const cmdData = new SlashCommandBuilder()
@@ -45,7 +46,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const nations = await db.Aurora.getNations().then(arr => arr.map(n => {
+        const nations = await AuroraDB.getNations().then(arr => arr.map(n => {
             n.name = formatString(n.name, true)
             return n
         }))
@@ -62,30 +63,36 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const userID = interaction.user.id
-        const linkedPlayer = await OfficialAPI.V3.uuidFromDiscord(userID).then(arr => arr[0])
 
-        const canEdit = fn.botDevs.includes(userID) || nation.king.toLowerCase() == linkedPlayer?.name.toLowerCase()
-        if (!linkedPlayer || !canEdit) {
-            return interaction.editReply({embeds: [new EmbedBuilder()
-                .setDescription(`
-                    In order to edit it this nation's info, you must:
-                    - Be the owner of this nation (NOT a representative).
-                    - Have your Discord linked to your in-game name.
-                `)
-                .setColor(Colors.Red)
-                .setTimestamp()
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        // Not a bot dev, check if this user is linked to the king ign.
+        if (!botDevs.includes(userID)) {
+            const uuid = await OfficialAPI.V3.uuidFromDiscord(userID).then(arr => arr[0])
+            const linkedPlayer = await OfficialAPI.V3.players(uuid).then(arr => arr[0])
+
+            const canEdit = nation.king.toLowerCase() == linkedPlayer?.name.toLowerCase()
+            if (!canEdit) {
+                return interaction.editReply({embeds: [new EmbedBuilder()
+                    .setDescription(`
+                        In order to edit it this nation's info, you must:
+                        - Be the owner of this nation (NOT a representative).
+                        - Have your Discord linked to your in-game name.
+                    `)
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+            }
         }
 
         const value = interaction.options.getString("value")
         const cleared = value.toLowerCase() == "none" || value.toLowerCase() == "clear"
 
-        const save = (n: db.DBSquaremapNation) => {
+        const save = (n: DBSquaremapNation) => {
             nations[nationIndex] = n
-            db.Aurora.setNations(nations)
+            AuroraDB.setNations(nations)
         }
 
-        switch (interaction.options.getString("type").toLowerCase()) {
+        const type = interaction.options.getString("type")
+        switch (type.toLowerCase()) {
             case "prefix": {
                 if (cleared) nation.kingPrefix = ""
                 else nation.kingPrefix = value.substring(0, 10)

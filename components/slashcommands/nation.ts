@@ -1,4 +1,4 @@
-import * as database from "../../bot/utils/database.js"
+import * as database from "../../bot/utils/db/index.js"
 
 import { 
     AURORA,
@@ -86,7 +86,7 @@ export default {
 
         await interaction.deferReply()
 
-        let nations = await database.Aurora.getNations()
+        let nations = await database.AuroraDB.getNations()
 
         // TODO: Should probably handle this error case
         if (!nations) nations = await Aurora.Nations.all() as DBSquaremapNation[]
@@ -105,7 +105,7 @@ export default {
                     if (!onlinePlayers) return await interaction.editReply({ embeds: [fetchError] })
                         .then(() => setTimeout(() => interaction.deleteReply(), 10000)).catch(() => {})
 
-                    let towns = await database.Aurora.getTowns()
+                    let towns = await database.AuroraDB.getTowns()
                     if (!towns) towns = await Aurora.Towns.all()
 
                     const len = towns.length
@@ -364,7 +364,7 @@ export default {
                     ))
                 }
     
-                const alliances = await database.Aurora.getAlliances()
+                const alliances = await database.AuroraDB.getAlliances()
                 if (alliances) {
                     const nationAlliances = alliances
                         .filter(a => a.nations.map(e => e.toLowerCase()).includes(nation.name.toLowerCase()))

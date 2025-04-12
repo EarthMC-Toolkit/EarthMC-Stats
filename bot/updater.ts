@@ -1,6 +1,6 @@
 //#region Imports
 import * as api from "./utils/api.js"
-import * as database from "./utils/database.js"
+import * as database from "./utils/db/index.js"
 
 import { 
     formatString,
@@ -309,7 +309,7 @@ async function updateLastSeen() {
         op['timesVanished'] = seen ? seen.timesVanished : 0
         op['timestamp'] = now
 
-        lastSeenPlayers.set(op.name, op as SeenPlayer) 
+        lastSeenPlayers.set(op.name, op ) 
     })
 
     const opNames = new Set(ops.map(op => op.name))

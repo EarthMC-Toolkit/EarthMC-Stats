@@ -1,7 +1,8 @@
 import type { 
     DBAlliance,
     StaffResponse,
-    StaffMember, StaffRoleOrUnknown
+    StaffMember, StaffRoleOrUnknown,
+    SkinOpts
 } from "../types.js"
 
 import type { 
@@ -447,4 +448,14 @@ export const backtick = (value: string | number, opts?: { prefix?: string, postf
 
 export function embedField(name: string, value: string, inline = false): APIEmbedField {
     return { name, value, inline }
+}
+
+// TODO: Customizing params to make player face left reduces image quality,
+//       consider mirroring it after and sending it as a local discord `File`.
+export const buildSkinURL = (opts: SkinOpts) => {
+    const domain = "https://vzge.me/"
+    const params = `y=${opts.yaw ?? 0}&p=${opts.pitch ?? 0}&r=${opts.roll ?? 0}`
+
+    // Ex: domain/bust/256/uuid.png?y=0&p=0&r=0
+    return `${domain}${opts.view}/${opts.size ?? 256}/${opts.subject}.png?${params}`
 }

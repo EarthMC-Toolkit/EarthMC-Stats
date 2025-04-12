@@ -6,7 +6,7 @@ import {
 
 import { MojangLib } from 'earthmc'
 
-import * as database from "../../bot/utils/database.js"
+import { AuroraDB } from "../../bot/utils/db/index.js"
 import { devsFooter, embedField } from "../../bot/utils/fn.js"
 
 const status = (data: any) => !data ? "Offline :red_circle:" : "Online :green_circle:"
@@ -24,7 +24,7 @@ export default {
             .setTimestamp()
 
         const serverData = await MojangLib.servers.get("join.earthmc.net")
-        const auroraData = await database.Aurora.getMapData()
+        const auroraData = await AuroraDB.getMapData()
 
         if (serverData && !auroraData) {
             embed.setDescription("The server seems to be up, but the map is unavailable!")

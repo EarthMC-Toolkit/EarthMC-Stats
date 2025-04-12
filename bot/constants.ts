@@ -3,9 +3,7 @@ import { Aurora } from "earthmc"
 import type { Firestore } from "firebase-admin/firestore"
 import type { ExtendedClient, MapInstance, SeenPlayer } from "./types.js"
 
-import { 
-    Aurora as AuroraDB
-} from "./utils/database.js"
+import { AuroraDB } from "./utils/db/index.js"
 
 import TTLCache from '@isaacs/ttlcache'
 

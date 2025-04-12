@@ -7,12 +7,12 @@ import {
     AttachmentBuilder
 } from "discord.js"
 
-import { backtick, botDevs } from '../../bot/utils/fn.js'
-//import { getPlayers, setPlayers } from "../../bot/utils/database.js"
+import { request } from "undici"
 
 import { cache } from "../../bot/constants.js"
-import { Aurora } from "../../bot/utils/database.js"
-import { request } from "undici"
+import { backtick, botDevs } from '../../bot/utils/fn.js'
+
+import { AuroraDB } from "../../bot/utils/db/index.js"
 
 // import dotenv from 'dotenv'
 // dotenv.config()
@@ -200,7 +200,7 @@ export default {
             case "backup_alliances": {
                 await interaction.deferReply()
 
-                const alliances = await Aurora.getAlliances(true)
+                const alliances = await AuroraDB.getAlliances(true)
                 if (!alliances) return await interaction.reply({
                     content: `Failed to fetch alliances.`,
                     ephemeral: true
@@ -231,7 +231,7 @@ export default {
 
                 await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
 
-                const alliances = await Aurora.getAlliances(true)
+                const alliances = await AuroraDB.getAlliances(true)
                 if (!alliances) return await interaction.reply({
                     content: `Failed to fetch alliances.`,
                     ephemeral: true
@@ -266,7 +266,7 @@ export default {
                     })
                 }
 
-                await Aurora.setAlliances(alliances)
+                await AuroraDB.setAlliances(alliances)
                 return await interaction.followUp({ content: `Successfully rebuilt alliances.` })
             }
             default: return await interaction.reply({embeds: [embed

@@ -5,27 +5,17 @@ import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
 
 import BaseCommandHelper from "./base.js"
-import { backtick, secToMs, unixFromDate } from "../../bot/utils/fn.js"
+import { backtick, buildSkinURL, secToMs, unixFromDate } from "../../bot/utils/fn.js"
 
 import * as MC from '../../bot/utils/minecraft.js'
-import * as database from '../../bot/utils/database.js'
+import * as database from '../../bot/utils/db/index.js'
 
 import { 
     type DBPlayer,
     type DBResident,
     type MCSessionProfile,
-    type SkinOpts,
     SkinType3D
 } from "../../bot/types.js"
-
-// TODO: Customizing params to make player face left reduces image quality,
-//       consider mirroring it after and sending it as a local discord `File`.
-const buildSkinURL = (opts: SkinOpts) => {
-    const domain = "https://vzge.me/"
-    const params = `y=${opts.yaw ?? 0}&p=${opts.pitch ?? 0}&r=${opts.roll ?? 0}`
-
-    return `${domain}${opts.view}/${opts.size ?? 256}/${opts.subject}.png?${params}`
-}
 
 const DEFAULT_ABOUT = "/res set about [msg]"
 
@@ -47,7 +37,7 @@ class ResidentHelper extends BaseCommandHelper {
     }
 
     async fetchResidents() {
-        const arr = await database.Aurora.getResidents()
+        const arr = await database.AuroraDB.getResidents()
         return arr ? arr : await Aurora.Residents.all()
     }
 

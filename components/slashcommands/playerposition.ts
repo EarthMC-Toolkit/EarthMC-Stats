@@ -5,11 +5,15 @@ import {
 } from "discord.js"
 
 import { 
-    botDevs, devsFooter, 
+    buildSkinURL,
+    devsFooter,
     embedField
 } from '../../bot/utils/fn.js'
 
 import { Aurora } from "earthmc"
+import { type MCSessionProfile, SkinType3D } from "../../bot/types.js"
+
+import * as MC from '../../bot/utils/minecraft.js'
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("playerposition")
@@ -47,43 +51,48 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
         const foundPlayer = ops.find(op => op.name.toLowerCase() == player.toLowerCase())
-        if (foundPlayer && !botDevs.includes(player.toLowerCase())) {
-            const acc = foundPlayer.name
-
-            if (foundPlayer.world == "-some-other-bogus-world-") {
-                return interaction.reply({embeds: [new EmbedBuilder()
-                    .setTitle("Location Unavailable")
-                    .setDescription(`${acc} seems to be invisible, under a block, or in the nether. Please try again later.`)
-                    .setColor(Colors.DarkGold)
-                    .setTimestamp()
-                ], ephemeral: true})
-            }
-
-            const locationEmbed = new EmbedBuilder()
-                .setTitle("Location Info | " + acc)
-                .setThumbnail(`https://crafatar.com/avatars/${acc}/256.png`)
-                .setColor(Colors.DarkVividPink)
-                .setTimestamp()
-                .setFooter(devsFooter(client))
-                
-            if (acc !== foundPlayer.nickname) {
-                locationEmbed.addFields(embedField("Nickname", foundPlayer.nickname))
-            }
-            
-            const { x, z } = foundPlayer
-            locationEmbed.addFields(
-                embedField("Coordinates", `X: ${x}\nZ: ${z}`),
-                embedField("Dynmap Link", `[${x}, ${z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${x}&y=64&z=${z})`)
-            )
-
-            return interaction.reply({ embeds: [locationEmbed] }).catch(() => {})
-        }
-        
-        return interaction.reply({embeds: [new EmbedBuilder()
+        if (!foundPlayer) return interaction.reply({embeds: [new EmbedBuilder()
             .setTitle("Error fetching player")
-            .setDescription(player + " isn't online or does not exist!")
+            .setDescription(`${player} is hidden/offline or does not exist!`)
             .setTimestamp()
             .setColor(Colors.Red)
         ], ephemeral: true})
+
+        const name = foundPlayer.name
+
+        if (foundPlayer.world == "-some-other-bogus-world-") {
+            return interaction.reply({embeds: [new EmbedBuilder()
+                .setTitle("Location Unavailable")
+                .setDescription(`${name} seems to be invisible, under a block, or in the nether. Please try again later.`)
+                .setColor(Colors.DarkGold)
+                .setTimestamp()
+            ], ephemeral: true})
+        }
+
+        const locationEmbed = new EmbedBuilder()
+            .setTitle(`Location Info | ${name}`)
+            .setColor(Colors.DarkVividPink)
+            .setTimestamp()
+            .setFooter(devsFooter(client))
+            
+        const mcProf: MCSessionProfile = await MC.Players.get(name).catch(() => null)
+        if (mcProf != null) {
+            locationEmbed.setThumbnail(buildSkinURL({ 
+                view: SkinType3D.BUST, 
+                subject: mcProf.id
+            }))
+        }
+
+        if (name !== foundPlayer.nickname) {
+            locationEmbed.addFields(embedField("Nickname", foundPlayer.nickname))
+        }
+        
+        const { x, z } = foundPlayer
+        locationEmbed.addFields(
+            embedField("Coordinates", `X: ${x}\nZ: ${z}`),
+            embedField("Map Link", `[${x}, ${z}](https://map.earthmc.net?x=${x}&z=${z}&zoom=5)`)
+        )
+
+        return interaction.reply({ embeds: [locationEmbed] }).catch(() => {})
     }
 }
