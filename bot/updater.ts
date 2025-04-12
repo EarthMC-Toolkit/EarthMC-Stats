@@ -301,6 +301,7 @@ async function updateLastSeen() {
     const ops = await AURORA.emc.Players.online() as SquaremapOnlinePlayer[]
     if (!ops) return console.warn(`[AURORA] Error updating last seen, bad response getting online players!`)
 
+    const opNames = new Set<string>()
     const now = Date.now()
     
     ops.forEach(op => {
@@ -309,207 +310,17 @@ async function updateLastSeen() {
         op['timesVanished'] = seen ? seen.timesVanished : 0
         op['timestamp'] = now
 
-        lastSeenPlayers.set(op.name, op ) 
+        lastSeenPlayers.set(op.name, op as SeenPlayer)
+        opNames.add(op.name)
     })
 
-    const opNames = new Set(ops.map(op => op.name))
     for (const p of lastSeenPlayers.values()) {
         const newOnline = opNames.has(p.name)
         if (p.online && !newOnline) p.timesVanished++
 
         p.online = newOnline
     }
-
-    //console.log(`[AURORA] Updated last seen. Length: ${lastSeenPlayers.size}`)
 }
-//#endregion
-
-//#region Live Stuff
-// const filterLiveEmbeds = (arr: Collection<string, Message>, mapName: string) => {
-//     return arr.filter(msg => msg.embeds.length >= 1 
-//         && msg.embeds[0]?.title?.includes(`Townless Players (${mapName})`) 
-//         && msg.author.id == "656231016385478657"
-//     )
-// }
-
-// const editEmbed = (msg: Message, players: Player[], mapName: string) => {
-//     const names = players.map(p => p.name).join('\n')
-//     const newEmbed = new EmbedBuilder()
-//         .setTitle(`Live Townless Players (${mapName})`)
-//         .setColor(Colors.DarkPurple)
-//         .setFooter(fn.devsFooter(client))
-//         .setTimestamp()
-
-//     let desc = ""
-//     const arrLen = players.toString().length
-
-//     if (arrLen < 1) desc = "There are currently no townless players!"
-//     else {
-//         desc = arrLen >= 2048
-//             ? "```" + (names.match(/(?:^.*$\n?){1,30}/mg))[0] + "```"
-//             : desc = "```" + players[0].name + "\n" + names + "```"
-//     }
-
-//     newEmbed.setDescription(desc)
-//     msg.edit({ embeds: [newEmbed] }).catch(err => console.error(err))
-// }
-
-// let townsCache = []
-// function updateTownCache(data: any[]) { 
-//     townsCache = data
-//     console.log(`${fn.time()} | Updated fallen town cache. Length: ${data.length}`)
-// }
-
-// async function updateFallenTowns(map: MapInstance) {
-//     const towns: BaseTown[] = await map.emc.Towns.all().then(arr => arr.map(t => {
-//         const NPCRegex = /^NPC[0-9]{1,5}$/
-//         t["ruined"] = (NPCRegex.test(t.mayor) || (t.residents?.length ?? 0) < 1) ? true : false
-
-//         return t
-//     }))
-
-//     if (!towns) return console.warn("Could not update map data! Failed to fetch towns.")
-//     // const msgs = await townFlowChannel.messages.fetch()
-//     // const ruinNames = msgs.filter(m => m.embeds[0] != null && m.embeds[0].title.includes("ruined")).map(m => m.embeds[0].fields[0].value)
-
-//     // Channel name: #town-fall-events
-//     const townFlowChannel = client.channels.cache.get("1161579122494029834") as TextChannel
-
-//     //#region Send ruined towns
-//     // townsArray.forEach(town => {
-//     //     if (!ruinNames.includes(town.name) && town.ruined) {
-//     //         const ruinEmbed = new Discord.EmbedBuilder()
-//     //             .setTitle("A town has ruined!")
-//     //             .addFields(fn.embedField(
-//     //                 "Town Name", 
-//     //                 town.name + (town.capital ? " :star:" : ""), 
-//     //                 true
-//     //             ))
-//     //             .setFooter(fn.devsFooter(client))
-//     //             .setThumbnail(client.user.avatarURL())
-//     //             .setTimestamp()
-//     //             .setColor("ORANGE")
-
-//     //         const mayor = town.mayor.replace(/_/g, "\\_")
-//     //         if (mayor) ruinEmbed.addFields(fn.embedField("Mayor", mayor, true))
-
-//     //         const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]
-//     //         ruinEmbed.addFields(
-//     //             fn.embedField("Town Size", town.area.toString(), true), 
-//     //             fn.embedField("Location", `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true),
-//     //             fn.embedField("Flags", `
-//     //                 ${town.pvp ? green : red } PVP
-//     //                 ${town.mobs ? green : red } Mobs 
-//     //                 ${town.public ? green : red } Public
-//     //                 ${town.explosion ? green : red } Explosions 
-//     //                 ${town.fire ? green : red } Fire Spread
-//     //             `)
-//     //         )
-
-//     //         townFlowChannel.send({embeds: [ruinEmbed]})
-//     //     }
-//     // })
-//     //#endregion
-
-//     //#region Send fallen towns
-//     if (townsCache.length > 0) {
-//         // Name and mayor have to be changed for it to be "fallen"
-//         const fallenTowns = townsCache.filter(cached => {
-//             return cached.ruined && !towns.some(cur =>
-//                 cur.name == cached.name && 
-//                 cur.mayor == cached.mayor
-//             )
-//         })
-
-//         const fallenTownsLen = fallenTowns.length
-//         if (fallenTownsLen < 1) {
-//             console.log(fn.time() + " | No towns have fallen.")
-//             return
-//         }
-
-//         for (let i = 0; i < fallenTownsLen; i++) {
-//             const town = fallenTowns[i]
-//             const mayor = town.mayor.replace(/_/g, "\\_")
-
-//             const route: RouteInfo = await Aurora.GPS.fastestRoute({ x: town.x, z: town.z })
-//             const desc = `Type **/n spawn ${route.nation.name}** and head **${route.direction}** for **${route.distance}** blocks.`
-
-//             // TODO: Check if new arrays inside the loop are intended.
-//             const residentBatch1 = []
-//             const residentBatch2 = []
-
-//             const fallenTownEmbed = new EmbedBuilder()
-//                 .setTitle("A town has fallen!")
-//                 .setDescription(desc)
-//                 .setFooter(fn.devsFooter(client))
-//                 .setThumbnail('attachment://aurora.png')
-//                 .setTimestamp()
-//                 .setColor(Colors.Green)
-//                 .addFields(fn.embedField("Town Name", town.name + (town.capital ? " :star:" : ""), true))
-
-//             if (town.nation != "No Nation") 
-//                 fallenTownEmbed.addFields(fn.embedField("Nation", town.nation, true))
-
-//             const townResidentsLen = town.residents.length
-//             for (let j = 0; j < townResidentsLen; j++) {
-//                 const currentResident = town.residents[j]
-//                 const curResIndex = town.residents.indexOf(currentResident)
-
-//                 const batch = (curResIndex <= 50 ? residentBatch1 : residentBatch2)
-//                 batch.push(" " + currentResident)
-//             }
-
-//             fallenTownEmbed.addFields(fn.embedField("Mayor", 
-//                 `${ townResidentsLen >= 28 ? "Lord " 
-//                 : townResidentsLen >= 24 ? "Duke "
-//                 : townResidentsLen >= 20 ? "Earl "
-//                 : townResidentsLen >= 14 ? "Count "
-//                 : townResidentsLen >= 10 ? "Viscount "
-//                 : townResidentsLen >= 6 ? "Baron "
-//                 : townResidentsLen >= 2 ? "Chief "
-//                 : townResidentsLen == 1 ? "Hermit " : "" }`
-//                 + mayor, true
-//             ))
-
-//             fallenTownEmbed.addFields(
-//                 fn.embedField("Town Size", town.area.toString(), true),
-//                 fn.embedField("Location", `[${town.x}, ${town.z}](https://map.earthmc.net?worldname=earth&mapname=flat&zoom=6&x=${town.x}&y=64&z=${town.z})`, true)
-//             )
-
-//             if (residentBatch1.length < 1) {
-//                 fallenTownEmbed.addFields(fn.embedField("Residents", "There are no residents in this town?"))
-//             } else {
-//                 const residentBatch1String = residentBatch1.toString().replace(/^\s+|\s+$/gm, "")
-
-//                  // If second batch is empty, only send first batch
-//                 if (residentBatch2.length <= 0) {
-//                     fallenTownEmbed.addFields(
-//                         fn.embedField(`Residents [${townResidentsLen}]`,
-//                         "```" + residentBatch1String + "```"
-//                     ))
-//                 }
-//                 else if (residentBatch2.length >= 1) { // Second batch not empty, send both.
-//                     const residentBatch2String = residentBatch2.toString().replace(/^\s+|\s+$/gm, "")
-
-//                     fallenTownEmbed.addFields(
-//                         fn.embedField("Residents", townResidentsLen),
-//                         fn.embedField("Resident List [1-50]", "```" + residentBatch1String + "```"),
-//                         fn.embedField(`Resident List [51-${townResidentsLen}]`, "```" + residentBatch2String + "```")
-//                     )
-//                 }
-//             }
-
-//             townFlowChannel.send({ 
-//                 content: "<@&1161647212061806683>",
-//                 embeds: [fallenTownEmbed],
-//                 files: [fn.AURORA.thumbnail]
-//             })
-//         }
-//     }
-
-//     updateTownCache(towns)
-//     //#endregion
-// }
 //#endregion
 
 //#region Helper Methods

@@ -192,7 +192,7 @@ export type NationItem = {
 export type SeenPlayer = SquaremapOnlinePlayer & {
     timesVanished: number
     online: boolean
-    timestamp: number
+    timestamp: number // Milliseconds
 }
 
 //#region Staff
