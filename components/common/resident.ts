@@ -1,4 +1,4 @@
-import type { Client } from "discord.js"
+import type { AttachmentBuilder, Client } from "discord.js"
 import striptags from 'striptags'
 
 import type { Resident, RawPlayerV3 } from 'earthmc'
@@ -113,6 +113,10 @@ class ResidentHelper extends BaseCommandHelper {
         }
 
         return this.embed
+    }
+
+    getDownloadAttachment (): AttachmentBuilder {
+        throw new Error("Method not implemented.")
     }
 
     #setupMcProfileEmbed() {

@@ -1,6 +1,7 @@
 import {
     Colors,
-    type Client
+    type Client,
+    type AttachmentBuilder
 } from "discord.js"
 
 import { 
@@ -28,11 +29,17 @@ class TownHelper extends BaseCommandHelper {
             console.error(e)
             return false
         }
+
+        
     }
 
     createEmbed() {
         //this.#setupEmbed()
         return this.embed
+    }
+
+    getDownloadAttachment(): AttachmentBuilder {
+        throw new Error("Method not implemented.")
     }
 }
 

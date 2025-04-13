@@ -2,6 +2,7 @@ import * as fn from '../../bot/utils/fn.js'
 
 import { 
     type Client,
+    type AttachmentBuilder,
     EmbedBuilder
 } from 'discord.js'
 
@@ -16,6 +17,7 @@ export default abstract class BaseCommandHelper {
 
     abstract init(input: string): Promise<boolean>;
     abstract createEmbed(): EmbedBuilder;
+    abstract getDownloadAttachment(): AttachmentBuilder
 
     /**
      * Appends a single field to the embed (max 25 fields).\

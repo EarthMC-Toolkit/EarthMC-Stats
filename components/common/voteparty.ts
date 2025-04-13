@@ -1,7 +1,7 @@
 import { OfficialAPI } from "earthmc"
 import { BaseCommandHelper } from "./base.js"
 
-import type { Client } from "discord.js"
+import type { AttachmentBuilder, Client } from "discord.js"
 
 export class VPHelper extends BaseCommandHelper {
     #target: number
@@ -46,5 +46,9 @@ export class VPHelper extends BaseCommandHelper {
         this.addField("Remaining", `\`${this.remaining.toString()}\``)
 
         return this.embed
+    }
+
+    getDownloadAttachment (): AttachmentBuilder {
+        throw new Error("Method not implemented.")
     }
 }

@@ -1,6 +1,6 @@
 import { BaseCommandHelper } from "./base.js"
 
-import type { Client } from "discord.js"
+import type { AttachmentBuilder, Client } from "discord.js"
 import { Colors } from "discord.js"
 
 class AllianceHelper extends BaseCommandHelper {
@@ -16,6 +16,10 @@ class AllianceHelper extends BaseCommandHelper {
     createEmbed() {
         //this.#setupEmbed()
         return this.embed
+    }
+
+    getDownloadAttachment (): AttachmentBuilder {
+        throw new Error("Method not implemented.")
     }
 }
 
