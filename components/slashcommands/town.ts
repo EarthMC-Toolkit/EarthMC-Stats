@@ -87,6 +87,8 @@ export default {
 
         await interaction.deferReply()
 
+        //#region Fetch towns
+        // TODO: 3 checks seems unwieldy, reduce if possible.
         let towns = await database.AuroraDB.getTowns()
         if (!towns) return await interaction.editReply({ embeds: [databaseError] })
             .then(m => setTimeout(() => m.delete(), 10000))
@@ -99,6 +101,7 @@ export default {
 
         if (!towns) return await interaction.editReply({ embeds: [fetchError] })
             .then(m => setTimeout(() => m.delete(), 10000))
+        //#endregion
 
         const subCmd = interaction.options.getSubcommand().toLowerCase()
         if (subCmd == "lookup") { // /t <town>
@@ -154,13 +157,13 @@ export default {
 
                 if (residentPlayer && residentPlayer.lastOnline != null) {
                     const ts = unixFromDate(residentPlayer.lastOnline.aurora)
-                    return "``" + resident + "`` - " + `<t:${ts}:R>`
+                    return `${backtick(resident)} - <t:${ts}:R>`
                 }
 
                 return `${resident} | Unknown`
             }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
-            return new CustomEmbed(client, "Town Information | Activity in " + town.name)
+            return new CustomEmbed(client, `Town Information | Activity in ${backtick(town.name)}`)
                 .paginate(allData)
                 .editInteraction(interaction)
         }
@@ -193,19 +196,19 @@ export default {
     
                 // Function to get rid of duplicates and add up residents and chunks.
                 const ctx: Record<string, TownDataItem> = {}
-                onlineTownData.forEach(a => {                   
+                onlineTownData.forEach(a => {
                     // If town doesnt exist, add it.
-                    if (!ctx[a.name]) {           
+                    if (!ctx[a.name]) {      
                         a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
     
-                        ctx[a.name] = { 
-                            name: a.name, 
+                        ctx[a.name] = {
+                            name: a.name,
                             nation: a.nation,
                             onlineResidents: a.onlineResidents
                         }
-    
+
                         onlineTownDataFinal.push(ctx[a.name])
-                    }     
+                    }
                 })
     
                 onlineTownDataFinal.sort((a, b) => b.onlineResidents.length - a.onlineResidents.length)
@@ -359,7 +362,7 @@ async function sendSingle(
         }
 
         const nationWiki = town?.wikis?.nation
-        const nationString = !nationWiki ? `\`${town.nation}\`` : `[${town.nation}](${nationWiki})`
+        const nationString = !nationWiki ? `${backtick(town.nation)}` : `[${town.nation}](${nationWiki})`
         
         townEmbed.addFields(
             embedField("Nation", nationString, true),
@@ -367,7 +370,7 @@ async function sendSingle(
         )
     }
 
-    const townAreaStr = `\`${town.area}\` / `
+    const townAreaStr = `${backtick(town.area)} / `
     const multiplier = townResidentsLength * 12
     
     if (town.nation != "No Nation") {
@@ -375,11 +378,11 @@ async function sendSingle(
         const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
 
         townEmbed.addFields(
-            embedField("Size", `${townAreaStr}\`${claimBonus}\` [Nation Bonus: \`${nationBonus}\`]`)
+            embedField("Size", `${townAreaStr}${backtick(claimBonus)} [Nation Bonus: ${backtick(nationBonus)}]`)
         )
     } else {
         const claimBonus = Math.min(multiplier, maxTownSize)
-        townEmbed.addFields(embedField("Size", `${townAreaStr}\`${claimBonus}\``, true))
+        townEmbed.addFields(embedField("Size", `${townAreaStr}${backtick(claimBonus)}`, true))
     }
 
     // if (town.wealth) {

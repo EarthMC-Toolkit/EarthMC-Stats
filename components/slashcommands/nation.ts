@@ -89,7 +89,7 @@ export default {
         let nations = await database.AuroraDB.getNations()
 
         // TODO: Should probably handle this error case
-        if (!nations) nations = await Aurora.Nations.all() as DBSquaremapNation[]
+        if (!nations) nations = await Aurora.Nations.all() satisfies DBSquaremapNation[]
 
         if (subCmd == "list") {
             let comparator = interaction.options.getString("comparator")
@@ -244,12 +244,13 @@ export default {
                 const allData = nation.residents.map(resident => {
                     const residentInPlayers = players.find(p => p.name == resident)
     
-                    let date: number | null = null
+                    let date: number = null
                     if (residentInPlayers && residentInPlayers.lastOnline?.aurora != null) {
                         date = unixFromDate(residentInPlayers.lastOnline.aurora)
                     }
     
-                    return `**$${resident}** - ${date ? `<t:${date}:R>` : `Unknown`}`
+                    const tsOrUnknown = date ? `<t:${date}:R>` : `Unknown`
+                    return `**${resident}** - ${tsOrUnknown}`
                 }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
     
                 return new CustomEmbed(client, `Nation Info | Activity in ${backtick(nation.name)}`)

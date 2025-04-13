@@ -942,7 +942,7 @@ export default {
                 foundAlliance.fullName = args.slice(3).join(" ")
                     
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-                let change = `set to: ${foundAlliance.fullName}`
+                let change = `set to: ${backtick(foundAlliance.fullName)}`
                 if (!args[3]) {
                     change = "cleared."
                     delete alliances[allianceIndex]['fullName']
@@ -952,7 +952,7 @@ export default {
                 database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
-                    .setTitle("Alliance Updated | " + foundAlliance.allianceName)
+                    .setTitle(`Alliance Updated | ${foundAlliance.allianceName}`)
                     .setDescription(`The alliance's full name has been ${change}`) 
                 ]}).catch(() => {})
             }
@@ -1005,8 +1005,8 @@ export default {
             ]})
         }
 
-        if (arg1 == "backup") {
-            if (isEditor) return sendDevsOnly(m)
+        if (arg1 == "restore") {
+            if (!botDev) return sendDevsOnly(m)
             
             const backupData = await jsonReq(arg2).catch(e => console.error(e)) as any
             if (!backupData) return m.edit({embeds: [errorEmbed(message)

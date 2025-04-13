@@ -40,11 +40,14 @@ export async function displayStaff(
 
     // No staff to display. Usually only the case if filtering by online.
     if (staff.length < 1) {
-        if (!online) return await interaction.editReply({ content: "No staff to display! Something probably went wrong." })
+        if (!online) return await interaction.editReply({
+            content: "No staff to display! Something probably went wrong."
+        })
 
         return await interaction.editReply({embeds: [new EmbedBuilder()
             .setTitle("Online Activity | Staff")
             .setDescription("No staff are online right now! 🤫")
+            .setColor(embedColour)
         ]})
     }
 
