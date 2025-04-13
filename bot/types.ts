@@ -19,11 +19,13 @@ import type { Timestamp, WriteResult } from "firebase-admin/firestore"
 export type ErrorWithCode = Error & { code: number }
 export type ReqMethod = 'GET' | 'PUT' | 'POST'
 
-export type ExtendedClient = Client & {
+export type CustomClientData = {
     auroraCommands?: Map<string, BaseCommand>
     slashCommands?: Map<string, SlashCommand<SharedNameAndDescription>>
     buttons?: Collection<string, Button>
 }
+
+export type ExtendedClient = Client & CustomClientData
 
 export type BaseCommand = {
     name: string

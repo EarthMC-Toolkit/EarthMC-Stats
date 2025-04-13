@@ -6,16 +6,22 @@ import {
     Colors, ChannelType
 } from 'discord.js'
 
-import type { DJSEvent, MessageCommand } from '../types.js'
+import type { Prettify } from 'earthmc'
+import type { 
+    DJSEvent, MessageCommand,
+    CustomClientData, ExtendedClient
+} from '../types.js'
 
 const { SendMessages, EmbedLinks } = PermissionFlagsBits
 const requiredPerms = [SendMessages, EmbedLinks]
 
-async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {	
+type CommandsKey = Prettify<keyof CustomClientData>
+
+async function runCmd(msg: Message, sliceAmt: number, cmdsKey: CommandsKey) {	
     const args = msg.content.slice(sliceAmt).split(/\s+/u)
     
     const commandName = args.shift().toLowerCase()
-    const commands = (msg.client as any)[cmdsKey] as Collection<string, MessageCommand>
+    const commands = (msg.client as ExtendedClient)[cmdsKey] as Collection<string, MessageCommand>
 
     const command = commands.get(commandName) || commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
     if (!command) {
@@ -25,13 +31,14 @@ async function runCmd(msg: Message, sliceAmt: number, cmdsKey: string) {
     
     const channel = msg.channel
     if (channel.type == ChannelType.GuildText) {
-        const missingPerms = []
+        const missingPerms: string[] = []
         const requiredPermsLen = requiredPerms.length
         
         for (let i = 0; i < requiredPermsLen; i++) {
             const curPerm = requiredPerms[i]
-            if (!channel.permissionsFor(msg.guild.members.me).has(curPerm))
+            if (!channel.permissionsFor(msg.guild.members.me).has(curPerm)) {
                 missingPerms.push(curPerm.toString())
+            }
         }
         
         const missingPermsLen = missingPerms.length

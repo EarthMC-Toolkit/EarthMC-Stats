@@ -5,7 +5,8 @@ dotenv.config()
 import { 
     Client, 
     IntentsBitField,
-    Collection
+    Collection,
+    Partials
 } from "discord.js"
 
 import { initializeApp, cert } from 'firebase-admin/app'
@@ -41,6 +42,12 @@ const client: ExtendedClient = new Client({
         Intents.DirectMessages, 
         Intents.DirectMessageReactions,
         Intents.MessageContent
+    ],
+    partials: [
+        Partials.Message,
+        Partials.User,
+        Partials.Reaction,
+        Partials.Channel
     ]
 })
 

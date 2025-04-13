@@ -164,12 +164,46 @@ export const paginatorInteraction = async(
 ) => {
     try {
         const msg: Message = await interaction.fetchReply()
-        if (!msg) throw new Error("Received null from fetchReply")
+        if (!msg) throw new Error("Message could not be fetched: fetchReply returned null.")
 
-        paginator(interaction.user.id, msg, embeds, currentPage)
+        doPaginatorInteraction(interaction, msg, embeds, currentPage)
     } catch(e) {
-        console.warn("Failed to paginate. Message could not be fetched from interaction.\n" + e)
+        console.warn("Failed to paginate interaction.\n" + e)
     }
+}
+
+export const doPaginatorInteraction = async(
+    interaction: CommandInteraction | ButtonInteraction,
+    msg: Message,
+    embeds: EmbedBuilder[],
+    currentPage: number
+) => {
+    // Create collector which will listen for a button interaction. (If it passes the filter)
+    const collector = msg.createMessageComponentCollector({ 
+        filter: (i: ButtonInteraction) => { 
+            i.deferUpdate()
+            return i.user.id === interaction.user.id // Only the original sender is allowed to press buttons.
+        },
+        componentType: ComponentType.Button,
+        time: fiveMin
+    })
+
+    const lastPage = embeds.length - 1
+
+    // Edit message to show arrow buttons
+    await interaction.editReply({ components: [buildButtons(currentPage, lastPage)] }).catch(console.error)
+    setTimeout(() => interaction.editReply({ components: [] }).catch(() => {}), fiveMin)
+
+    collector.on("collect", async interaction => {
+        currentPage = interaction.customId == "last" ? lastPage 
+            : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
+            : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
+
+        await interaction.editReply({
+            embeds: [embeds[currentPage]],
+            components: [buildButtons(currentPage, lastPage)]
+        })
+    })
 }
 
 const buildButtons = (currentPage: number, lastPage: number) => {

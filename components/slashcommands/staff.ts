@@ -34,14 +34,25 @@ export async function displayStaff(
     embedColour: ColorResolvable,
     online: boolean
 ) {
-    let onlineStaff = (await getStaff())
-    if (online) onlineStaff = onlineStaff.filter(sm => sm.player.status.isOnline)
+    const staff = await getStaff().then(staff => {
+        return online ? staff.filter(sm => sm.player.status.isOnline) : staff
+    })
+
+    // No staff to display. Usually only the case if filtering by online.
+    if (staff.length < 1) {
+        if (!online) return await interaction.editReply({ content: "No staff to display! Something probably went wrong." })
+
+        return await interaction.editReply({embeds: [new EmbedBuilder()
+            .setTitle("Online Activity | Staff")
+            .setDescription("No staff are online right now! 🤫")
+        ]})
+    }
 
     // Sort alphabetically
-    //const sorted = onlineStaff.sort((sm1, sm2) => sm1.player.name.localeCompare(sm2.player.name))
+    //const sorted = staff.sort((sm1, sm2) => sm1.player.name.localeCompare(sm2.player.name))
 
     // Sort by role
-    const sorted = onlineStaff.sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role))
+    const sorted = staff.sort((sm1, sm2) => roleOrder.indexOf(sm1.role) - roleOrder.indexOf(sm2.role))
 
     const data = sorted.map(sm => {
         const town = sm.player.town?.name
