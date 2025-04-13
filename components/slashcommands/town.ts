@@ -127,7 +127,7 @@ export default {
                 .setDescription(`${nameArg} doesn't seem to be a valid town name, please try again.`)
                 .setColor(Colors.Red)
                 .setTimestamp()
-            ] /* ephemeral: true */})
+            ]})
 
             const players = await database.getPlayers()
             if (!players) return await interaction.editReply({ embeds: [databaseError] })

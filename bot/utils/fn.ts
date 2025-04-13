@@ -194,10 +194,10 @@ export const doPaginatorInteraction = async(
     await interaction.editReply({ components: [buildButtons(currentPage, lastPage)] }).catch(console.error)
     setTimeout(() => interaction.editReply({ components: [] }).catch(() => {}), fiveMin)
 
-    collector.on("collect", async interaction => {
-        currentPage = interaction.customId == "last" ? lastPage 
-            : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
-            : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
+    collector.on("collect", async i => {
+        currentPage = i.customId == "last" ? lastPage 
+            : i.customId == "back" ? Math.max(currentPage - 1, 0) 
+            : i.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
 
         await interaction.editReply({
             embeds: [embeds[currentPage]],
