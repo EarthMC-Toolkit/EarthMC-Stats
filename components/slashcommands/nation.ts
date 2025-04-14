@@ -1,4 +1,15 @@
-import * as database from "../../bot/utils/db/index.js"
+import { 
+    type SquaremapTown,
+    NotFoundError, Aurora
+} from 'earthmc'
+
+import {
+    type Client, 
+    type TextChannel,
+    type ChatInputCommandInteraction, 
+    EmbedBuilder, SlashCommandBuilder, 
+    Colors, ButtonStyle
+} from "discord.js"
 
 import { 
     AURORA,
@@ -10,21 +21,8 @@ import {
     backtick
 } from '../../bot/utils/fn.js'
 
-import {
-    type Client, 
-    type TextChannel,
-    type ChatInputCommandInteraction, 
-    EmbedBuilder, SlashCommandBuilder, 
-    Colors, ButtonStyle
-} from "discord.js"
-
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
 import News from "../../bot/objects/News.js"
-
-import { 
-    type SquaremapTown,
-    NotFoundError, Aurora
-} from 'earthmc'
 
 import type {
     DBSquaremapNation,
@@ -32,6 +30,8 @@ import type {
 } from '../../bot/types.js'
 
 import { cache } from "../../bot/constants.js"
+import * as database from "../../bot/utils/db/index.js"
+import * as DiscordUtils from "../../bot/utils/discord.js"
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("nation")
@@ -244,12 +244,11 @@ export default {
                 const allData = nation.residents.map(resident => {
                     const residentInPlayers = players.find(p => p.name == resident)
     
-                    let date: number = null
-                    if (residentInPlayers && residentInPlayers.lastOnline?.aurora != null) {
-                        date = unixFromDate(residentInPlayers.lastOnline.aurora)
-                    }
-    
-                    const tsOrUnknown = date ? `<t:${date}:R>` : `Unknown`
+                    const resLoAurora = residentInPlayers?.lastOnline?.aurora
+                    const tsOrUnknown = resLoAurora != null 
+                        ? DiscordUtils.timestampRelative(resLoAurora)
+                        : "Unknown"
+
                     return `**${resident}** - ${tsOrUnknown}`
                 }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
     

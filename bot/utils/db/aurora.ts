@@ -17,7 +17,8 @@ import type {
     DBAlliance, DBResident, 
     DBSquaremapNation, DBSquaremapTown
 } from '../../types.js'
-import { Timestamp } from "firebase/firestore"
+
+import { Timestamp } from "firebase-admin/firestore"
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 

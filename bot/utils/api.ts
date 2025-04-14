@@ -2,14 +2,13 @@ import { request } from "undici"
 
 import { AuroraDB } from "./db/index.js"
 import { 
-    AURORA,
-    unixFromDate
+    AURORA
 }  from "./fn.js"
 
 import News from "../objects/News.js"
 
 import type { Client, Collection, Message, TextChannel } from "discord.js"
-import type { DBPlayer, ReqMethod } from "../types.js"
+import type { ReqMethod } from "../types.js"
 
 const REQ_HEADERS = {
     'Content-Type': 'application/json',
@@ -24,8 +23,8 @@ async function sendRequest(route: string, method: ReqMethod, content: any) {
     }).catch(console.warn)
 }
 
-export const replaceWithUnix = (arr: DBPlayer[], map: 'aurora') => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
-    .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
+// const replaceWithUnix = (arr: DBPlayer[], map: 'aurora') => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
+//     .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
 
 const isValidMessage = (msg: Message) => 
     msg.content != "[Original Message Deleted]" &&

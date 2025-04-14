@@ -21,7 +21,6 @@ import { OfficialAPI } from "earthmc"
 import { request } from "undici"
 import { Timestamp } from "firebase-admin/firestore"
 
-import moment from "moment"
 import fs from 'fs'
 import path from "path"
 
@@ -68,7 +67,10 @@ export const AURORA = {
     newsChannel: "970962878486183958"
 }
 
-export const time = (date = moment()) => moment(date).utc().format("YYYY/MM/DD HH:mm:ss")
+// UTC time in British style (d/m/y)
+export function time(date = new Date()) {
+    return date.toLocaleString('en-GB', { timeZone: 'UTC' })
+}
 
 export const error = (client: Client, message: string, error: string) => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -82,13 +84,18 @@ export const devsFooter = (client: Client) => ({
     iconURL: client.user.avatarURL()
 })
 
+/**
+ * This method returns the proper Unix timestamp in milliseconds from the given JS {@link Date} 
+ * or Firestore {@link Timestamp} object.\
+ * If the input is not an instance of either, null is returned.
+ * @param date
+ */
 export function unixFromDate(date: Date | Timestamp): number {
-    let result: Date = null
-
-    if (date instanceof Timestamp) result = new Date(date["seconds"] * 1000)
-    else if (date instanceof Date) result = date
+    // I forgot why we avoid dot notation but I think it's important.
+    if (date instanceof Timestamp) return date["seconds"] * 1000
+    if (date instanceof Date) return date.getTime()
     
-    return result ? moment.utc(result).unix() : null
+    return null
 }
 
 export const listInputToArr = (str: string) => str.replace(/,/g, ' ').split(' ').filter(Boolean)
@@ -203,7 +210,7 @@ export const random = (array: any[], last: number) => {
     }
 }
 
-export const secToMs = (ts: number) => Math.round(ts / 1000)
+export const msToSec = (ts: number) => Math.round(ts / 1000)
 export const jsonReq = (url: string) => request(url).then(res => res.body.json()).catch(() => {})
 
 /**

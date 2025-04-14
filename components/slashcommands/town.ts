@@ -1,4 +1,4 @@
-import * as database from "../../bot/utils/db/index.js"
+import { Aurora, formatString, NotFoundError } from 'earthmc'
 
 import {
     type Client,
@@ -6,22 +6,23 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
+import type { 
+    TownDataItem,
+    DBSquaremapTown, DBSquaremapNation
+} from '../../bot/types.js'
+
 import { 
     AURORA, auroraNationBonus, 
     databaseError, defaultSort, 
     devsFooter, embedField, fetchError, 
     sortByKey, unixFromDate,
     maxTownSize,
-    backtick
-} from '../../bot/utils/fn.js'
+    backtick,
+    timestampRelative
+} from '../../bot/utils/index.js'
 
-import { Aurora, formatString, NotFoundError } from 'earthmc'
-
-import type { 
-    TownDataItem,
-    DBSquaremapTown, DBSquaremapNation
-} from '../../bot/types.js'
+import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
+import * as database from "../../bot/utils/db/index.js"
 
 const invalidUsageEmbed = () => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -196,18 +197,18 @@ export default {
     
                 // Function to get rid of duplicates and add up residents and chunks.
                 const ctx: Record<string, TownDataItem> = {}
-                onlineTownData.forEach(a => {
+                onlineTownData.forEach(t => {
                     // If town doesnt exist, add it.
-                    if (!ctx[a.name]) {      
-                        a.onlineResidents = a.residents.filter(res => ops.some(op => res === op.name))
+                    if (!ctx[t.name]) {
+                        t.onlineResidents = t.residents.filter(res => ops.some(op => res === op.name))
     
-                        ctx[a.name] = {
-                            name: a.name,
-                            nation: a.nation,
-                            onlineResidents: a.onlineResidents
+                        ctx[t.name] = {
+                            name: t.name,
+                            nation: t.nation,
+                            onlineResidents: t.onlineResidents
                         }
 
-                        onlineTownDataFinal.push(ctx[a.name])
+                        onlineTownDataFinal.push(ctx[t.name])
                     }
                 })
     
@@ -366,7 +367,7 @@ async function sendSingle(
         
         townEmbed.addFields(
             embedField("Nation", nationString, true),
-            embedField("Founded", `<t:${town.foundedTimestamp}:R>`, true)
+            embedField("Founded", timestampRelative(town.foundedTimestamp), true)
         )
     }
 

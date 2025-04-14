@@ -11,7 +11,7 @@ import {
 } from "discord.js"
 
 import { request } from "undici"
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from "firebase-admin/firestore"
 
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
@@ -27,6 +27,8 @@ import {
     jsonReq, removeDuplicates,
     paginator
 } from "../../bot/utils/index.js"
+
+import * as DiscordUtils from "../../bot/utils/discord.js"
 
 const successEmbed = (msg: Message) => new EmbedBuilder()
     .setColor(Colors.DarkBlue)
@@ -360,7 +362,7 @@ export default {
                     For future reference, this alliance exists at index ${backtick(index)} in the database.
                 `)
             ]})
-        } 
+        }
         
         if (arg1 == "wizard") {
             // TODO: Use args we already have instead of splitting and slicing content again.
@@ -1308,28 +1310,31 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
     const leaderNames = foundAlliance.leaderName.split(', ')
-
     const leaderPlayers = await OfficialAPI.V3.players(...leaderNames)
-    if (!leaderPlayers) return m.edit({embeds: [errorEmbed(message)
-        .setTitle("Database error occurred")
-        .setDescription("Failed to fetch players needed for this command to work.")
-    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
-    let leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
-        const name = backtick(p.name)
+    let leadersStr = "None"
 
-        if (p.town?.name) {
-            return p.nation?.name
-                ? `${name} of ${p.town.name} (**${p.nation.name}**)`
-                : `${name} of ${p.town.name}`
+    if (!leaderPlayers) {
+        // OAPI failed - fall back to just names.
+        leadersStr = leaderNames.map(name => backtick(name)).join(", ")
+    }
+    else {
+        leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
+            const name = backtick(p.name)
+    
+            if (p.town?.name) {
+                return p.nation?.name
+                    ? `${name} of ${p.town.name} (**${p.nation.name}**)`
+                    : `${name} of ${p.town.name}`
+            }
+            
+            return name
+        }).join("\n") : "None"
+    
+        // Too many characters to show leader affiliations, fall back to just names.
+        if (leadersStr.length > 1024) {
+            leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")
         }
-        
-        return name
-    }).join("\n") : "None"
-
-    // Too many characters to show leader affiliations, fall back to just names.
-    if (leadersStr.length > 1024) {
-        leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")
     }
 
     const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
@@ -1349,7 +1354,6 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
         .addField("Leader(s)", leadersStr, false)
         .addField("Type", backtick(allianceType), true)
-        //.addField("Wealth", `\`${foundAlliance.wealth}\`G`, true),
         .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
         .addField("Towns", backtick(foundAlliance.towns), true)
         .addField("Residents", backtick(foundAlliance.residents), true)
@@ -1360,6 +1364,11 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
 
     if (foundAlliance.online) {
         allianceEmbed.addField("Online", backtick(foundAlliance.online.length), true)
+    }
+
+    if (foundAlliance.lastUpdated) {
+        const formattedTs = DiscordUtils.timestampDateTime(foundAlliance.lastUpdated)
+        allianceEmbed.addField("Last Updated", formattedTs)
     }
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {

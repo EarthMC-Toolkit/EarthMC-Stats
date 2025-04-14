@@ -12,35 +12,42 @@ import type {
     APIActionRowComponent, APIMessageActionRowComponent
 } from "discord.js"
 
-import { secToMs } from "./fn.js"
+import { unixFromDate } from "./fn.js"
+import { Timestamp } from "firebase-admin/firestore"
 
 //#region Discord Timestamp Formatting
 // Cheat Sheet: https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa
 
-export function timestampDefault(timestamp: number) {
-    return `<t:${secToMs(timestamp)}>`
-}
+// export function timestampDefault(timestamp: number | Timestamp) {
+//     return timestamp instanceof Timestamp 
+//         ? `<t:${unixFromDate(timestamp)}>`
+//         : `<t:${timestamp}>`
+// }
 
-export function timestampDate(timestamp: number) {
-    return `<t:${secToMs(timestamp)}:D>`
-}
+// export function timestampDate(timestamp: number | Timestamp) {
+//     return timestamp instanceof Timestamp
+//         ? `<t:${unixFromDate(timestamp)}:D>`
+//         : `<t:${timestamp}:D>`
+// }
 
 /**
  * Formats the timestamp into its full date and time. For example: `Wednesday, November 28, 2018 9:01 AM`
- * @param timestamp The timestamp to format.
- * @returns The formatted timestamp as a string.
+ * @param timestamp The timestamp to format. If not a {@link Timestamp}, milliseconds are expected.
  */
-export function timestampDateTime(timestamp: number) {
-    return `<t:${secToMs(timestamp)}:F>`
+export function timestampDateTime(timestamp: number | Timestamp) {
+    return timestamp instanceof Timestamp
+        ? `<t:${unixFromDate(timestamp)}:F>`
+        : `<t:${timestamp}:F>`
 }
 
 /**
  * Formats the timestamp according to the relative time. For example: `6 seconds ago`, `21 days ago`, `4 months ago` etc.
- * @param timestamp The timestamp to format.
- * @returns The formatted timestamp as a string.
+ * @param timestamp The timestamp to format. If not a {@link Timestamp}, milliseconds are expected.
  */
-export function timestampRelative(timestamp: number) {
-    return `<t:${secToMs(timestamp)}:R>`
+export function timestampRelative(timestamp: number | Timestamp) {
+    return timestamp instanceof Timestamp 
+        ? `<t:${unixFromDate(timestamp)}:R>`
+        : `<t:${timestamp}:R>`
 }
 //#endregion
 

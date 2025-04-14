@@ -5,10 +5,11 @@ import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
 
 import BaseCommandHelper from "./base.js"
-import { backtick, buildSkinURL, secToMs, unixFromDate } from "../../bot/utils/fn.js"
+import { backtick, buildSkinURL, unixFromDate } from "../../bot/utils/fn.js"
 
 import * as MC from '../../bot/utils/minecraft.js'
 import * as database from '../../bot/utils/db/index.js'
+import * as DiscordUtils from '../../bot/utils/discord.js'
 
 import { 
     type DBPlayer,
@@ -181,11 +182,11 @@ class ResidentHelper extends BaseCommandHelper {
         this.addField("Status", statusStr, true)
 
         if (lastOnlineTs != 0 && this.status == "Offline") {
-            this.addField("Last Online", `<t:${secToMs(lastOnlineTs)}:R>`, true)
+            this.addField("Last Online", DiscordUtils.timestampRelative(lastOnlineTs), true)
         }
 
         if (registeredTs != 0) {
-            this.addField("Registered", `<t:${secToMs(registeredTs)}:F>`, true)
+            this.addField("Registered", DiscordUtils.timestampDateTime(registeredTs), true)
         }
     }
 
@@ -193,11 +194,11 @@ class ResidentHelper extends BaseCommandHelper {
         const lastOnline = this.dbPlayer?.lastOnline
         if (!lastOnline) return
 
-        const auroraLoTimestamp = unixFromDate(lastOnline.aurora)
-        if (auroraLoTimestamp == 0) return
+        const auroraLoTs = unixFromDate(lastOnline.aurora)
+        if (auroraLoTs == 0) return
 
         if (this.status == "Offline") {
-            this.addField("Last Online", `<t:${auroraLoTimestamp}:R>`, true)
+            this.addField("Last Online", DiscordUtils.timestampRelative(auroraLoTs), true)
         }
     }
 
