@@ -1,9 +1,17 @@
 import { 
+    Aurora, OfficialAPI, 
+    type SquaremapPlayer 
+} from "earthmc"
+
+import { 
     type Client,
     type Message, 
     ButtonStyle, EmbedBuilder, Colors,
     ChannelType
 } from "discord.js"
+
+import { request } from "undici"
+import { Timestamp } from "firebase/firestore"
 
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
@@ -16,12 +24,9 @@ import {
     defaultSortAlliances,
     fastMerge, isNumeric,
     backtick, backticks,
-    jsonReq, paginator,
-    removeDuplicates
-} from "../../bot/utils/fn.js"
-
-import { Aurora, OfficialAPI, type SquaremapPlayer } from "earthmc"
-import { request } from "undici"
+    jsonReq, removeDuplicates,
+    paginator
+} from "../../bot/utils/index.js"
 
 const successEmbed = (msg: Message) => new EmbedBuilder()
     .setColor(Colors.DarkBlue)
@@ -331,11 +336,12 @@ export default {
                 leaderName: "None",
                 discordInvite: "No discord invite has been set for this alliance",
                 nations: [] as string[],
-                type: 'normal' as AllianceType
+                type: 'normal' as AllianceType,
+                lastUpdated: Timestamp.now()
             })
 
             try {
-                await database.AuroraDB.setAlliances(alliances)
+                await database.AuroraDB.setAlliances(alliances, null) // TODO: No need for lastUpdated. Implement createdAt instead?
             } catch(err: any) {
                 console.error(`[/a new] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -454,6 +460,7 @@ export default {
                 nations: [],
                 type: typeLower,
                 discordInvite,
+                lastUpdated: Timestamp.now(),
                 ...{
                     fullName: info[1] || null,
                     imageURL: info[6] || null
@@ -502,7 +509,7 @@ export default {
 
             try {
                 alliances.push(alliance)
-                await database.AuroraDB.setAlliances(alliances)
+                await database.AuroraDB.setAlliances(alliances, null) // TODO: No need for lastUpdated. Implement createdAt instead?
             } catch(err: any) {
                 console.error(`[/a wizard] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -559,7 +566,7 @@ export default {
             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName)
             alliances[allianceIndex] = foundAlliance
             
-            database.AuroraDB.setAlliances(alliances)
+            database.AuroraDB.setAlliances(alliances, [allianceIndex])
 
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Renamed")
@@ -588,7 +595,7 @@ export default {
             const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
 
             alliances.splice(allianceIndex, 1)
-            database.AuroraDB.setAlliances(alliances)
+            database.AuroraDB.setAlliances(alliances, null) // Disbanding, no need to set lastUpdated.
         
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Disbanded")
@@ -658,7 +665,7 @@ export default {
             alliances[allianceIndex] = foundAlliance
 
             if (nationsAdded.length > 0) {
-                await database.AuroraDB.setAlliances(alliances)
+                await database.AuroraDB.setAlliances(alliances, [allianceIndex])
             }
             
             const name = getNameOrLabel(foundAlliance)
@@ -733,9 +740,9 @@ export default {
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
-
             alliances[allianceIndex] = foundAlliance
-            database.AuroraDB.setAlliances(alliances).catch(console.error)
+
+            database.AuroraDB.setAlliances(alliances, [allianceIndex]).catch(console.error)
 
             return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -796,7 +803,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
                 
-                database.AuroraDB.setAlliances(alliances).catch(console.error)
+                database.AuroraDB.setAlliances(alliances, [allianceIndex]).catch(console.error)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -851,7 +858,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
-                database.AuroraDB.setAlliances(alliances).catch(console.error)
+                database.AuroraDB.setAlliances(alliances, [allianceIndex]).catch(console.error)
 
                 return m.edit({embeds: [successEmbed(message)
                     .setColor(removing ? Colors.Orange : Colors.DarkBlue)
@@ -904,7 +911,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
-                database.AuroraDB.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances, [allianceIndex])
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -953,7 +960,7 @@ export default {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
-                database.AuroraDB.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances, [allianceIndex])
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -991,7 +998,7 @@ export default {
                 } 
                 else alliances[allianceIndex] = foundAlliance
 
-                database.AuroraDB.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances, [allianceIndex])
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
@@ -1013,7 +1020,7 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
                 
                 foundAlliance.fullName = args.slice(3).join(" ")
-                    
+
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 let change = `set to: ${backtick(foundAlliance.fullName)}`
                 if (!args[3]) {
@@ -1022,7 +1029,7 @@ export default {
                 }
                 else alliances[allianceIndex] = foundAlliance
 
-                database.AuroraDB.setAlliances(alliances)
+                database.AuroraDB.setAlliances(alliances, [allianceIndex])
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${foundAlliance.allianceName}`)
@@ -1070,8 +1077,8 @@ export default {
             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
             alliances[allianceIndex] = foundAlliance
             
-            database.AuroraDB.setAlliances(alliances)
-        
+            database.AuroraDB.setAlliances(alliances, [allianceIndex])
+
             return m.edit({embeds: [successEmbed(message)
                 .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                 .setDescription(`The following alliances have been merged:\n\n${backticks(alliancesToMerge.join(", "))}`)
@@ -1101,7 +1108,7 @@ export default {
                 }
             }
 
-            await database.AuroraDB.setAlliances(alliances)
+            await database.AuroraDB.setAlliances(alliances, null)
             
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Backup Successful")
@@ -1116,6 +1123,17 @@ export default {
         //#endregion
     }
 }
+
+// type AllianceMapping = { index: number, alliance: DBAlliance }
+// async function updateAlliances(alliances: DBAlliance[], changed: AllianceMapping[]) {
+//     const now = Timestamp.now()
+//     changed.forEach(mapping => {
+//         mapping.alliance.lastUpdated = now
+//         alliances[mapping.index] = mapping.alliance
+//     })
+
+//     return database.AuroraDB.setAlliances(alliances)
+// }
 
 /**
  * Removes duplicates from the input array of strings, then calls the API and returns an array of player names

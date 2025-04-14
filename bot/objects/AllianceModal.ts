@@ -1,6 +1,5 @@
 import {
     type CommandInteractionOptionResolver,
-    type ModalSubmitInteraction,
     type ChatInputCommandInteraction,
     ModalBuilder, ActionRowBuilder,
     TextInputBuilder, TextInputStyle
@@ -14,8 +13,9 @@ const optionals = ['flag', 'discord', 'fill', 'outline', 'full_name']
 const optLower = (opts: CommandInteractionOptionResolver, k: string) => 
     opts.getString(k).toLowerCase()
 
-const fieldVal = (interaction: ModalSubmitInteraction, name: string) => 
-    interaction.fields.getField(name).value
+// function fieldVal(interaction: ModalSubmitInteraction, name: string) {
+//     return interaction.fields.getField(name).value
+// }
 
 class AllianceModal extends ModalBuilder {
     rows: ActionRowBuilder<any>[] = []
@@ -70,25 +70,27 @@ class AllianceModal extends ModalBuilder {
         return this
     }
 
-    asObject = (interaction: ModalSubmitInteraction) => { 
-        const obj: DBAlliance & { map?: string } = {
-            map: this.alliance.map,
-            allianceName: this.alliance.allianceName,
-            type: this.alliance.type || "normal",
-            nations: fieldVal(interaction, 'nations').replaceAll(' ', '').split(','),
-            leaderName: fieldVal(interaction, 'leaders')
-        }
+    // Only call when creating.
+    // asObject = (modal: ModalSubmitInteraction) => { 
+    //     const obj: DBAlliance & { map?: string } = {
+    //         map: this.alliance.map,
+    //         allianceName: this.alliance.allianceName,
+    //         type: this.alliance.type || "normal",
+    //         nations: fieldVal(modal, 'nations').replaceAll(' ', '').split(','),
+    //         leaderName: fieldVal(modal, 'leaders'),
+    //         //lastUpdated: this.alliance.lastUpdated
+    //     }
 
-        const fullName = fieldVal(interaction, 'full_name')
-        const discord = fieldVal(interaction, 'discord')
-        const flag = fieldVal(interaction, 'flag')
+    //     const fullName = fieldVal(modal, 'full_name')
+    //     const discord = fieldVal(modal, 'discord')
+    //     const flag = fieldVal(modal, 'flag')
 
-        if (fullName) obj.fullName = fullName
-        if (discord) obj.discordInvite = discord
-        if (flag) obj.imageURL = flag
+    //     if (fullName) obj.fullName = fullName
+    //     if (discord) obj.discordInvite = discord
+    //     if (flag) obj.imageURL = flag
 
-        return obj
-    }
+    //     return obj
+    // }
 
     extra = () => {
         this.rows = [

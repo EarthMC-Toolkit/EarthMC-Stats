@@ -3,10 +3,11 @@ import {
     type Client
 } from "discord.js"
 
-import type { Button, DBSquaremapNation } from "../../bot/types.js"
-import { cache } from "../../bot/constants.js"
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
-import { paginatorInteraction } from "../../bot/utils/fn.js"
+import { cache } from "../../bot/constants.js"
+import { paginatorInteraction } from "../../bot/utils/index.js"
+
+import type { Button, DBSquaremapNation } from "../../bot/types.js"
 
 // Appears when `/nation lookup` cannot display all towns.
 const viewTownsBtn: Button = {

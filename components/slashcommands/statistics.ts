@@ -8,7 +8,7 @@ import {
     embedField, 
     getUserCount,
     devsFooter
-} from '../../bot/utils/fn.js'
+} from '../../bot/utils/index.js'
 
 export default {
     name: "stats",

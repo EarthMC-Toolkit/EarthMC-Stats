@@ -10,7 +10,7 @@ import {
     getStaff,
     backtick,
     paginatorInteraction
-} from '../../bot/utils/fn.js'
+} from '../../bot/utils/index.js'
 
 import { 
     staffResponse,

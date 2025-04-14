@@ -14,6 +14,7 @@ import type { SlashCommand } from "../../../bot/types.js"
 const editingChannels = ["971408026516979813"]
 const editorRole = "966359842417705020"
 
+// TODO: Does this work in DMs since we cast to GuildMember ?
 const checkEditor = async (interaction: ChatInputCommandInteraction) => {
     const author = interaction.member as GuildMember
     const isEditor = editingChannels.includes(interaction.channelId) && author.roles.cache.has(editorRole)

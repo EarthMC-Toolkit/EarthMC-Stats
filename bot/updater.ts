@@ -134,7 +134,7 @@ async function updateAlliances(map: MapInstance) {
             .catch(err => { if (err.code == 10006) a.discordInvite = noInvite })
     }
 
-    await map.db.setAlliances(alliances)
+    await map.db.setAlliances(alliances, null) // No need to set lastUpdated - auto stuff would confuse editors.
 }
 
 async function sendEmptyAllianceNotif(map: MapInstance) {

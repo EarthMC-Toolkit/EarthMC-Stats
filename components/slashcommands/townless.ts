@@ -5,7 +5,7 @@ import {
 } from "discord.js"
 
 import { Aurora } from 'earthmc'
-import { fastMerge, fetchError, paginatorInteraction } from '../../bot/utils/fn.js'
+import { fastMerge, fetchError, paginatorInteraction } from '../../bot/utils/index.js'
 import { lastSeenPlayers } from "../../bot/constants.js"
 import { getResidents } from "../../bot/utils/db/aurora.js"
 

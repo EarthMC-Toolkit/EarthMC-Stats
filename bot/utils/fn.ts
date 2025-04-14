@@ -5,25 +5,15 @@ import type {
     SkinOpts
 } from "../types.js"
 
-import type { 
-    Channel, Message,
-    MessageReaction,
-    ButtonInteraction,
+import type {
     Client,
-    CommandInteraction,
-    EmojiIdentifierResolvable,
-    User,
-    APIEmbedField,
-    APIActionRowComponent,
-    APIMessageActionRowComponent
+    APIEmbedField
 } from "discord.js"
 
 import {
-    ButtonBuilder, EmbedBuilder,
-    ActionRowBuilder, AttachmentBuilder,
-    ChannelType, ComponentType,
-    Colors, ButtonStyle,
-    PermissionFlagsBits
+    EmbedBuilder,
+    AttachmentBuilder,
+    Colors
 } from "discord.js"
 
 import { OfficialAPI } from "earthmc"
@@ -101,188 +91,11 @@ export function unixFromDate(date: Date | Timestamp): number {
     return result ? moment.utc(result).unix() : null
 }
 
-export const fiveMin = 5 * 60 * 1000
 export const listInputToArr = (str: string) => str.replace(/,/g, ' ').split(' ').filter(Boolean)
 export const removeDuplicates = <T>(arr: T[]) => [...new Set(arr)]
-export const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
 
 //export const deepCopy = <T>(arr: T[]) => JSON.parse(JSON.stringify(arr))
 //export const isEmpty = (str: string) => (!str || str.length === 0)
-
-// type ForwardCallback = (
-//     interaction: ButtonInteraction, 
-//     msg: Message,
-//     embeds: EmbedBuilder[]
-// ) => Awaitable<any>
-
-export const paginator = async(
-    author: string, 
-    msg: Message, 
-    embeds: EmbedBuilder[], 
-    currentPage: number
-    // TODO: Implement this. For running specified method on fwd/back.
-    // _forward: ForwardCallback
-) => {
-    // DM messages don't work with component collectors right now
-    // if (msg?.channel?.type == ChannelType.DM) {
-    //     return await msg.edit("DMs do not support buttons yet! Try again in a server.")
-    // }
-
-    // Create collector which will listen for a button interaction. (If it passes the filter)
-    const collector = msg.createMessageComponentCollector({ 
-        filter: (i: ButtonInteraction) => { 
-            i.deferUpdate()
-            return i.user.id === author // Only the original sender is allowed to press buttons.
-        },
-        componentType: ComponentType.Button,
-        time: fiveMin
-    })
-
-    const lastPage = embeds.length - 1
-
-    // Edit message to show arrow buttons
-    await msg.edit({ components: [buildButtons(currentPage, lastPage)] }).catch(console.error)
-    setTimeout(() => msg.edit({ components: [] }).catch(() => {}), fiveMin)
-
-    collector.on("collect", async interaction => {
-        currentPage = interaction.customId == "last" ? lastPage 
-            : interaction.customId == "back" ? Math.max(currentPage - 1, 0) 
-            : interaction.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
-
-        await msg.edit({
-            embeds: [embeds[currentPage]],
-            components: [buildButtons(currentPage, lastPage)]
-        })
-    })
-}
-
-/** Helper method to create a paginator on an interaction. */
-export const paginatorInteraction = async(
-    interaction: CommandInteraction | ButtonInteraction,
-    embeds: EmbedBuilder[],
-    currentPage: number
-) => {
-    try {
-        const msg: Message = await interaction.fetchReply()
-        if (!msg) throw new Error("Message could not be fetched: fetchReply returned null.")
-
-        doPaginatorInteraction(interaction, msg, embeds, currentPage)
-    } catch(e) {
-        console.warn("Failed to paginate interaction.\n" + e)
-    }
-}
-
-export const doPaginatorInteraction = async(
-    interaction: CommandInteraction | ButtonInteraction,
-    msg: Message,
-    embeds: EmbedBuilder[],
-    currentPage: number
-) => {
-    // Create collector which will listen for a button interaction. (If it passes the filter)
-    const collector = msg.createMessageComponentCollector({ 
-        filter: (i: ButtonInteraction) => { 
-            i.deferUpdate()
-            return i.user.id === interaction.user.id // Only the original sender is allowed to press buttons.
-        },
-        componentType: ComponentType.Button,
-        time: fiveMin
-    })
-
-    const lastPage = embeds.length - 1
-
-    // Edit message to show arrow buttons
-    await interaction.editReply({ components: [buildButtons(currentPage, lastPage)] }).catch(console.error)
-    setTimeout(() => interaction.editReply({ components: [] }).catch(() => {}), fiveMin)
-
-    collector.on("collect", async i => {
-        currentPage = i.customId == "last" ? lastPage 
-            : i.customId == "back" ? Math.max(currentPage - 1, 0) 
-            : i.customId == "forward" ? Math.min(currentPage + 1, lastPage) : 0
-
-        await interaction.editReply({
-            embeds: [embeds[currentPage]],
-            components: [buildButtons(currentPage, lastPage)]
-        })
-    })
-}
-
-const buildButtons = (currentPage: number, lastPage: number) => {
-    const noFurther = currentPage >= lastPage
-    const noLess = currentPage <= 0
-
-    return new ActionRowBuilder<ButtonBuilder>().addComponents(
-        emojiButton("first", "⏪", noLess), emojiButton("back", "◀", noLess), 
-        emojiButton("forward", "▶", noFurther), emojiButton("last", "⏩", noFurther)
-    ).toJSON() as APIActionRowComponent<APIMessageActionRowComponent>
-}
-
-const emojiButton = (
-    id: string, 
-    emoji: EmojiIdentifierResolvable, 
-    disabled: boolean
-) => new ButtonBuilder({
-    customId: id,
-    emoji: emoji,
-    disabled: disabled,
-    style: ButtonStyle.Primary
-})
-
-const reactionOpts = {
-    time: fiveMin, 
-    max: 1, 
-    errors: ['time']
-}
-
-export const paginatorDM  = async (
-    author: string,
-    msg: Message,
-    embeds: EmbedBuilder[], 
-    curPage: number, 
-    addReactions = true
-) => {
-    if (addReactions) {
-        await msg.react("⏪")
-        await msg.react("◀")
-        await msg.react("▶")
-        await msg.react("⏩")
-
-        setTimeout(() => msg.reactions.removeAll().catch(() => {}), fiveMin)
-    }
-
-    const filter = (reaction: MessageReaction, user: User) => {
-        return user.id == author && ["◀", "▶", "⏪", "⏩"].includes(reaction.emoji.name)
-    }
-
-    const reaction = await msg.awaitReactions({ filter, ...reactionOpts }).catch(() => {})
-    if (!reaction) return msg.reactions.removeAll().catch(() => {})
-
-    switch (reaction.first().emoji.name) {
-        case "◀": {
-            const m = await msg.edit({ embeds: [embeds[Math.max(curPage - 1, 0)]] })
-            paginatorDM(author, m, embeds, Math.max(curPage - 1, 0), false)
-
-            break
-        }
-        case "▶": {
-            const m = await msg.edit({ embeds: [embeds[Math.min(curPage + 1, embeds.length - 1)]] })
-            paginatorDM(author, m, embeds, Math.min(curPage + 1, embeds.length - 1), false)
-
-            break
-        }
-        case "⏪": {
-            const m = await msg.edit({ embeds: [embeds[0]] })
-            paginatorDM(author, m, embeds, 0, false)
-
-            break
-        }
-        case "⏩": {
-            const m = await msg.edit({ embeds: [embeds[embeds.length - 1]] })
-            paginatorDM(author, m, embeds, embeds.length - 1, false)
-
-            break
-        }
-    }
-}
 
 // UTC is safe to divide by 24 hours
 export const daysBetween = (start: Date, end: Date) => {
@@ -387,23 +200,6 @@ export const random = (array: any[], last: number) => {
     while(true) {
         const rand = Math.floor(Math.random() * len)
         if (rand != last) return rand
-    }
-}
-
-/** Checks whether the client can view and send messages in a channel */
-export function canViewAndSend(channel: Channel) {
-    switch (channel.type) {
-        case ChannelType.GuildText:
-        case ChannelType.GuildAnnouncement: {
-            if (!channel.viewable) return false
-            return channel.permissionsFor(channel.guild.members.me).has(PermissionFlagsBits.SendMessages)
-        }
-        case ChannelType.AnnouncementThread:
-        case ChannelType.PublicThread:
-        case ChannelType.PrivateThread: {
-            return channel.joinable && channel.sendable
-        }
-        default: return false
     }
 }
 

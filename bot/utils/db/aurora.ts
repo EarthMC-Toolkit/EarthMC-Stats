@@ -17,6 +17,7 @@ import type {
     DBAlliance, DBResident, 
     DBSquaremapNation, DBSquaremapTown
 } from '../../types.js'
+import { Timestamp } from "firebase/firestore"
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 
@@ -221,7 +222,12 @@ function validDBAlliance(alliance: unknown): alliance is DBAlliance {
     return true
 }
 
-export async function setAlliances(alliances: DBAlliance[]) {
+/**
+ * Overwrites the alliances document with updated alliances data.
+ * @param alliances All existing alliances, including ones we just changed.
+ * @param changed The indexes of the alliances that changed.
+ */
+export async function setAlliances(alliances: DBAlliance[], changed: number[]) {
     if (!Array.isArray(alliances)) {
         console.warn("Attempted to overwrite alliances with non-array type.")
         return
@@ -233,11 +239,18 @@ export async function setAlliances(alliances: DBAlliance[]) {
     }
 
     // TODO: This could be slow, determine whether it's truly necessary to typecheck each alliance.
-    //       If we validate only the alliance(s) that we updated, the two checks above are fine?
+    //       If we validate only the alliance(s) that we updated, the two checks above should suffice.
     const allValid = alliances.every(a => !!a && validDBAlliance(a))
     if (!allValid) {
         console.warn("Attempted to overwrite alliances, but not all of them satisified DBAlliance.")
         return
+    }
+
+    if (changed?.length > 0) {
+        const now = Timestamp.now()
+        changed.forEach(idx => {
+            alliances[idx].lastUpdated = now
+        })
     }
 
     cache.set('aurora_alliances', alliances)

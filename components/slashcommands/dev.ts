@@ -51,7 +51,7 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
         )
     )
 
-interface CachedAlliance {
+interface MapExtAlliance {
     name: string
     type: "alliances" | "meganations" // Doesn't matter for now
     nations: string[]
@@ -224,7 +224,7 @@ export default {
                 const inputFile = await interaction.options.getAttachment("cache_file")
                 if (!inputFile) return await interaction.editReply({ content: `Something went wrong with the input file.` })
 
-                const cachedAlliances = (await request(inputFile.url).then(res => res.body.json())) as CachedAlliance[]
+                const cachedAlliances = (await request(inputFile.url).then(res => res.body.json())) as MapExtAlliance[]
                 if (!cachedAlliances || cachedAlliances.length < 0) {
                     return await interaction.editReply({ content: `Failed to parse JSON.` })
                 }
@@ -237,36 +237,36 @@ export default {
                     ephemeral: true
                 })
 
-                const skip = [
-                    "HRE", "Holy Roman Empire", 
-                    "OFN", "Organization of Free Nations", 
-                    "RSAA", "Realm of South Africa and Antartica",
-                    "UAA", "United Aurora Accord",
-                    "RSA", "Realm of South Africa",
-                    "Uzbek", "Federation Of Uzbekistan",
-                    "ALC", "American Liberty Coalition",
-                    "Africa"
-                ]
+                // const skip = [
+                //     "HRE", "Holy Roman Empire", 
+                //     "OFN", "Organization of Free Nations", 
+                //     "RSAA", "Realm of South Africa and Antartica",
+                //     "UAA", "United Aurora Accord",
+                //     "RSA", "Realm of South Africa",
+                //     "Uzbek", "Federation Of Uzbekistan",
+                //     "ALC", "American Liberty Coalition",
+                //     "Africa"
+                // ]
                 
-                for (const cachedAlliance of cachedAlliances) {
-                    if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
-                    if (alliances.some(a => a.fullName.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
+                // for (const cachedAlliance of cachedAlliances) {
+                //     if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
+                //     if (alliances.some(a => a.fullName.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
 
-                    // Exists already
+                //     // Exists already
 
 
-                    // Doesn't exist already
-                    alliances.push({
-                        allianceName: cachedAlliance.name.replaceAll(" ", "_"),
-                        fullName: cachedAlliance.name,
-                        type: "normal",
-                        nations: cachedAlliance.nations,
-                        leaderName: "None",
-                        colours: cachedAlliance.colours
-                    })
-                }
+                //     // Doesn't exist already
+                //     alliances.push({
+                //         allianceName: cachedAlliance.name.replaceAll(" ", "_"),
+                //         fullName: cachedAlliance.name,
+                //         type: "normal",
+                //         nations: cachedAlliance.nations,
+                //         leaderName: "None",
+                //         colours: cachedAlliance.colours
+                //     })
+                // }
 
-                await AuroraDB.setAlliances(alliances)
+                //await AuroraDB.setAlliances(alliances)
                 return await interaction.followUp({ content: `Successfully rebuilt alliances.` })
             }
             default: return await interaction.reply({embeds: [embed

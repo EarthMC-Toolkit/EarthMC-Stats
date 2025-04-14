@@ -1,4 +1,8 @@
-import * as fn from '../utils/fn.js'
+import { 
+    devsFooter,
+    paginator,
+    paginatorInteraction
+} from '../utils/index.js'
 
 import type { 
     Client, ColorResolvable, 
@@ -33,19 +37,25 @@ type EntityType = ObjectValues<typeof EntityType>
 //     files: BaseMessageOptions['files']
 // }
 
+type AnyComponent = BaseMessageOptions['components'][number]
+type AnyFile = BaseMessageOptions['files'][number]
+
+const MAX_ROW_BTNS = 5
+
 export default class CustomEmbed extends EmbedBuilder {
-    embeds: EmbedBuilder[] = []
-    components: any[] = []
-    files: any[] = []
+    client: Client = null
+    colour: ColorResolvable = null
+    title: string = null
 
     ephemeral = false
     paginated = false
     page = 0
 
-    client: Client = null
-    colour: ColorResolvable = null
-    row: ActionRowBuilder = null
-    title: string = null
+    embeds: EmbedBuilder[] = []
+    components: AnyComponent[] = []
+    files: AnyFile[] = []
+
+    buttonRows: ActionRowBuilder<ButtonBuilder>[] = []
 
     constructor(client: Client = null, title: string = null) {
         super({ title })
@@ -54,7 +64,7 @@ export default class CustomEmbed extends EmbedBuilder {
         this.client = client
 
         if (this.client) {
-            this.setFooter(fn.devsFooter(client))
+            this.setFooter(devsFooter(client))
         }
     }
 
@@ -64,15 +74,20 @@ export default class CustomEmbed extends EmbedBuilder {
     }
 
     addButton(id: string, label: string, style = ButtonStyle.Primary) {
-        const row = this.row ?? new ActionRowBuilder()
-        row.addComponents(new ButtonBuilder()
+        let row = this.buttonRows[this.buttonRows.length - 1]
+
+        // No rows or hit max buttons on one row.
+        if (!row || row.components.length >= MAX_ROW_BTNS) {
+            row = new ActionRowBuilder<ButtonBuilder>()
+            this.buttonRows.push(row)
+        }
+
+        // Add our button to new or existing row.
+        this.components.push(row.addComponents(new ButtonBuilder()
             .setCustomId(id)
             .setLabel(label)
             .setStyle(style)
-        )
-
-        this.row = row
-        this.components.push(row)
+        ))
 
         return this
     }
@@ -107,7 +122,7 @@ export default class CustomEmbed extends EmbedBuilder {
 
     /** Sets the footer to the default one displaying name of the maintainer and bot profile pic as the icon. */
     setDefaultFooter() {
-        this.setFooter(fn.devsFooter(this.client))
+        this.setFooter(devsFooter(this.client))
         return this
     }
 
@@ -167,21 +182,21 @@ export default class CustomEmbed extends EmbedBuilder {
         if (!this.paginated) return await interaction.reply({ ...this.payload(), ephemeral: this.ephemeral })
 
         return await interaction.reply(this.payload(true))
-            .then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
+            .then(() => paginatorInteraction(interaction, this.embeds, this.page))
     }
 
     async editInteraction(interaction: CommandInteraction) {
         if (!this.paginated) return await interaction.editReply(this.payload())
 
         return await interaction.editReply(this.payload(true))
-            .then(() => fn.paginatorInteraction(interaction, this.embeds, this.page))
+            .then(() => paginatorInteraction(interaction, this.embeds, this.page))
     }
     
     async editMessage(msg: Message) {
         if (!this.paginated) return await msg.edit(this.payload())
         
         return await msg.edit(this.payload(true))
-            .then(() => fn.paginator(msg.author.id, msg, this.embeds, this.page))
+            .then(() => paginator(msg.author.id, msg, this.embeds, this.page))
     }
 
     /**
