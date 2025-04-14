@@ -1,11 +1,10 @@
 import  { 
     endpoint,
     type RawPlayerStatsV3,
-    type SquaremapMapResponse, 
+    type SquaremapMapResponse,
     type SquaremapPlayersResponse
 } from "earthmc"
 
-import { request } from "undici"
 import { db, cache } from '../../constants.js'
 
 import { 
@@ -28,14 +27,15 @@ const townDataCollection = () => auroraDoc().collection("townData")
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
 const playerStatsCollection = () => auroraDoc().collection("playerStats").doc("playerStatsDoc")
 
-export const AURORA_MAP_URL = 'https://map.earthmc.net'
+//export const AURORA_MAP_URL = 'https://map.earthmc.net'
 
 export const getMapData = () => endpoint.mapData<SquaremapMapResponse>('aurora')
+export const getOnlinePlayerData = () => endpoint.playerData<SquaremapPlayersResponse>('aurora')
 
-export const getOnlinePlayerData = async () => {
-    const res = await request(`${AURORA_MAP_URL}/tiles/players.json`)
-    return await res.body.json() as SquaremapPlayersResponse
-}
+// export const getOnlinePlayerData = async () => {
+//     const res = await request(`${AURORA_MAP_URL}/tiles/players.json`)
+//     return await res.body.json() as SquaremapPlayersResponse
+// }
 
 export async function getResidents(): Promise<DBResident[]> {
     const cachedResidents = cache.get('aurora_residents')
@@ -116,11 +116,18 @@ export async function setTowns(towns: DBSquaremapTown[]) {
 
 const length = (x: unknown[]) => x.length
 
+// Represents an alliance that has extra info (to be displayed on embeds)
+// but doesn't need to be stored in the DB. Info set here is always after getAlliances().
+type DBAllianceExtended = DBAlliance & {
+    online: string[]
+    //wealth: number
+}
+
 export async function getAlliance(name: string) {
     const alliances = await getAlliances() as DBAlliance[]
     if (!alliances) return null
 
-    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase())
+    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase()) as DBAllianceExtended
     if (!foundAlliance) return null
 
     const nations = await getNations()
@@ -134,7 +141,7 @@ export async function getAlliance(name: string) {
     for (let i = 0; i < len; i++) {
         const n = allianceNations[i]
 
-        if (opData) {
+        if (opData?.players) {
             const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
             foundAlliance.online = fastMerge([], onlineInNation)
         }
@@ -198,6 +205,22 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
     }).catch(e => { console.warn(`Error getting alliances:\n` + e); return null })
 }
 
+
+function validDBAlliance(alliance: unknown): alliance is DBAlliance {
+    const isObj = typeof alliance === 'object' && !Array.isArray(alliance)
+    if (!isObj) return false
+
+    const name = alliance['allianceName']
+    const validName = !!name && typeof name === 'string'
+    if (!validName) return false
+
+    const nations = alliance['nations']
+    const validNations = !!nations && Array.isArray(nations)
+    if (!validNations) return false
+
+    return true
+}
+
 export async function setAlliances(alliances: DBAlliance[]) {
     if (!Array.isArray(alliances)) {
         console.warn("Attempted to overwrite alliances with non-array type.")
@@ -209,7 +232,13 @@ export async function setAlliances(alliances: DBAlliance[]) {
         return
     }
 
-    // TODO: Ensure first (or every?) element satisfies DBAlliance.
+    // TODO: This could be slow, determine whether it's truly necessary to typecheck each alliance.
+    //       If we validate only the alliance(s) that we updated, the two checks above are fine?
+    const allValid = alliances.every(a => !!a && validDBAlliance(a))
+    if (!allValid) {
+        console.warn("Attempted to overwrite alliances, but not all of them satisified DBAlliance.")
+        return
+    }
 
     cache.set('aurora_alliances', alliances)
     return allianceCollection().set({ allianceArray: alliances })

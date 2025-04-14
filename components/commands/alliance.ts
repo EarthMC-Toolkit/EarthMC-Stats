@@ -1102,7 +1102,7 @@ export default {
             }
 
             await database.AuroraDB.setAlliances(alliances)
-                    
+            
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Backup Successful")
                 .setDescription(`The following alliances have been restored:\n\n${backticks(restored.join(", "))}`) 
