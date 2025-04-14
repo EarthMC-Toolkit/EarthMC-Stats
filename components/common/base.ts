@@ -34,8 +34,7 @@ export default abstract class BaseCommandHelper {
     /**
      * Stringifys the embed data, returning info about this command as a JSON string.\
      * While we could use `embed.toJSON()`, this avoids the overhead of validation and allows us to customize how it gets printed.
-     * 
-     * @returns {string} The JSON formatted string.
+     * @param pretty Whether to format the returned JSON string with line breaks and 2 indents.
      */
     raw = (pretty = true) => {
         const embedData = this.embed.data

@@ -53,6 +53,7 @@ const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
 const editorID = "966359842417705020"
 const seniorEditorID = "1143253762039873646"
 const allowedChannels = ["971408026516979813", "966369739679080578"]
+const flagsChannel = "966372674236481606"
 
 const getNameOrLabel = (a: { fullName?: string, allianceName: string }) => a.fullName || a.allianceName
 const getType = (a: { type: string }) => a.type == 'mega' 
@@ -539,10 +540,23 @@ export default {
                 .setDescription("The alliance you're trying to rename does not exist! Please try again.")
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-            const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName)
             const oldName = foundAlliance.allianceName
+            const nameInput = args[2]
 
-            foundAlliance.allianceName = args[2]
+            if (oldName == nameInput) {
+                return m.edit({embeds: [successEmbed(message)
+                    .setColor(Colors.Orange)
+                    .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                    .setDescription(`
+                        The alliance name specified is the same as the existing one.
+                        Nothing changed, but an unnecessary database write was avoided! :)
+                    `)
+                ]}).catch(() => {})
+            }
+
+            foundAlliance.allianceName = nameInput
+
+            const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName)
             alliances[allianceIndex] = foundAlliance
             
             database.AuroraDB.setAlliances(alliances)
@@ -751,6 +765,17 @@ export default {
 
                 const removing = playerArgsStr.toLowerCase() == "none" || playerArgsStr.toLowerCase() == "null"
                 if (!removing) {
+                    if (playerArgsStr == foundAlliance.leaderName) {
+                        return m.edit({embeds: [successEmbed(message)
+                            .setColor(Colors.Orange)
+                            .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                            .setDescription(`
+                                The alliance leaders specified are all already set.
+                                Nothing changed, but an unnecessary database write was avoided! :)
+                            `)
+                        ]}).catch(() => {})
+                    }
+
                     //#region Check if leaders exist adding them.
                     const missingPlayers = await checkPlayersExist(playerArgs)
                     if (missingPlayers.length > 0) return m.edit({embeds: [new EmbedBuilder()
@@ -767,9 +792,10 @@ export default {
                 }
 
                 foundAlliance.leaderName = removing ? "None" : playerArgsStr
-                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
 
+                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
+                
                 database.AuroraDB.setAlliances(alliances).catch(console.error)
                 
                 return m.edit({embeds: [successEmbed(message)
@@ -790,9 +816,20 @@ export default {
                     .setDescription("Unable to update that alliance as it does not exist!")
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
                 
+                const inviteInput = args[3]
+                if (inviteInput == foundAlliance.discordInvite) {
+                    return m.edit({embeds: [successEmbed(message)
+                        .setColor(Colors.Orange)
+                        .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                        .setDescription(`
+                            The alliance discord link specified is the same as the existing one.
+                            Nothing changed, but an unnecessary database write was avoided! :)
+                        `)
+                    ]}).catch(() => {})
+                }
+
                 let removing = false
 
-                const inviteInput = args[3]
                 if (inviteInput.toLowerCase() == "none" || inviteInput.toLowerCase() == "null") {
                     foundAlliance.discordInvite = "No discord invite has been set for this alliance"
 
@@ -838,18 +875,41 @@ export default {
                     .setTitle("Error updating alliance")
                     .setDescription("Unable to update that alliance as it does not exist!")
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-                
-                foundAlliance.imageURL = args[3]
-                    
+
+                //#region Validate input
+                const urlInput = args[3]
+                if (!urlInput.includes(flagsChannel)) {
+                    return m.edit({embeds: [successEmbed(message)
+                        .setColor(Colors.Orange)
+                        .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                        .setDescription(`Naughty editor! Read the description of the flags channel.`)
+                        .setImage("https://cdn.7tv.app/emote/01FQ98TKT0000FX658SRNP1BXC/4x.gif") // SMH
+                    ]}).catch(() => {})
+                }
+
+                if (foundAlliance.imageURL == urlInput) {
+                    return m.edit({embeds: [successEmbed(message)
+                        .setColor(Colors.Orange)
+                        .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                        .setDescription(`
+                            The alliance image specified is the same as the existing one.
+                            Nothing changed, but an unnecessary database write was avoided! :)
+                        `)
+                    ]}).catch(() => {})
+                }
+                //#endregion
+
+                foundAlliance.imageURL = urlInput
+
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-                alliances[allianceIndex] = foundAlliance   
+                alliances[allianceIndex] = foundAlliance
 
                 database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
                     .setDescription("The alliance image has been set to:") 
-                    .setImage(args[3])
+                    .setImage(urlInput)
                 ]}).catch(() => {})
             }
             //#endregion                
@@ -874,14 +934,25 @@ export default {
                     ]}).then(m => setTimeout(() => m.delete(), 10000))
                 }
 
-                foundAlliance["type"] = type
+                if (foundAlliance.type == type) {
+                    return m.edit({embeds: [successEmbed(message)
+                        .setColor(Colors.Orange)
+                        .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                        .setDescription(`
+                            The alliance type specified is the same as the existing one.
+                            Nothing changed, but an unnecessary database write was avoided! :)
+                        `)
+                    ]}).catch(() => {})
+                }
+
+                foundAlliance.type = type
                 const desc = type == 'sub'
                     ? "The alliance is now a sub-meganation. :partying_face: " : type == 'mega' 
                     ? "The alliance is now a meganation! :statue_of_liberty:" : "The alliance type has been set back to normal. :pensive:"
 
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+                alliances[allianceIndex] = foundAlliance
 
-                alliances[allianceIndex] = foundAlliance   
                 database.AuroraDB.setAlliances(alliances)
                 
                 return m.edit({embeds: [successEmbed(message)
@@ -909,12 +980,14 @@ export default {
                 }
 
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-                let change = `set to: \n
+                let change = `set to:\n
                     Fill: ${foundAlliance.colours.fill}\n
-                    Outline: ${foundAlliance.colours.outline}`
+                    Outline: ${foundAlliance.colours.outline}
+                `
+
                 if (!args[3]) {
                     change = "cleared."
-                    delete alliances[allianceIndex]['colours']
+                    delete alliances[allianceIndex].colours
                 } 
                 else alliances[allianceIndex] = foundAlliance
 
@@ -945,7 +1018,7 @@ export default {
                 let change = `set to: ${backtick(foundAlliance.fullName)}`
                 if (!args[3]) {
                     change = "cleared."
-                    delete alliances[allianceIndex]['fullName']
+                    delete alliances[allianceIndex].fullName
                 }
                 else alliances[allianceIndex] = foundAlliance
 
@@ -995,8 +1068,8 @@ export default {
             }
 
             const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-
             alliances[allianceIndex] = foundAlliance
+            
             database.AuroraDB.setAlliances(alliances)
         
             return m.edit({embeds: [successEmbed(message)
