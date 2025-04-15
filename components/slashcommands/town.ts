@@ -156,14 +156,14 @@ export default {
 
             const allData = town.residents.map(resident => {
                 const residentPlayer = players.find(p => p.name == resident)
+    
+                const loTimestamp = residentPlayer?.lastOnline?.aurora
+                const tsOrUnknown = loTimestamp != null 
+                    ? timestampRelative(loTimestamp)
+                    : "Unknown"
 
-                if (residentPlayer && residentPlayer.lastOnline != null) {
-                    const ts = residentPlayer.lastOnline.aurora.seconds
-                    return `${backtick(resident)} - <t:${ts}:R>`
-                }
-
-                return `${resident} | Unknown`
-            }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                return `${backtick(resident)} - ${tsOrUnknown}`
+            }).join('\n').match(/(?:^.*$\n?){1,15}/mg)
 
             return new CustomEmbed(client, `Town Information | Activity in ${backtick(town.name)}`)
                 .paginate(allData)

@@ -1,6 +1,7 @@
 import { 
     type SquaremapTown,
-    NotFoundError, Aurora
+    NotFoundError,
+    Aurora
 } from 'earthmc'
 
 import {
@@ -30,8 +31,11 @@ import type {
 } from '../../bot/types.js'
 
 import { cache } from "../../bot/constants.js"
-import * as database from "../../bot/utils/db/index.js"
-import * as DiscordUtils from "../../bot/utils/discord.js"
+import { 
+    database,
+    EMOJI_CHUNK,
+    timestampRelative
+} from "../../bot/utils/index.js"
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("nation")
@@ -208,6 +212,7 @@ export default {
                 return interaction.editReply({ embeds: [nationEmbed] })
             }
 
+            // TODO: Use timestamps from OAPI - keep current logic (DB dates) as fallback.
             if (subCmd == "activity") {
                 const players = await database.getPlayers()
                 if (!players) return await interaction.editReply({ embeds: [databaseError] })
@@ -242,15 +247,15 @@ export default {
                 else page--
     
                 const allData = nation.residents.map(resident => {
-                    const residentInPlayers = players.find(p => p.name == resident)
+                    const residentPlayer = players.find(p => p.name == resident)
     
-                    const resLoAurora = residentInPlayers?.lastOnline?.aurora
-                    const tsOrUnknown = resLoAurora != null 
-                        ? DiscordUtils.timestampRelative(resLoAurora)
+                    const loTimestamp = residentPlayer?.lastOnline?.aurora
+                    const tsOrUnknown = loTimestamp != null 
+                        ? timestampRelative(loTimestamp)
                         : "Unknown"
 
-                    return `**${resident}** - ${tsOrUnknown}`
-                }).join('\n').match(/(?:^.*$\n?){1,10}/mg)
+                    return `${backtick(resident)} - ${tsOrUnknown}`
+                }).join('\n').match(/(?:^.*$\n?){1,15}/mg)
     
                 return new CustomEmbed(client, `Nation Info | Activity in ${backtick(nation.name)}`)
                     .setType(EntityType.Nation)
@@ -293,12 +298,12 @@ export default {
 
                 //#region Embed Stuff
                 const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
-                const mapUrl = Aurora.buildMapLink({ x: capitalX, z: capitalZ }, 5)
+                const mapUrl = new Aurora.URLBuilder({ x: capitalX, z: capitalZ }, 5)
 
                 //const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
                 
                 const area = Math.round(nation.area)
-                const chunksStr = `<:chunk:1318944677562679398> \`${area.toString()}\` Chunks`
+                const chunksStr = `${EMOJI_CHUNK} ${backtick(area.toString())} Chunks`
 
                 // TODO: Implement as `/nation worth <name>` instead.
                 //const worth = Math.round(nation.area * 16)
@@ -310,10 +315,10 @@ export default {
                     .addFields(
                         embedField("Leader", backtick(nation.king, { prefix: kingPrefix }), true),
                         embedField("Capital", backtick(nation.capital.name), true), 
-                        embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.toString()})`, true),
+                        embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.getAsString()})`, true),
                         embedField("Size", chunksStr, true),
-                        embedField("Residents", `\`${nationResLength.toString()}\``, true),
-                        embedField("<:chunk:1318944677562679398> Nation Bonus", `\`${auroraNationBonus(nationResLength).toString()}\``, true)
+                        embedField("Residents", backtick(nationResLength), true),
+                        embedField(`${EMOJI_CHUNK} Nation Bonus`, backtick(auroraNationBonus(nationResLength)), true)
                     )
     
                 if (nation.discord) {
