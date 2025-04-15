@@ -12,42 +12,39 @@ import type {
     APIActionRowComponent, APIMessageActionRowComponent
 } from "discord.js"
 
-import { unixFromDate } from "./fn.js"
 import { Timestamp } from "firebase-admin/firestore"
+import { msToSec } from "./fn.js"
 
 //#region Discord Timestamp Formatting
 // Cheat Sheet: https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa
 
 // export function timestampDefault(timestamp: number | Timestamp) {
-//     return timestamp instanceof Timestamp 
-//         ? `<t:${unixFromDate(timestamp)}>`
-//         : `<t:${timestamp}>`
+//     return `<t:${timestampToSec(timestamp)}>` as const
 // }
 
 // export function timestampDate(timestamp: number | Timestamp) {
-//     return timestamp instanceof Timestamp
-//         ? `<t:${unixFromDate(timestamp)}:D>`
-//         : `<t:${timestamp}:D>`
+//     return `<t:${timestampToSec(timestamp)}:D>` as const
 // }
 
 /**
  * Formats the timestamp into its full date and time. For example: `Wednesday, November 28, 2018 9:01 AM`
- * @param timestamp The timestamp to format. If not a {@link Timestamp}, milliseconds are expected.
+ * @param timestamp The timestamp to format. Seconds are preferred, but ms should work.
  */
 export function timestampDateTime(timestamp: number | Timestamp) {
-    return timestamp instanceof Timestamp
-        ? `<t:${unixFromDate(timestamp)}:F>`
-        : `<t:${timestamp}:F>`
+    return `<t:${timestampToSec(timestamp)}:F>` as const
 }
 
 /**
  * Formats the timestamp according to the relative time. For example: `6 seconds ago`, `21 days ago`, `4 months ago` etc.
- * @param timestamp The timestamp to format. If not a {@link Timestamp}, milliseconds are expected.
+ * @param timestamp The timestamp to format. Seconds are preferred, but ms should work.
  */
 export function timestampRelative(timestamp: number | Timestamp) {
-    return timestamp instanceof Timestamp 
-        ? `<t:${unixFromDate(timestamp)}:R>`
-        : `<t:${timestamp}:R>`
+    return `<t:${timestampToSec(timestamp)}:R>` as const
+}
+
+function timestampToSec(timestamp: number | Timestamp) {
+    if (timestamp instanceof Timestamp) return timestamp.seconds
+    return timestamp > 1e12 ? msToSec(timestamp) : timestamp
 }
 //#endregion
 

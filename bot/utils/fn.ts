@@ -85,9 +85,12 @@ export const devsFooter = (client: Client) => ({
 })
 
 /**
- * This method returns the proper Unix timestamp in milliseconds from the given JS {@link Date} 
+ * This function returns the proper Unix timestamp in `milliseconds` from the given JS {@link Date} 
  * or Firestore {@link Timestamp} object.\
- * If the input is not an instance of either, null is returned.
+ * If the input is not an instance of either, `null` is returned.
+ * 
+ * This function will **NOT** work with Discord timestamps unless converted to seconds, it is recommended to use this
+ * function only when high precision is required such as in comparing timestamps in a sort.
  * @param date
  */
 export function unixFromDate(date: Date | Timestamp): number {
@@ -278,9 +281,9 @@ export const safeParseInt = (num: number | string) => typeof num === "number" ? 
  * Shortform for "\`\`\`someString\`\`\`" in Discord, but avoids us escaping them for JS every time.
  * @param value
  */
-export const backticks = <T extends string>(value: T): `\`\`\`${T}\`\`\`` => `\`\`\`${value}\`\`\``
+export const backticks = <T extends string>(value: T) => `\`\`\`${value}\`\`\`` as const
 export const backtick = (value: string | number, opts?: { prefix?: string, postfix?: string }) => {
-    return `${opts?.prefix ?? ""}\`${value.toString()}\`${opts?.postfix ?? ""}`
+    return `${opts?.prefix ?? ""}\`${value.toString()}\`${opts?.postfix ?? ""}` as const
 }
 
 export function embedField(name: string, value: string, inline = false): APIEmbedField {
@@ -294,5 +297,5 @@ export const buildSkinURL = (opts: SkinOpts) => {
     const params = `y=${opts.yaw ?? 0}&p=${opts.pitch ?? 0}&r=${opts.roll ?? 0}`
 
     // Ex: domain/bust/256/uuid.png?y=0&p=0&r=0
-    return `${domain}${opts.view}/${opts.size ?? 256}/${opts.subject}.png?${params}`
+    return `${domain}${opts.view}/${opts.size ?? 256}/${opts.subject}.png?${params}` as const
 }

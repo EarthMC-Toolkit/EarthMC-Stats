@@ -5,7 +5,7 @@ import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
 
 import BaseCommandHelper from "./base.js"
-import { backtick, buildSkinURL, unixFromDate } from "../../bot/utils/fn.js"
+import { backtick, buildSkinURL } from "../../bot/utils/fn.js"
 
 import * as MC from '../../bot/utils/minecraft.js'
 import * as database from '../../bot/utils/db/index.js'
@@ -53,7 +53,10 @@ class ResidentHelper extends BaseCommandHelper {
             const players = await OfficialAPI.V3.players(arg1)
             apiRes = players[0]
 
-            console.warn(`Official API could not find resident: ${arg1}`)
+            if (!apiRes) {
+                // No need to throw, we just didn't find them and that's fine.
+                console.warn(`Official API could not find resident: ${arg1}`)
+            }
         } catch(e: any) {
             console.error(e)
             //return false // TODO: Just serve player embed without OAPI info if db fallback found.
@@ -174,18 +177,18 @@ class ResidentHelper extends BaseCommandHelper {
     }
 
     addDatesFromAPI = () => {
-        const timestamps = this.apiResident.timestamps
-        const registeredTs = timestamps?.registered ?? 0
-        const lastOnlineTs = timestamps?.lastOnline ?? 0
+        const timestamps = this.apiResident.timestamps // Should usually be ms.
+        const registeredTs = timestamps?.registered
+        const lastOnlineTs = timestamps?.lastOnline
 
         const statusStr = this.status == "Offline" ? ":red_circle: Offline" : ":green_circle: Online"
         this.addField("Status", statusStr, true)
 
-        if (lastOnlineTs != 0 && this.status == "Offline") {
+        if (lastOnlineTs && this.status == "Offline") {
             this.addField("Last Online", DiscordUtils.timestampRelative(lastOnlineTs), true)
         }
 
-        if (registeredTs != 0) {
+        if (registeredTs) {
             this.addField("Registered", DiscordUtils.timestampDateTime(registeredTs), true)
         }
     }
@@ -194,11 +197,11 @@ class ResidentHelper extends BaseCommandHelper {
         const lastOnline = this.dbPlayer?.lastOnline
         if (!lastOnline) return
 
-        const auroraLoTs = unixFromDate(lastOnline.aurora)
-        if (auroraLoTs == 0) return
+        // Unix epoch (January 1, 1970) or earlier.
+        if (lastOnline.aurora?.seconds <= 0) return
 
         if (this.status == "Offline") {
-            this.addField("Last Online", DiscordUtils.timestampRelative(auroraLoTs), true)
+            this.addField("Last Online", DiscordUtils.timestampRelative(lastOnline.aurora), true)
         }
     }
 

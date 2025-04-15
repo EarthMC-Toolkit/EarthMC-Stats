@@ -119,7 +119,8 @@ export default {
             return sendSingle(client, interaction, towns, town)
         }
 
-        if (subCmd == "activity") {  
+        // TODO: Use timestamps from OAPI - keep current logic (DB dates) as fallback.
+        if (subCmd == "activity") {
             const nameArg = interaction.options.getString("name", true)
 
             const town = towns.find(t => t.name.toLowerCase() == nameArg.toLowerCase())
@@ -157,7 +158,7 @@ export default {
                 const residentPlayer = players.find(p => p.name == resident)
 
                 if (residentPlayer && residentPlayer.lastOnline != null) {
-                    const ts = unixFromDate(residentPlayer.lastOnline.aurora)
+                    const ts = residentPlayer.lastOnline.aurora.seconds
                     return `${backtick(resident)} - <t:${ts}:R>`
                 }
 

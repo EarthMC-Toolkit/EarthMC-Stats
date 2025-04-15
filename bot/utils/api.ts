@@ -23,9 +23,6 @@ async function sendRequest(route: string, method: ReqMethod, content: any) {
     }).catch(console.warn)
 }
 
-// const replaceWithUnix = (arr: DBPlayer[], map: 'aurora') => arr.filter(p => !!p.lastOnline && p.lastOnline[map])
-//     .map(p => ({ ...p, lastOnline: unixFromDate(p.lastOnline[map]) }))
-
 const isValidMessage = (msg: Message) => 
     msg.content != "[Original Message Deleted]" &&
     !msg.content.startsWith("/")
