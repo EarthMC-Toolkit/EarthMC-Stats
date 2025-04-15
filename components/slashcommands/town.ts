@@ -18,7 +18,8 @@ import {
     sortByKey, unixFromDate,
     maxTownSize,
     backtick,
-    timestampRelative
+    timestampRelative,
+    backticks
 } from '../../bot/utils/index.js'
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -298,8 +299,8 @@ function sendList(
 ) {
     const townData = extractTownData(towns)
     const allData = townData.map((town, index) => `**${(index + 1)}**. ${town.name} (**${town.nation}**)\n` +
-        `Residents: \`${town.residentNames.length}\`\n` +
-        `Chunks: \`${town.area}\``
+        `Residents: ${backtick(town.residentNames.length)}\n` +
+        `Chunks: ${backtick(town.area)}`
         //`${wealthStr(town.wealth)}`
     ).join('\n\n').match(/(?:^.*$\n\n?){1,15}/mg)
 
@@ -314,7 +315,7 @@ async function sendSingle(
     client: Client, interaction: ChatInputCommandInteraction, 
     towns: DBSquaremapTown[], town: DBSquaremapTown
 ) {
-    towns = defaultSort(towns)
+    defaultSort(towns)
 
     const townEmbed = new EmbedBuilder()
     const townRank = (towns.findIndex(t => t.name == town.name)) + 1
@@ -325,25 +326,32 @@ async function sendSingle(
     // })
 
     // const colour = !townColours ? Colors.Green : parseInt(townColours.fill.replace('#', '0x'))
-    
+
+    let title = `Town Info | ${backtick(town.name)}${town.flags.capital ? " :star:" : ""}`
+    title += town.ruined ? ` (Ruin)` : ` | #${townRank}` // Add rank if not ruined.
+
+    townEmbed.setTitle(title)
     townEmbed.setColor(town.ruined ? Colors.Orange : Colors.Green)
-    townEmbed.setTitle(("Town Info | `" + town.name + `\`${town.flags.capital ? " :star:" : ""}`) + (town.ruined ? " (Ruin)" : " | #" + townRank))
     
     if (town.board) {
         townEmbed.setDescription(`*${town.board}*`)
     }
 
-    // TODO: Wtf is this abomination? Make it more readable please, thanks.
-    let townNation = (await database.AuroraDB.getNation(town.nation) ?? await Aurora.Nations.get(town.nation)) as DBSquaremapNation
+    let townNation = await(
+        await database.AuroraDB.getNation(town.nation) ?? 
+        await Aurora.Nations.get(town.nation)
+    ) as DBSquaremapNation
+
+    // Handle 
     if (townNation instanceof NotFoundError) {
         townNation = null
     }
 
     const townResidentsLength = town.residents.length
+    const nationResidentsLength = townNation?.residents?.length ?? 0
+
     if (!town.ruined) {
         if (town.flags.capital) {
-            const nationResidentsLength = townNation?.residents?.length ?? 0
-
             townEmbed.addFields(embedField("Mayor", `${nationResidentsLength >= 60 ? "God Emperor "
                 : nationResidentsLength >= 40 ? "Emperor "
                 : nationResidentsLength >= 30 ? "King "
@@ -376,7 +384,7 @@ async function sendSingle(
     const multiplier = townResidentsLength * 12
     
     if (town.nation != "No Nation") {
-        const nationBonus = auroraNationBonus(townNation.residents.length)
+        const nationBonus = auroraNationBonus(nationResidentsLength)
         const claimBonus = Math.min(nationBonus + multiplier, maxTownSize)
 
         townEmbed.addFields(
@@ -403,7 +411,7 @@ async function sendSingle(
             if (townResidentsLength <= 50) {
                 townEmbed.addFields(embedField(
                     `Residents [${townResidentsLength}]`, 
-                    "```" + town.residents.join(", ") + "```"
+                    backticks(town.residents.join(", "))
                 ))
             }
             else townEmbed.addFields(embedField("Residents", `\`${townResidentsLength.toString()}\``))
@@ -415,37 +423,12 @@ async function sendSingle(
             if (townCouncillorsLen <= 50) {
                 townEmbed.addFields(embedField(
                     `Councillors [${townCouncillorsLen}]`, 
-                    "```" + town.councillors.join(", ") + "```"
+                    backticks(town.councillors.join(", "))
                 ))
             }
             else townEmbed.addFields(embedField("Councillors", townCouncillorsLen.toString()))
         } 
         else townEmbed.addFields(embedField("Councillors", "None")) 
-
-        // //#region "Online Residents" field
-        // const ops = await Aurora.Players.online().catch(console.error)
-
-        // if (!townyData) {
-        //     townEmbed.addFields(embedField(
-        //         "Online Residents", 
-        //         "No residents are online in " + town.name + "."
-        //     ))
-        // } else {
-        //     const onlineResidents = removeDuplicates(town.residents.filter(res => ops.some(op => res === op.name)))
-        //     const onlineResLen = onlineResidents.length
-
-        //     if (onlineResLen > 0) {
-        //         townEmbed.addFields(embedField(
-        //             `Online Residents [${onlineResLen}]`, 
-        //             "```" + onlineResidents.join(", ") + "```"
-        //         ))
-        //     }
-        //     else townEmbed.addFields(embedField(
-        //         "Online Residents", 
-        //         "No residents are online in " + town.name + "."
-        //     ))
-        // }
-        // //#endregion
     }
 
     const [green, red] = ["<:green_tick:1036290473708495028>", "<:red_tick:1036290475012915270>"]

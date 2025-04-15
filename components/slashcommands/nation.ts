@@ -250,7 +250,7 @@ export default {
                     const residentPlayer = players.find(p => p.name == resident)
     
                     const loTimestamp = residentPlayer?.lastOnline?.aurora
-                    const tsOrUnknown = loTimestamp != null 
+                    const tsOrUnknown = loTimestamp != null
                         ? timestampRelative(loTimestamp)
                         : "Unknown"
 
@@ -290,7 +290,7 @@ export default {
                     : `Land of ${nation.name}`
                 //#endregion
     
-                nations = defaultSort(nations)
+                defaultSort(nations)
 
                 // Custom prefix (via /nationset) otherwise Towny default.
                 const kingPrefix = nation.kingPrefix ? `${nation.kingPrefix} ` : nationLeaderPrefix 

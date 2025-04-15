@@ -122,7 +122,7 @@ export type DBResident = {
     rank: ResidentRank
 }
 
-export interface DBPlayer {
+export type DBPlayer = {
     name: string
     lastOnline: {
         aurora?: Timestamp

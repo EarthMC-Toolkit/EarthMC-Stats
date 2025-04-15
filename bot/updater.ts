@@ -1,20 +1,10 @@
 //#region Imports
-import * as api from "./utils/api.js"
-import * as database from "./utils/db/index.js"
-
 import { 
     formatString,
     OfficialAPI,
     type RawPlayerStatsV3,
     type SquaremapOnlinePlayer
 } from "earthmc"
-
-import { 
-    getClient, 
-    AURORA,
-    lastSeenPlayers,
-    getProduction
-} from "./constants.js"
 
 import { 
     Timestamp
@@ -26,12 +16,22 @@ import {
 } from "discord.js"
 
 import { 
+    getClient, 
+    AURORA,
+    lastSeenPlayers,
+    getProduction
+} from "./constants.js"
+
+import {
+    api, database,
+    daysBetween, devsFooter
+} from "./utils/index.js"
+
+import { 
     type MapInstance, type ResidentRank,
     type DBAlliance, type DBResident, type DBPlayer,
     type SeenPlayer
 } from "./types.js"
-
-import { daysBetween, devsFooter } from "./utils/fn.js"
 //#endregion
 
 //#region Call Updates
@@ -201,7 +201,7 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
                 //nova: playerInDB?.lastOnline?.nova ?? null,
                 aurora: opInDB?.lastOnline?.aurora ?? null
             }
-        } as DBPlayer
+        } satisfies DBPlayer
         
         player.lastOnline[mapName] = now
 
@@ -324,7 +324,7 @@ async function updateLastSeen() {
 //#endregion
 
 //#region Helper Methods
-const isInactive = (timestamp: { seconds: number }, now: Date) => {
+const isInactive = (timestamp: Timestamp, now: Date) => {
     const loDate = new Date(timestamp.seconds * 1000)
     return daysBetween(loDate, now) > 42
 }
