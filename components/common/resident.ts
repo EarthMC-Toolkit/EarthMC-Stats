@@ -119,17 +119,14 @@ class ResidentHelper extends BaseCommandHelper {
         return this.embed
     }
 
-    getDownloadAttachment (): AttachmentBuilder {
+    getDownloadAttachment(): AttachmentBuilder {
         throw new Error("Method not implemented.")
     }
 
     #setupMcProfileEmbed() {
         this.embed.setTitle(`Player Info | ${backtick(this.mcProfile.name)}`)
         this.embed.setDescription(`*This player is not registered on EarthMC.*`)
-
-        if (this.mcProfile.id) {
-            this.addField("Minecraft UUID", backtick(this.mcProfile.id))
-        }
+        this.addField("Minecraft UUID", backtick(this.mcProfile.id))
     }
 
     #setupTownlessEmbed() {
@@ -169,14 +166,13 @@ class ResidentHelper extends BaseCommandHelper {
             this.addDatesFromAPI()
         } else this.addDatesFromDB()
 
-        if (this.mcProfile.id) {
-            this.addField("Minecraft UUID", backtick(this.mcProfile.id))
-        }
+        const uuid = this.mcProfile?.id || this.apiResident?.uuid
+        this.addField("Minecraft UUID", uuid ? backtick(uuid) : "Unavailable")
 
         //this.addLinkedAcc()
     }
 
-    addDatesFromAPI = () => {
+    addDatesFromAPI() {
         const timestamps = this.apiResident.timestamps // Should usually be ms.
         const registeredTs = timestamps?.registered
         const lastOnlineTs = timestamps?.lastOnline
@@ -193,7 +189,7 @@ class ResidentHelper extends BaseCommandHelper {
         }
     }
 
-    addDatesFromDB = () => {
+    addDatesFromDB() {
         const lastOnline = this.dbPlayer?.lastOnline
         if (!lastOnline) return
 
@@ -205,7 +201,7 @@ class ResidentHelper extends BaseCommandHelper {
         }
     }
 
-    tryAddAvatar = () => {
+    tryAddAvatar() {
         if (!this.mcProfile?.id) return
 
         this.embed.setThumbnail(buildSkinURL({ 
@@ -214,7 +210,7 @@ class ResidentHelper extends BaseCommandHelper {
         }))
     }
 
-    tryAddNickname = () => {
+    tryAddNickname() {
         if (this.status == "Online") {
             const opName = this.onlinePlayer.name
             const nickname = striptags(opName)
@@ -226,7 +222,7 @@ class ResidentHelper extends BaseCommandHelper {
         }
     }
 
-    addBalance = (bal: string | number) => {
+    addBalance(bal: string | number) {
         this.addField("Balance", `<:gold:1318944918118600764> ${backtick(bal ?? 0)}G`, true)
     }
 

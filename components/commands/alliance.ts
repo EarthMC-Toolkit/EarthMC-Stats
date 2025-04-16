@@ -1214,7 +1214,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
     } else { // /alliances <option> <option> ... ...
         const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => 
             a.allianceName.toLowerCase().includes(key) ||
-            a.fullName.toLowerCase().includes(key)
+            (a.fullName && a.fullName.toLowerCase().includes(key))
         )
 
         // Everything after "search" arg must be key.
