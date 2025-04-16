@@ -1,18 +1,18 @@
-import * as fn from '../../bot/utils/fn.js'
-
-import { 
+import {
     type Client,
     type AttachmentBuilder,
     EmbedBuilder
 } from 'discord.js'
 
-export default abstract class BaseCommandHelper {
+import { devsFooter } from '../../../bot/utils/index.js'
+
+export default abstract class CommandLookup {
     client: Client = null
     embed = new EmbedBuilder()
 
     constructor(client: Client) {
         this.client = client
-        this.embed.setFooter(fn.devsFooter(client)).setTimestamp()
+        this.embed.setFooter(devsFooter(client)).setTimestamp()
     }
 
     abstract init(input: string): Promise<boolean>;
@@ -40,8 +40,4 @@ export default abstract class BaseCommandHelper {
         const embedData = this.embed.data
         return pretty ? JSON.stringify(embedData, null, 2) : JSON.stringify(embedData)
     }
-}
-
-export {
-    BaseCommandHelper
 }

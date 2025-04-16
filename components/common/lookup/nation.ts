@@ -12,21 +12,22 @@ import {
 import { 
     type StrictPoint2D,
     type RawNationV3,
-    // NotFoundError,
-    // SquaremapTown,
     Aurora,
     OfficialAPI
 } from "earthmc"
 
-import { AURORA, auroraNationBonus, backtick } from "../../bot/utils/fn.js"
+import { 
+    database,
+    backtick,
+    timestampDateTime,
+    EMOJI_CHUNK, EMOJI_GOLD,
+    AURORA, auroraNationBonus
+} from "../../../bot/utils/index.js"
 
-import * as DiscordUtils from "../../bot/utils/discord.js"
-import * as database from "../../bot/utils/db/index.js"
+import News from "../../../bot/objects/News.js"
+import CommandLookup from "./base.js"
 
-import News from "../../bot/objects/News.js"
-import BaseCommandHelper from "./base.js"
-
-class NationHelper extends BaseCommandHelper {
+export default class NationLookup extends CommandLookup {
     #apiNation: RawNationV3 = null
     get apiNation() { return this.#apiNation }
 
@@ -163,7 +164,7 @@ class NationHelper extends BaseCommandHelper {
         const mapUrl = Aurora.buildMapLink(spawnPoint, 5)
 
         const area = Math.round(this.apiNation.stats.numTownBlocks)
-        const foundedTimestamp = DiscordUtils.timestampDateTime(this.apiNation.timestamps.registered)
+        const foundedTimestamp = timestampDateTime(this.apiNation.timestamps.registered)
 
         this.embed.setTitle(`Nation Info | ${backtick(label)}`)
             .setDescription(`*${this.apiNation.board}*`)
@@ -174,9 +175,9 @@ class NationHelper extends BaseCommandHelper {
             .addField("Capital", backtick(this.apiNation.capital.name), true)
             .addField("Location", `[${spawnPoint.x}, ${spawnPoint.z}](${mapUrl.toString()})`, true)
             .addField("Residents", backtick(resLength.toString()), true)
-            .addField("Balance", `${DiscordUtils.EMOJI_GOLD} ${backtick(this.apiNation.stats.balance)}G`, true)
-            .addField("Size", `${DiscordUtils.EMOJI_CHUNK} ${backtick(area)} Chunks`, true)
-            .addField("Bonus", `${DiscordUtils.EMOJI_CHUNK} ${backtick(bonus)} Chunks`, true)
+            .addField("Balance", `${EMOJI_GOLD} ${backtick(this.apiNation.stats.balance)}G`, true)
+            .addField("Size", `${EMOJI_CHUNK} ${backtick(area)} Chunks`, true)
+            .addField("Bonus", `${EMOJI_CHUNK} ${backtick(bonus)} Chunks`, true)
 
         const amtAlliances = this.affiliatedAlliances?.length
         if (amtAlliances > 0) {
@@ -195,8 +196,4 @@ class NationHelper extends BaseCommandHelper {
         this.#setupEmbed()
         return this.embed
     }
-}
-
-export {
-    NationHelper
 }

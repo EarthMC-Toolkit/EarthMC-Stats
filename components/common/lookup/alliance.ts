@@ -1,9 +1,9 @@
-import { BaseCommandHelper } from "./base.js"
-
 import type { AttachmentBuilder, Client } from "discord.js"
 import { Colors } from "discord.js"
 
-class AllianceHelper extends BaseCommandHelper {
+import CommandLookup from "./base.js"
+
+class AllianceHelper extends CommandLookup {
     constructor(client: Client) {
         super(client)
         this.embed.setColor(Colors.DarkBlue)

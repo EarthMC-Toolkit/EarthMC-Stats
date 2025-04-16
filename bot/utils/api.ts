@@ -1,9 +1,6 @@
 import { request } from "undici"
 
-import { AuroraDB } from "./db/index.js"
-import { 
-    AURORA
-}  from "./fn.js"
+import { database, AURORA } from "./index.js"
 
 import News from "../objects/News.js"
 
@@ -43,7 +40,7 @@ async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora')
 }
 
 export async function sendAuroraAlliances() {
-    const auroraAlliances = await AuroraDB.getAlliances()
+    const auroraAlliances = await database.AuroraDB.getAlliances()
     if (auroraAlliances) {
         await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
         console.log('[AURORA] Sent PUT request to alliances')

@@ -19,7 +19,7 @@ import {
 } from "./bot/constants.js"
 
 import type { DJSEvent, ErrorWithCode, ExtendedClient } from "./bot/types.js"
-import { readTsFiles } from "./bot/utils/fn.js"
+import { readTsFiles } from "./bot/utils/index.js"
 //#endregion
 
 //#region Check production

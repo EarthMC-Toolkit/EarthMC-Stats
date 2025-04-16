@@ -7,7 +7,7 @@ import {
 } from "discord.js"
 
 import { Aurora, Routes } from "earthmc"
-import { backtick, embedField } from "../../bot/utils/fn.js"
+import { backtick, embedField } from "../../bot/utils/index.js"
 
 const desc = "Gets the optimal route to a location. Includes the nearest nation and distance/direction from it."
 

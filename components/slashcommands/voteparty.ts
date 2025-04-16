@@ -4,8 +4,8 @@ import {
     Colors, EmbedBuilder
 } from "discord.js"
 
-import { AURORA, devsFooter } from "../../bot/utils/fn.js"
-import { VPHelper } from "../common/voteparty.js"
+import { AURORA, devsFooter } from "../../bot/utils/index.js"
+import { VPLookup } from "../common/lookup/voteparty.js"
 
 export default {
     name: "voteparty",
@@ -13,8 +13,8 @@ export default {
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const vpHelper = new VPHelper(client)
-        const ok = await vpHelper.init()
+        const vpLookup = new VPLookup(client)
+        const ok = await vpLookup.init()
 
         if (!ok) {
             await interaction.deleteReply()
@@ -27,7 +27,7 @@ export default {
         }
         
         await interaction.editReply({
-            embeds: [vpHelper.createEmbed()], 
+            embeds: [vpLookup.createEmbed()], 
             files: [AURORA.thumbnail]
         })
     }

@@ -1,26 +1,29 @@
 import type { AttachmentBuilder, Client } from "discord.js"
-import striptags from 'striptags'
 
 import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
 
-import BaseCommandHelper from "./base.js"
-import { backtick, buildSkinURL } from "../../bot/utils/fn.js"
+import striptags from 'striptags'
 
-import * as MC from '../../bot/utils/minecraft.js'
-import * as database from '../../bot/utils/db/index.js'
-import * as DiscordUtils from '../../bot/utils/discord.js'
+import BaseCommandHelper from "./base.js"
+import * as MC from '../../../bot/utils/minecraft.js'
+
+import { 
+    database,
+    backtick, buildSkinURL,
+    timestampRelative, timestampDateTime
+} from "../../../bot/utils/index.js"
 
 import { 
     type DBPlayer,
     type DBResident,
     type MCSessionProfile,
     SkinType3D
-} from "../../bot/types.js"
+} from "../../../bot/types.js"
 
 const DEFAULT_ABOUT = "/res set about [msg]"
 
-class ResidentHelper extends BaseCommandHelper {
+export default class ResidentLookup extends BaseCommandHelper {
     dbResident: DBResident | Resident = null
     dbPlayer: DBPlayer
     
@@ -181,11 +184,11 @@ class ResidentHelper extends BaseCommandHelper {
         this.addField("Status", statusStr, true)
 
         if (lastOnlineTs && this.status == "Offline") {
-            this.addField("Last Online", DiscordUtils.timestampRelative(lastOnlineTs), true)
+            this.addField("Last Online", timestampRelative(lastOnlineTs), true)
         }
 
         if (registeredTs) {
-            this.addField("Registered", DiscordUtils.timestampDateTime(registeredTs), true)
+            this.addField("Registered", timestampDateTime(registeredTs), true)
         }
     }
 
@@ -197,7 +200,7 @@ class ResidentHelper extends BaseCommandHelper {
         if (lastOnline.aurora?.seconds <= 0) return
 
         if (this.status == "Offline") {
-            this.addField("Last Online", DiscordUtils.timestampRelative(lastOnline.aurora), true)
+            this.addField("Last Online", timestampRelative(lastOnline.aurora), true)
         }
     }
 
@@ -232,8 +235,4 @@ class ResidentHelper extends BaseCommandHelper {
     //         this.addField("Linked Account", `<@${disc}>`)
     //     }
     // }
-}
-
-export {
-    ResidentHelper
 }

@@ -1,4 +1,9 @@
 import { 
+    type Player,
+    Aurora, OfficialAPI
+} from "earthmc"
+
+import { 
     type Client,
     type ChatInputCommandInteraction,
     EmbedBuilder,
@@ -6,16 +11,13 @@ import {
     Colors
 } from 'discord.js'
 
-import { Aurora, OfficialAPI, type Player } from "earthmc"
+import { displayStaff } from './staff.js'
 import { CustomEmbed } from '../../bot/objects/CustomEmbed.js'
 
 import { 
-    backtick,
-    fetchError, sortByKey
-} from '../../bot/utils/fn.js'
-
-import { EMOJI_GOLD } from '../../bot/utils/discord.js'
-import { displayStaff } from './staff.js'
+    fetchError, sortByKey,
+    EMOJI_GOLD, backtick
+} from '../../bot/utils/index.js'
 
 const EMBED_COLOUR = "#d67a82"
 

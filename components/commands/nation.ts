@@ -3,8 +3,8 @@ import {
     EmbedBuilder, Colors
 } from "discord.js"
 
-import { botDevs, devsFooter } from "../../bot/utils/fn.js"
-import { NationHelper } from "../common/nation.js"
+import { botDevs, devsFooter } from "../../bot/utils/index.js"
+import NationLookup from "../common/lookup/nation.js"
 
 const errEmbed = (client: Client, msg: Message) => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -44,8 +44,8 @@ export default {
         // TODO: Replace with .trim() instead?
         const input = req.replaceAll(' ', '')
 
-        const nationHelper = new NationHelper(client) 
-        const exists = await nationHelper.init(input)
+        const nationLookup = new NationLookup(client) 
+        const exists = await nationLookup.init(input)
         
         if (!exists) {
             return m.edit({embeds: [errEmbed(client, message)
@@ -55,7 +55,7 @@ export default {
 
         return await m.edit({
             //files: [nationHelper.getDownloadAttachment()],
-            embeds: [nationHelper.createEmbed()]
+            embeds: [nationLookup.createEmbed()]
         })
     }
 }

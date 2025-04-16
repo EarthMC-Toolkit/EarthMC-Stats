@@ -4,8 +4,8 @@ import {
     EmbedBuilder, SlashCommandBuilder, Colors
 } from "discord.js"
 
-import { ResidentHelper } from '../common/resident.js'
-import { devsFooter } from "../../bot/utils/fn.js"
+import ResidentLookup from '../common/lookup/resident.js'
+import { devsFooter } from "../../bot/utils/index.js"
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("resident")
@@ -34,10 +34,10 @@ export default {
             ], ephemeral: true })
         }
 
-        const resHelper = new ResidentHelper(client)
-        const exists = await resHelper.init(name)
+        const resLookup = new ResidentLookup(client)
+        const exists = await resLookup.init(name)
 
-        if (!exists || !resHelper.apiResident) {
+        if (!exists || !resLookup.apiResident) {
             await interaction.deleteReply()
             return interaction.followUp({embeds: [new EmbedBuilder()
                 .setTitle(`${name} isn't a registered player name, please try again.`)
@@ -48,7 +48,7 @@ export default {
         }
             
         await interaction.editReply({
-            embeds: [resHelper.createEmbed()]
+            embeds: [resLookup.createEmbed()]
         })
     }
 }

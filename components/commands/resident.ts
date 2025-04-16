@@ -1,14 +1,14 @@
-import { backtick, devsFooter } from '../../bot/utils/fn.js'
-
-import { ResidentHelper } from '../common/resident.js'
-import type { MessageCommand } from '../../bot/types.js'
-
 import { 
     type Client, 
     type Message,
     Colors, 
     EmbedBuilder 
 } from "discord.js"
+
+import ResidentLookup from '../common/lookup/resident.js'
+
+import { backtick, devsFooter } from '../../bot/utils/index.js'
+import type { MessageCommand } from '../../bot/types.js'
 
 const errEmbed = (client: Client, msg: Message) => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -45,8 +45,8 @@ const resCmd: MessageCommand = {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         //#endregion
 
-        const resHelper = new ResidentHelper(client)
-        const exists = await resHelper.init(input)
+        const resLookup = new ResidentLookup(client)
+        const exists = await resLookup.init(input)
 
         if (!exists) {
             return m.edit({embeds: [errEmbed(client, message)
@@ -55,7 +55,7 @@ const resCmd: MessageCommand = {
         }
 
         return await m.edit({
-            embeds: [resHelper.createEmbed()] 
+            embeds: [resLookup.createEmbed()] 
         })
     }
 }

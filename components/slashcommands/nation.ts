@@ -12,30 +12,25 @@ import {
     Colors, ButtonStyle
 } from "discord.js"
 
+import News from "../../bot/objects/News.js"
+
 import { 
-    AURORA,
+    database, AURORA,
     auroraNationBonus, embedField,
     databaseError, fetchError,
     defaultSort, devsFooter, 
     fastMergeUnique, removeDuplicates, 
-    sortByOrder, unixFromDate,
-    backtick
-} from '../../bot/utils/fn.js'
+    sortByOrder, unixFromDate, timestampRelative,
+    backtick, EMOJI_CHUNK
+} from '../../bot/utils/index.js'
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
-import News from "../../bot/objects/News.js"
+import { cache } from "../../bot/constants.js"
 
 import type {
     DBSquaremapNation,
     NationItem, TownItem 
 } from '../../bot/types.js'
-
-import { cache } from "../../bot/constants.js"
-import { 
-    database,
-    EMOJI_CHUNK,
-    timestampRelative
-} from "../../bot/utils/index.js"
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("nation")

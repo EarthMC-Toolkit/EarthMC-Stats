@@ -1,6 +1,6 @@
 import { EmbedBuilder, type Guild } from "discord.js"
 import type { DJSEvent } from "../types.js"
-import { backtick } from "../utils/fn.js"
+import { backtick } from "../utils/index.js"
 
 const PURGE_THRESHOLD = 4
 

@@ -10,9 +10,7 @@ import {
 import { request } from "undici"
 
 import { cache } from "../../bot/constants.js"
-import { backtick, botDevs } from '../../bot/utils/fn.js'
-
-import { AuroraDB } from "../../bot/utils/db/index.js"
+import { database, backtick, botDevs } from '../../bot/utils/index.js'
 
 // import dotenv from 'dotenv'
 // dotenv.config()
@@ -200,7 +198,7 @@ export default {
             case "backup_alliances": {
                 await interaction.deferReply()
 
-                const alliances = await AuroraDB.getAlliances(true)
+                const alliances = await database.AuroraDB.getAlliances(true)
                 if (!alliances) return await interaction.reply({
                     content: `Failed to fetch alliances.`,
                     ephemeral: true
@@ -231,7 +229,7 @@ export default {
 
                 await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
 
-                const alliances = await AuroraDB.getAlliances(true)
+                const alliances = await database.AuroraDB.getAlliances(true)
                 if (!alliances) return await interaction.reply({
                     content: `Failed to fetch alliances.`,
                     ephemeral: true

@@ -1,9 +1,9 @@
 import { OfficialAPI } from "earthmc"
-import { BaseCommandHelper } from "./base.js"
+import CommandLookup from "./base.js"
 
 import type { AttachmentBuilder, Client } from "discord.js"
 
-export class VPHelper extends BaseCommandHelper {
+export class VPLookup extends CommandLookup {
     #target: number
     get target() {
         return this.#target

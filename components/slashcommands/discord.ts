@@ -6,7 +6,7 @@ import {
     OfficialAPI
 } from "earthmc"
 
-import { backtick, listInputToArr } from "../../bot/utils/fn.js"
+import { backtick, listInputToArr } from "../../bot/utils/index.js"
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
 
 const desc = "Interact with the Official EMC API discord endpoint. Discord -> UUID or vice versa."

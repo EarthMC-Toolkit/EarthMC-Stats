@@ -9,9 +9,9 @@ import {
     type RawTownV3
 } from "earthmc"
 
-import { BaseCommandHelper } from "./base.js"
+import CommandLookup from "./base.js"
 
-class TownHelper extends BaseCommandHelper {
+export default class TownLookup extends CommandLookup {
     #apiTown: RawTownV3 = null
     get apiNation() { return this.#apiTown }
 
@@ -41,8 +41,4 @@ class TownHelper extends BaseCommandHelper {
     getDownloadAttachment(): AttachmentBuilder {
         throw new Error("Method not implemented.")
     }
-}
-
-export {
-    TownHelper
 }

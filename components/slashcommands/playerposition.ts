@@ -1,3 +1,5 @@
+import { Aurora } from "earthmc"
+
 import {
     type Client, 
     type ChatInputCommandInteraction, 
@@ -10,10 +12,8 @@ import {
     embedField
 } from '../../bot/utils/fn.js'
 
-import { Aurora } from "earthmc"
-import { type MCSessionProfile, SkinType3D } from "../../bot/types.js"
-
 import * as MC from '../../bot/utils/minecraft.js'
+import { type MCSessionProfile, SkinType3D } from "../../bot/types.js"
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("playerposition")

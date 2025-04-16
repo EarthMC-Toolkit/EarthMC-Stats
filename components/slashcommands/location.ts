@@ -15,7 +15,7 @@ import {
     backtick,
     devsFooter, 
     inWorldBorder
-} from '../../bot/utils/fn.js'
+} from '../../bot/utils/index.js'
 
 const defaultEmbed = (
     client: Client, 

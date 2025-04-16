@@ -1,3 +1,8 @@
+import { 
+    formatString,
+    OfficialAPI
+} from "earthmc"
+
 import {
     type Message, 
     type Client,
@@ -6,12 +11,9 @@ import {
 } from "discord.js"
 
 import { 
-    formatString,
-    OfficialAPI
-} from "earthmc"
-
-import { botDevs } from '../../bot/utils/fn.js'
-import { AuroraDB } from '../../bot/utils/db/index.js'
+    database,
+    botDevs
+} from '../../bot/utils/index.js'
 
 import type { 
     DBSquaremapNation,
@@ -46,7 +48,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
-        const nations = await AuroraDB.getNations().then(arr => arr.map(n => {
+        const nations = await database.AuroraDB.getNations().then(arr => arr.map(n => {
             n.name = formatString(n.name, true)
             return n
         }))
@@ -88,7 +90,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
 
         const save = (n: DBSquaremapNation) => {
             nations[nationIndex] = n
-            AuroraDB.setNations(nations)
+            database.AuroraDB.setNations(nations)
         }
 
         const type = interaction.options.getString("type")

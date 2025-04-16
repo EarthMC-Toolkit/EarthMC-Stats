@@ -62,6 +62,7 @@ export const auroraNationBonus = (residentAmt: number) => residentAmt >= 200 ? 1
     : residentAmt >= 40 ? 30
     : residentAmt >= 20 ? 10 : 0
 
+// TODO: Do something with this so the name isn't as ambiguous.
 export const AURORA = {
     thumbnail: attachmentFromFile('/bot/images/aurora.png', 'aurora.png'),
     newsChannel: "970962878486183958"
@@ -205,7 +206,7 @@ export function attachmentFromFile(absolutePath: string, name: string, descripti
     return new AttachmentBuilder(file, description ? { name, description } : { name })
 }
 
-export const random = (array: any[], last: number) => {
+export const randomFrom = <T>(array: T[], last: number) => {
     const len = array.length
     while(true) {
         const rand = Math.floor(Math.random() * len)

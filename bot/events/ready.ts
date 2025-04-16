@@ -1,17 +1,18 @@
 //#region Imports
-import * as fn from "../utils/fn.js"
-import { initUpdates } from "../updater.js"
-
-import { 
-    getProduction
-} from "../constants.js"
-
 import { 
     ActivityType,
     type Client,
     type SlashCommandBuilder,
     type ApplicationCommandDataResolvable
 } from "discord.js"
+
+import { getProduction } from "../constants.js"
+import { initUpdates } from "../updater.js"
+
+import {
+    randomFrom,
+    readTsFiles
+} from "../utils/index.js"
 
 import type { 
     BaseCommand, SlashCommand,
@@ -26,7 +27,7 @@ const rdyEvent: DJSEvent = {
     name: 'ready',
     once: true,
     async execute(client: Client) {
-        console.log(`${fn.time()} | ${client.user.username} is up!`)
+        console.log(`${client.user.username} is up!`)
         client.user.setPresence({ activities: [{ name: 'Startup Complete!' }], status: 'online' })
 
         await registerCommands(client)
@@ -41,7 +42,7 @@ const rdyEvent: DJSEvent = {
         ]
     
         setInterval(() => {
-            const randomNum = fn.random(watchingActivities, lastActivity)
+            const randomNum = randomFrom(watchingActivities, lastActivity)
             client.user.setActivity(watchingActivities[randomNum], { 
                 type: ActivityType.Watching 
             })
@@ -59,7 +60,7 @@ const BUTTONS_PATH = `components/buttons`
 //const MODALS_PATH = `components/modals`
 
 async function registerCommands(client: ExtendedClient) {
-    const auroraCmds = fn.readTsFiles(CMDS_PATH)
+    const auroraCmds = readTsFiles(CMDS_PATH)
 
     for (const file of auroraCmds) {
         const commandFile = await import(`../../${CMDS_PATH}/${file}`)
@@ -69,7 +70,7 @@ async function registerCommands(client: ExtendedClient) {
         client.auroraCommands.set(cmd.name, cmd)
     }
     
-    const slashCmds = fn.readTsFiles(SLASH_CMDS_PATH)
+    const slashCmds = readTsFiles(SLASH_CMDS_PATH)
     const data: ApplicationCommandDataResolvable[] = []
 
     for (const file of slashCmds) {
@@ -106,7 +107,7 @@ async function registerCommands(client: ExtendedClient) {
 }
 
 async function registerButtons(client: ExtendedClient) {
-    const buttons = fn.readTsFiles(BUTTONS_PATH) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
+    const buttons = readTsFiles(BUTTONS_PATH) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
 
     for (const file of buttons) {
         const buttonFile = await import(`../../${BUTTONS_PATH}/${file}`)
