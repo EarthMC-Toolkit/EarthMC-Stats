@@ -1,6 +1,9 @@
-import type { RawServerInfoV3, SquaremapPlayersResponse } from 'earthmc'
+import type {
+    RawServerInfoV3,
+    SquaremapPlayersResponse
+} from 'earthmc'
 
-interface Map {
+type Map = {
     online: boolean
     max: number
     count: number
@@ -24,16 +27,16 @@ const initMap = () => ({
     online: true,
     count: 0,
     max: 400,
-    config: null,
     formatted: ""
-}) as Map
+}) satisfies Map as Map
 
-class Queue {
+// NOTE: This is no longer rly accurate since there is 
+//       no real queue, joining is instant in most cases.
+export default class Queue {
     serverOnline = true
     totalPlayers = 0
 
     aurora = initMap()
-    //nova   = initMap()
 
     constructor(server: any, aurora: { mapRes: SquaremapPlayersResponse, apiRes: RawServerInfoV3 }) {
         this.#setServerInfo(server)
@@ -48,7 +51,6 @@ class Queue {
     }
 
     #formatMaps() {
-        //this.nova.formatted = format(this.nova)
         this.aurora.formatted = format(this.aurora)
     }
 
@@ -64,5 +66,3 @@ class Queue {
         this.aurora.count = apiRes.stats.numOnlinePlayers
     }
 }
-
-export default Queue

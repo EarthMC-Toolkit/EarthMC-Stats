@@ -891,8 +891,8 @@ export default {
                     return m.edit({embeds: [successEmbed(message)
                         .setColor(Colors.Orange)
                         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                        .setDescription(`Naughty editor! Read the description of the flags channel.`)
-                        .setImage("https://cdn.7tv.app/emote/01FQ98TKT0000FX658SRNP1BXC/4x.gif") // SMH
+                        .setDescription(`Naughty editor! Read the description of the flags channel.\nMake sure to maintain the original size.`)
+                        .setImage("https://cdn.7tv.app/emote/01F6R50PYR0004V0XPDH2CKXCH/4x.gif") // SMH
                     ]}).catch(() => {})
                 }
 

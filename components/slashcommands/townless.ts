@@ -1,13 +1,17 @@
+import { Aurora } from 'earthmc'
+
 import {
     type Client, 
     type ChatInputCommandInteraction,
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
-import { Aurora } from 'earthmc'
-import { fastMerge, fetchError, paginatorInteraction } from '../../bot/utils/index.js'
 import { lastSeenPlayers } from "../../bot/constants.js"
-import { getResidents } from "../../bot/utils/db/aurora.js"
+import { 
+    database,
+    fastMerge, fetchError,
+    paginatorInteraction
+} from '../../bot/utils/index.js'
 
 const embed = (len: number, desc: string, footer?: { text: string, iconURL?: string }) => {
     const builder = new EmbedBuilder()
@@ -18,23 +22,6 @@ const embed = (len: number, desc: string, footer?: { text: string, iconURL?: str
 
     if (footer) builder.setFooter(footer)
     return builder
-}
-
-const townlessLastSeen = async () => {
-    //#region
-    const residents = await getResidents()
-    if (!residents) {
-        console.warn(`[AURORA] Error getting townless, could not get residents!`)
-        return null
-    }
-
-    const residentNames = new Set<string>(residents.reduce((out: string[], cur) => {
-        out.push(cur.name)
-        return out
-    }, []))
-    //#endregion
-
-    return [...lastSeenPlayers.values()].filter(p => !residentNames.has(p.name))
 }
 
 const send = (interaction: ChatInputCommandInteraction, allData: RegExpMatchArray, townless: { name: string }[]) => {
@@ -54,6 +41,23 @@ const send = (interaction: ChatInputCommandInteraction, allData: RegExpMatchArra
     return interaction.reply({ embeds: [botEmbed[0]] })
         .then(() => paginatorInteraction(interaction, botEmbed, 0))
         .catch(console.log)
+}
+
+const townlessLastSeen = async () => {
+    //#region
+    const residents = await database.AuroraDB.getResidents()
+    if (!residents) {
+        console.warn(`[AURORA] Error getting townless, could not get residents!`)
+        return null
+    }
+
+    const residentNames = new Set<string>(residents.reduce((out: string[], cur) => {
+        out.push(cur.name)
+        return out
+    }, []))
+    //#endregion
+
+    return [...lastSeenPlayers.values()].filter(p => !residentNames.has(p.name))
 }
 
 const slashCmdData = new SlashCommandBuilder()

@@ -5,6 +5,8 @@ import  {
     type SquaremapPlayersResponse
 } from "earthmc"
 
+import { Timestamp } from "firebase-admin/firestore"
+
 import { db, cache } from '../../constants.js'
 
 import { 
@@ -17,8 +19,6 @@ import type {
     DBAlliance, DBResident, 
     DBSquaremapNation, DBSquaremapTown
 } from '../../types.js'
-
-import { Timestamp } from "firebase-admin/firestore"
 
 const auroraDoc = () => db.collection("aurora").doc("data")
 

@@ -1,3 +1,5 @@
+import type { Prettify } from 'earthmc'
+
 import {
     type Message,
     type Collection,
@@ -6,7 +8,6 @@ import {
     Colors, ChannelType
 } from 'discord.js'
 
-import type { Prettify } from 'earthmc'
 import type { 
     DJSEvent, MessageCommand,
     CustomClientData, ExtendedClient

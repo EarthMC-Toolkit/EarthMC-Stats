@@ -1,11 +1,11 @@
 import { Aurora } from "earthmc"
 
+import TTLCache from '@isaacs/ttlcache'
 import type { Firestore } from "firebase-admin/firestore"
+
 import type { ExtendedClient, MapInstance, SeenPlayer } from "./types.js"
 
-import { AuroraDB } from "./utils/db/index.js"
-
-import TTLCache from '@isaacs/ttlcache'
+import { database } from "./utils/index.js"
 
 const state: { prod: boolean, client: ExtendedClient } = {
     prod: false,
@@ -22,29 +22,17 @@ export function setClient(val: ExtendedClient) {
     state.client = val
 }
 
-let db: Firestore = null
-//let queueSubbedChannels: DocReference = null
-//let townlessSubbedChannels: DocReference = null
-
-const setDatabase = (instance: Firestore) => {
+export let db: Firestore = null
+export const setDatabase = (instance: Firestore) => {
     db = instance
-
-    //const subsCollection = db.collection("subs")
-    //queueSubbedChannels = subsCollection.doc("queue")
-    //townlessSubbedChannels = subsCollection.doc("townless")
 }
 
-const AURORA: MapInstance = { 
+export const AURORA: MapInstance = { 
     emc: Aurora,
-    db: AuroraDB
+    db: database.AuroraDB
 }
 
 // We update this every x seconds, so expiry isn't needed.
 export const cache = new TTLCache<string, any>({ ttl: Infinity })
 
 export const lastSeenPlayers = new Map<string, SeenPlayer>()
-
-export {
-    db, setDatabase,
-    AURORA
-}

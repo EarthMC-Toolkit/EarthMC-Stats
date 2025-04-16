@@ -125,7 +125,7 @@ process.on('uncaughtException', (err: ErrorWithCode) => {
 // ]
 
 // const myID = "263377802647175170"
-// const editorID = "263377802647175170"
+// const editorID = "966359842417705020"
 
 // client.on('messageCreate', async msg => {
 //     if (msg.author.bot) return

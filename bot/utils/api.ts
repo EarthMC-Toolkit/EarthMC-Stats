@@ -1,11 +1,13 @@
 import { request } from "undici"
+import type { Client, Collection, Message, TextChannel } from "discord.js"
 
 import { database, AURORA } from "./index.js"
 
 import News from "../objects/News.js"
-
-import type { Client, Collection, Message, TextChannel } from "discord.js"
 import type { ReqMethod } from "../types.js"
+
+import dotenv from 'dotenv'
+dotenv.config()
 
 const REQ_HEADERS = {
     'Content-Type': 'application/json',

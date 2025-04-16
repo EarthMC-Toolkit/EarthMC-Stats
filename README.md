@@ -9,18 +9,20 @@ This bot relies heavily on the purpose-made [NPM Library](https://www.npmjs.com/
 
 > [!WARNING]
 > - This repo is meant for viewing and attribution, hosting it yourself will **NOT** work.
->
 
 > [!NOTE]
 > - Duplicate code is slowly being phased out in favour of helper classes found in the `common` folder.
 > - To reduce reads/writes, an in-memory cache is used alongside [Firestore](https://firebase.google.com/docs/firestore) - no PR's should edit this.
 
 ## Features
+### Reliable
+✅ A persistent DB is used, allowing EMCS to be used seamlessly when EarthMC goes down.<br>
+✅ Quick responses via an in-memory cache and fast HTTP client thanks to [Undici](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise).
+
+### Maintainable
 ✅ Written in **TypeScript** for type-safety and intellisense.<br>
 ✅ Uses modern **ESM** format which provides a nicer syntax and better module compatibility.<br>
-✅ **DiscordJS** commands and events have their own files for clarity and maintainability.<br>
-✅ A persistent DB is used, allowing EMCS to be used seamlessly when EarthMC goes down.<br>
-✅ Fast responses via an in-memory cache and fast HTTP client thanks to [Undici](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise).
+✅ **DiscordJS** commands and events have their own files for clarity and scalability.<br>
 
 ## The legal stu- 😴..
 #### This project has the [CC-BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.</h4>

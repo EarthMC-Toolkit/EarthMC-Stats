@@ -1,10 +1,10 @@
-import { Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js"
-import type { Client, ChatInputCommandInteraction, User } from "discord.js"
-
 import { 
     type DiscordReqObjectV3, 
     OfficialAPI
 } from "earthmc"
+
+import { Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js"
+import type { Client, ChatInputCommandInteraction, User } from "discord.js"
 
 import { backtick, listInputToArr } from "../../bot/utils/index.js"
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
