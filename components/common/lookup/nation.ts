@@ -161,7 +161,7 @@ export default class NationLookup extends CommandLookup {
         const bonus = auroraNationBonus(resLength)
 
         const spawnPoint = this.getSpawnPoint(true, true)
-        const mapUrl = Aurora.buildMapLink(spawnPoint, 5)
+        const mapUrl = new Aurora.URLBuilder(spawnPoint, 5)
 
         const area = Math.round(this.apiNation.stats.numTownBlocks)
         const foundedTimestamp = timestampDateTime(this.apiNation.timestamps.registered)
@@ -173,7 +173,7 @@ export default class NationLookup extends CommandLookup {
         this.addField("Founded", foundedTimestamp, true)
             .addField("Leader", backtick(this.apiNation.king.name, { prefix: kingPrefix }), true)
             .addField("Capital", backtick(this.apiNation.capital.name), true)
-            .addField("Location", `[${spawnPoint.x}, ${spawnPoint.z}](${mapUrl.toString()})`, true)
+            .addField("Location", `[${spawnPoint.x}, ${spawnPoint.z}](${mapUrl.getAsString()})`, true)
             .addField("Residents", backtick(resLength.toString()), true)
             .addField("Balance", `${EMOJI_GOLD} ${backtick(this.apiNation.stats.balance)}G`, true)
             .addField("Size", `${EMOJI_CHUNK} ${backtick(area)} Chunks`, true)

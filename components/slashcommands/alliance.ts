@@ -16,7 +16,7 @@ import {
 } from '../../bot/utils/index.js'
 
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
-import type { SlashCommand } from "../../bot/types.js"
+import type { DBAlliance, SlashCommand } from "../../bot/types.js"
 
 //const editingChannels = ["971408026516979813"]
 //const editorRole = "966359842417705020"
@@ -82,10 +82,28 @@ const cmdData = new SlashCommandBuilder()
     //     )
     // )
 
+const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => 
+    a.allianceName.toLowerCase().includes(key) ||
+    (a.fullName && a.fullName.toLowerCase().includes(key))
+)
+
 const allianceCmd: SlashCommand<typeof cmdData> = {
     name: "alliance",
     description: desc,
     data: cmdData,
+    autocomplete: async (_, interaction) => {
+        const focusedValue = interaction.options.getFocused()
+
+        const alliances = await database.AuroraDB.getAlliances()
+        const filtered = filterAlliances(alliances, focusedValue)
+        
+        const choices = filtered.map(a => ({
+            name: a.fullName ? `${a.allianceName} - ${a.fullName}` : a.allianceName,
+            value: a.allianceName
+        }))
+
+        await interaction.respond(choices)
+    },
     run: async (client, interaction) => {
         const cmd = interaction.options.getSubcommand().toLowerCase()
 
@@ -237,15 +255,6 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
 
         // Handle success message
 
-    },
-    autocomplete: async (_, interaction) => {
-        const focusedValue = interaction.options.getFocused()
-		
-        const alliances = await database.AuroraDB.getAlliances()
-        const filtered = alliances.filter(a => a.allianceName.toLowerCase().startsWith(focusedValue.toLowerCase()))
-		const choices = filtered.map(a => ({ name: a.allianceName, value: a.allianceName }))
-
-        return await interaction.respond(choices)
     }
 }
 

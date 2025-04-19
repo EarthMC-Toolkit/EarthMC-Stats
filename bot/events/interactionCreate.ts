@@ -13,21 +13,16 @@ const interactionCreate: DJSEvent = {
         const client: ExtendedClient = interaction.client
         const username = interaction.user.displayName
 
-        let cmdName: string = null
-        if (interaction.isCommand()) {
-            cmdName = interaction.commandName
-        }
-
         if (interaction.isChatInputCommand()) {
-            const cmd = client.slashCommands.get(cmdName)
+            const cmd = client.slashCommands.get(interaction.commandName)
             if (!cmd) return
         
-            console.log(`[${username}] Interaction triggered: '${cmdName}'`)
+            console.log(`[${username}] Interaction triggered: '${interaction.commandName}'`)
             return await cmd.run(client, interaction).catch(console.error)
         }
 
         if (interaction.isAutocomplete()) {
-            const cmd = client.slashCommands.get(cmdName)
+            const cmd = client.slashCommands.get(interaction.commandName)
             if (!cmd?.autocomplete) return
 
             return await cmd.autocomplete(client, interaction).catch(console.error)

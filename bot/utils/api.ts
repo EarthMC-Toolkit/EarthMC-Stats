@@ -34,17 +34,16 @@ export const sendNews = async (client: Client, map: 'aurora') => {
 }
 
 async function sendNewsReq(msgs: Collection<string, Message>, mapName: 'aurora') {
-    const route = `${mapName}/news`
     const all = msgs.sort((a, b) => b.createdTimestamp - a.createdTimestamp).map(m => new News(m))
 
-    await sendRequest(route, 'POST', all)
-    console.log(`[${mapName.toUpperCase()}] Sent POST request to ${route}`)
+    await sendRequest(`${mapName}/news`, 'POST', all)
+    console.log(`[${mapName.toUpperCase()} - Custom API] Sent POST request to news.`)
 }
 
 export async function sendAuroraAlliances() {
     const auroraAlliances = await database.AuroraDB.getAlliances()
     if (auroraAlliances) {
         await sendRequest('aurora/alliances', 'PUT', auroraAlliances)
-        console.log('[AURORA] Sent PUT request to alliances')
+        console.log('[AURORA - Custom API] Sent PUT request to alliances.')
     }
 }

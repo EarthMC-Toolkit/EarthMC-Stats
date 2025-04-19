@@ -20,7 +20,7 @@
     "@isaacs/ttlcache": "^1.4.1",
     "discord.js": "14.18.0",
     "dotenv": "^16.5",
-    "earthmc": "^10.3.2",
+    "earthmc": "^10",
     "firebase": "11.6.0",
     "firebase-admin": "13.2.0",
     "striptags": "^3.2.0",
@@ -35,7 +35,7 @@
     "eslint-plugin-named-import-spacing": "^1.0.3",
     "rimraf": "^5.0.5",
     "tsx": "latest",
-    "typescript": "^5.2.2"
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=20"
