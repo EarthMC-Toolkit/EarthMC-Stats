@@ -26,6 +26,13 @@ const interactionCreate: DJSEvent = {
             return await cmd.run(client, interaction).catch(console.error)
         }
 
+        if (interaction.isAutocomplete()) {
+            const cmd = client.slashCommands.get(cmdName)
+            if (!cmd?.autocomplete) return
+
+            return await cmd.autocomplete(client, interaction).catch(console.error)
+        }
+
         if (interaction.isModalSubmit()) {
             console.log(`${username} submitted a modal.`)
 

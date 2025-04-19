@@ -4,8 +4,6 @@ import {
 } from "earthmc"
 
 import { 
-    type Client,
-    type ChatInputCommandInteraction,
     SlashCommandBuilder
 } from "discord.js"
 
@@ -35,7 +33,7 @@ const playerStatsCmd: SlashCommand<typeof slashCmdData> = {
     name: "playerstats",
     description: desc,
     data: slashCmdData,
-    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+    run: async (client, interaction) => {
         await interaction.deferReply()
 
         // Get stats from OAPI.

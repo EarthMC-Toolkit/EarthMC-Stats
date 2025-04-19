@@ -4,7 +4,8 @@ import type {
     BaseInteraction,
     ChatInputCommandInteraction,
     SharedNameAndDescription,
-    Collection
+    Collection,
+    AutocompleteInteraction
 } from "discord.js"
 
 import type { 
@@ -37,6 +38,7 @@ export type SlashCommand<TData extends SharedNameAndDescription> = BaseCommand &
     data?: TData
     cooldown?: number
     run: (client: Client, interaction: ChatInputCommandInteraction) => any
+    autocomplete?: (client: Client, interaction: AutocompleteInteraction) => any
 }
 
 export type MessageCommand = BaseCommand & {

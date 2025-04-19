@@ -1,11 +1,11 @@
 import {
-    type Client, 
-    type ChatInputCommandInteraction,
     EmbedBuilder, SlashCommandBuilder, Colors
 } from "discord.js"
 
 import ResidentLookup from '../common/lookup/resident.js'
 import { devsFooter } from "../../bot/utils/index.js"
+
+import type { SlashCommand } from "../../bot/types.js"
 
 const slashCmdData = new SlashCommandBuilder()
     .setName("resident")
@@ -15,11 +15,11 @@ const slashCmdData = new SlashCommandBuilder()
         .setRequired(true)
     )
 
-export default {
+const residentCmd: SlashCommand<typeof slashCmdData> = {
     name: "resident",
     description: "Displays info for a specific resident.",
     data: slashCmdData,
-    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+    run: async (client, interaction) => {
         await interaction.deferReply()
 
         const name = interaction.options.getString("name", true)
@@ -52,3 +52,5 @@ export default {
         })
     }
 }
+
+export default residentCmd

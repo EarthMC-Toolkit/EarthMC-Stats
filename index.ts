@@ -92,7 +92,7 @@ const EVENT_FILES = readTsFiles(EVENTS_PATH)
 
 for (const file of EVENT_FILES) {
     const eventFile = await import(`./${EVENTS_PATH}/${file}`)
-    const event = eventFile.default as DJSEvent
+    const event: DJSEvent = eventFile.default
 
     if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
     else client.on(event.name, (...args) => event.execute(...args))

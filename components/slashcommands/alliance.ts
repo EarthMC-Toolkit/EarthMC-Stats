@@ -6,7 +6,6 @@ import {
 } from "discord.js"
 
 import type {
-    Client,
     ChatInputCommandInteraction
 } from "discord.js"
 
@@ -48,9 +47,10 @@ const errorEmbed = (interaction: ChatInputCommandInteraction) => new EmbedBuilde
         iconURL: interaction.user.displayAvatarURL()
     })
 
+const desc = "Command for all things alliance related. Lookup, editing etc."
 const cmdData = new SlashCommandBuilder()
     .setName("alliance")
-    .setDescription("Used by editors to create or update an alliance.")
+    .setDescription(desc)
     .addSubcommand(subCmd => subCmd.setName("lookup")
         .addStringOption(opt => opt.setName("name")
             .setDescription("The colloquial/short name of the alliance to lookup.")
@@ -60,8 +60,9 @@ const cmdData = new SlashCommandBuilder()
     )
     // .addSubcommand(subCmd => subCmd.setName('create').setDescription('Create a new alliance.')
     //     .addStringOption(option => option.setName("map")
-    //         .setDescription("Choose a map this new alliance will apply to.").setRequired(true)
+    //         .setDescription("Choose a map this new alliance will apply to.")
     //         .addChoices({ name: "Aurora", value: "aurora" }, { name: "Nova", value: "nova" })
+    //         .setRequired(true)
     //     )
     //     .addStringOption(option => option.setName("name")
     //         .setDescription("Enter a name for this new alliance.")
@@ -70,8 +71,9 @@ const cmdData = new SlashCommandBuilder()
     // )
     // .addSubcommand(subCmd => subCmd.setName('edit').setDescription('Edit an existing alliance.')
     //     .addStringOption(option => option.setName("map")
-    //         .setDescription("Choose a map the edits will apply to.").setRequired(true)
+    //         .setDescription("Choose a map the edits will apply to.")
     //         .addChoices({ name: "Aurora", value: "aurora" }, { name: "Nova", value: "nova" })
+    //         .setRequired(true)
     //     )
     //     .addStringOption(option => option.setName("name")
     //         .setDescription("Enter name of the alliance to edit.")
@@ -80,9 +82,10 @@ const cmdData = new SlashCommandBuilder()
     // )
 
 const allianceCmd: SlashCommand<typeof cmdData> = {
-    data: cmdData,
     name: "alliance",
-    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+    description: desc,
+    data: cmdData,
+    run: async (client, interaction) => {
         const cmd = interaction.options.getSubcommand().toLowerCase()
 
         switch(cmd) {
@@ -233,6 +236,15 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
 
         // Handle success message
 
+    },
+    autocomplete: async (_, interaction) => {
+        const focusedValue = interaction.options.getFocused()
+		
+        const alliances = await database.AuroraDB.getAlliances()
+        const filtered = alliances.filter(a => a.allianceName.toLowerCase().startsWith(focusedValue.toLowerCase()))
+		const choices = filtered.map(a => ({ name: a.allianceName, value: a.allianceName }))
+
+        return await interaction.respond(choices)
     }
 }
 
