@@ -97,12 +97,14 @@ async function registerCommands(client: ExtendedClient) {
         })
     }
 
-    if (getProduction()) await client.application.commands.set(data)
-    //else await client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands.set(data)
+    const prod = getProduction()
 
-    console.log(`Commands registered.
-        \nRegular: ${auroraCmds.length}
-        \nSlash: ${slashCmds.length}`
+    const cmds = prod ? client.application.commands : client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands
+    if (cmds) await cmds.set(data)
+
+    console.log(`Commands registered ${prod ? "globally" : "in dev guild"}.\n
+        Regular: ${auroraCmds.length}
+        Slash: ${slashCmds.length}\n`
     )
 }
 

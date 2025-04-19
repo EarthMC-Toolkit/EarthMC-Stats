@@ -26,7 +26,7 @@ import { readTsFiles } from "./bot/utils/index.js"
 const prod = process.env.NODE_ENV == "production"
 setProduction(prod)
 
-// NOTE: PM2 ecosystem file sets NODE_ENV depending on how we started it.
+// NOTE: PM2 ecosystem file overrides NODE_ENV depending on how we started via --env.
 //       Any local .env files should always have NODE_ENV set to "development" for starting without PM2.
 console.log(prod ? "Running in production." : "Running in maintenance, live functions disabled.")
 //#endregion
