@@ -122,7 +122,7 @@ async function updateAlliances(map: MapInstance) {
         else {
             console.log(`Alliance '${a.allianceName}' has no nations.`)
 
-            // TODO: Bring back disband logic (once bug is confirmed fixed)
+            // Bring back disband logic here if desired in future.
         }
 
         const noInvite = "No discord invite has been set for this alliance"
@@ -198,15 +198,11 @@ async function updatePlayerData(players: DBPlayer[], map: MapInstance) {
         const player = {
             name: op.name,
             lastOnline: {
-                //nova: playerInDB?.lastOnline?.nova ?? null,
                 aurora: opInDB?.lastOnline?.aurora ?? null
             }
         } satisfies DBPlayer
         
         player.lastOnline[mapName] = now
-
-        // const linkedID = opInDB?.linkedID
-        // if (linkedID) player.linkedID = linkedID
 
         // Not in DB, add them.
         if (!opInDB) players.push(player)

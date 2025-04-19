@@ -29,11 +29,10 @@ const townDataCollection = () => auroraDoc().collection("townData")
 const allianceCollection = () => auroraDoc().collection("alliances").doc("alliancesDoc")
 const playerStatsCollection = () => auroraDoc().collection("playerStats").doc("playerStatsDoc")
 
-//export const AURORA_MAP_URL = 'https://map.earthmc.net'
-
 export const getMapData = () => endpoint.mapData<SquaremapMapResponse>('aurora')
 export const getOnlinePlayerData = () => endpoint.playerData<SquaremapPlayersResponse>('aurora')
 
+//export const AURORA_MAP_URL = 'https://map.earthmc.net'
 // export const getOnlinePlayerData = async () => {
 //     const res = await request(`${AURORA_MAP_URL}/tiles/players.json`)
 //     return await res.body.json() as SquaremapPlayersResponse
@@ -78,9 +77,6 @@ export const getNation = (nationName: string): Promise<DBSquaremapNation> => get
 export async function setNations(nations: DBSquaremapNation[]) {
     cache.set('aurora_nations', nations)
 
-    //const dividedNationsArray = divideArray(nations, 2)
-    //let counter = 0
-
     nationDataCollection()
         .doc("nationArray1")
         .set({ nationArray: nations })
@@ -116,7 +112,7 @@ export async function setTowns(towns: DBSquaremapTown[]) {
     await batch2.commit()
 }
 
-const length = (x: unknown[]) => x.length
+const length = <T>(x: string | Array<T>) => x.length
 
 // Represents an alliance that has extra info (to be displayed on embeds)
 // but doesn't need to be stored in the DB. Info set here is always after getAlliances().
@@ -125,7 +121,52 @@ type DBAllianceExtended = DBAlliance & {
     //wealth: number
 }
 
+/**
+ * Overwrites the alliances document with updated alliances data.
+ * @param alliances All existing alliances, including ones we just changed.
+ * @param changed The indexes of the alliances that changed.
+ */
+export async function setAlliances(alliances: DBAlliance[], changed: number[]) {
+    if (!Array.isArray(alliances)) {
+        console.warn("Attempted to overwrite alliances with non-array type.")
+        return
+    }
+
+    if (alliances.length < 1) {
+        console.warn("Attempted to overwrite alliances with empty array!")
+        return
+    }
+
+    // TODO: This could be slow, determine whether it's truly necessary to typecheck each alliance.
+    //       If we validate only the alliance(s) that we updated, the two checks above should suffice.
+    const allValid = alliances.every(a => !!a && validDBAlliance(a))
+    if (!allValid) {
+        console.warn("Attempted to overwrite alliances, but not all of them satisified DBAlliance.")
+        return
+    }
+
+    if (changed?.length > 0) {
+        const now = Timestamp.now()
+        changed.forEach(idx => {
+            alliances[idx].lastUpdated = now
+        })
+    }
+
+    cache.set('aurora_alliances', alliances)
+    return allianceCollection().set({ allianceArray: alliances })
+}
+
+export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
+    const cached: DBAlliance[] = cache.get('aurora_alliances')
+    if (cached && !skipCache) return cached
+
+    return allianceCollection().get().then(async doc => { 
+        return doc.data().allianceArray
+    }).catch(e => { console.warn(`Error getting alliances:\n` + e); return null })
+}
+
 export async function getAlliance(name: string) {
+    // TODO: Handle these three errors instead null - throw with msg instead?
     const alliances = await getAlliances() as DBAlliance[]
     if (!alliances) return null
 
@@ -156,7 +197,7 @@ export async function getAlliance(name: string) {
         foundAlliance.rank = getAllianceRank(foundAlliance.allianceName, alliances, nations)
     }
 
-    return foundAlliance
+    return { foundAlliance, alliances, nations }
 }
 
 export function getAllianceRank(allianceName: string, alliances: DBAlliance[], nations: DBSquaremapNation[]) {
@@ -198,16 +239,6 @@ export function getAllianceRank(allianceName: string, alliances: DBAlliance[], n
     return alliances.findIndex(a => a.allianceName == allianceName) + 1
 }
 
-export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
-    const cached: DBAlliance[] = cache.get('aurora_alliances')
-    if (cached && !skipCache) return cached
-
-    return allianceCollection().get().then(async doc => { 
-        return doc.data().allianceArray
-    }).catch(e => { console.warn(`Error getting alliances:\n` + e); return null })
-}
-
-
 function validDBAlliance(alliance: unknown): alliance is DBAlliance {
     const isObj = typeof alliance === 'object' && !Array.isArray(alliance)
     if (!isObj) return false
@@ -221,41 +252,6 @@ function validDBAlliance(alliance: unknown): alliance is DBAlliance {
     if (!validNations) return false
 
     return true
-}
-
-/**
- * Overwrites the alliances document with updated alliances data.
- * @param alliances All existing alliances, including ones we just changed.
- * @param changed The indexes of the alliances that changed.
- */
-export async function setAlliances(alliances: DBAlliance[], changed: number[]) {
-    if (!Array.isArray(alliances)) {
-        console.warn("Attempted to overwrite alliances with non-array type.")
-        return
-    }
-
-    if (alliances.length < 1) {
-        console.warn("Attempted to overwrite alliances with empty array!")
-        return
-    }
-
-    // TODO: This could be slow, determine whether it's truly necessary to typecheck each alliance.
-    //       If we validate only the alliance(s) that we updated, the two checks above should suffice.
-    const allValid = alliances.every(a => !!a && validDBAlliance(a))
-    if (!allValid) {
-        console.warn("Attempted to overwrite alliances, but not all of them satisified DBAlliance.")
-        return
-    }
-
-    if (changed?.length > 0) {
-        const now = Timestamp.now()
-        changed.forEach(idx => {
-            alliances[idx].lastUpdated = now
-        })
-    }
-
-    cache.set('aurora_alliances', alliances)
-    return allianceCollection().set({ allianceArray: alliances })
 }
 
 //#region Player Stats

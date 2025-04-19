@@ -176,7 +176,7 @@ export function sortByOrder<V extends object>(arr: V[], keys: KeySortOption[], a
     return arr
 }
 
-const len = (x: any[]) => x.length
+const len = <T>(x: string | Array<T>) => x.length
 export const defaultSort = <V extends object>(arr: V[]) => sortByOrder(arr, [{
     key: 'residents',
     callback: len

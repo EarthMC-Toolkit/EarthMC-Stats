@@ -17,7 +17,7 @@ const errEmbed = (client: Client, msg: Message) => new EmbedBuilder()
 export default {
     name: "nation",
     description: "Displays info for a nation.",
-    slashCommand: true,
+    //slashCommand: true,
     aliases: ["n"],
     run: async (client: Client, message: Message, args: string[]) => {
         if (!botDevs.includes(message.author.id)) {

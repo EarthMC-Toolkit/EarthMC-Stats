@@ -10,7 +10,8 @@ import type {
     ModalSubmitInteraction,
     AttachmentBuilder,
     Attachment,
-    BaseMessageOptions
+    BaseMessageOptions,
+    BaseInteraction
 } from "discord.js"
 
 import { 
@@ -39,6 +40,7 @@ type EntityType = ObjectValues<typeof EntityType>
 
 type AnyComponent = BaseMessageOptions['components'][number]
 type AnyFile = BaseMessageOptions['files'][number]
+type Author = Message['author'] | BaseInteraction['user']
 
 const MAX_ROW_BTNS = 5
 
@@ -127,10 +129,10 @@ export default class CustomEmbed extends EmbedBuilder {
     }
 
     /** Sets the author to the default one where it uses the message author's username and avatar url. */
-    setDefaultAuthor(message: Message) {
+    setBasicAuthorInfo(author: Author) {
         this.setAuthor({ 
-            name: message.author.username, 
-            iconURL: message.author.displayAvatarURL() 
+            name: author.username, 
+            iconURL: author.displayAvatarURL() 
         })
 
         return this

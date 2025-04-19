@@ -8,10 +8,12 @@ import {
 import { cache } from '../constants.js'
 import type { DBAlliance } from '../types.js'
 
-const ParagraphStyle = TextInputStyle.Paragraph
-const optionals = ['flag', 'discord', 'fill', 'outline', 'full_name']
-const optLower = (opts: CommandInteractionOptionResolver, k: string) => 
-    opts.getString(k).toLowerCase()
+const INPUT_STYLE = TextInputStyle.Paragraph
+const OPTIONALS = ['flag', 'discord', 'fill', 'outline', 'full_name']
+
+function optLower(opts: CommandInteractionOptionResolver, k: string) {
+    return opts.getString(k).toLowerCase()
+}
 
 // function fieldVal(interaction: ModalSubmitInteraction, name: string) {
 //     return interaction.fields.getField(name).value
@@ -30,7 +32,7 @@ class AllianceModal extends ModalBuilder {
     }
 
     createRow = (id: string, label: string, placeholder: string = null, style = TextInputStyle.Short) => {
-        this.required = !optionals.includes(id)
+        this.required = !OPTIONALS.includes(id)
 
         const comp = new TextInputBuilder()
             .setCustomId(id)
@@ -58,8 +60,8 @@ class AllianceModal extends ModalBuilder {
 
     main = (options: CommandInteractionOptionResolver) => {
         this.rows = [
-            this.createRow('nations', 'List of Nations', this.alliance?.nations.join(", "), ParagraphStyle),
-            this.createRow('leaders', 'Leader(s)', this.alliance?.leaderName, ParagraphStyle),
+            this.createRow('nations', 'List of Nations', this.alliance?.nations.join(", "), INPUT_STYLE),
+            this.createRow('leaders', 'Leader(s)', this.alliance?.leaderName, INPUT_STYLE),
             this.createRow('flag', 'Flag Image Link (Optional)', this.alliance?.imageURL),
             this.createRow('discord', 'Discord Invite Link (Optional)', this.alliance?.discordInvite),
             this.createRow('full_name', 'Full Name (Optional)', this.alliance?.fullName)

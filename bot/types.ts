@@ -80,7 +80,7 @@ export type MCSessionProfile = MCUserProfile & {
 }
 
 export interface MapDB {
-    getAlliance(name: string): Promise<DBAlliance>
+    getAlliance(name: string): Promise<{ foundAlliance: DBAlliance, alliances: DBAlliance[], nations: DBSquaremapNation[] }>
     getAlliances(skipCache: boolean): Promise<DBAlliance[]> 
     setAlliances(alliances: DBAlliance[], changed: number[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>

@@ -65,7 +65,7 @@ const flagsChannel = "966372674236481606"
 const getNameOrLabel = (a: { fullName?: string, allianceName: string }) => a.fullName || a.allianceName
 const getType = (a: { type: string }) => a.type == 'mega' 
     ? 'Meganation' : a.type == 'sub' 
-    ? 'Sub-Meganation' : 'Normal'
+    ? 'Sub-Meganation' : 'Normal/Pact'
 
 const setAddedNationsInfo = (
     type: 'creating' | 'updating',
@@ -167,7 +167,7 @@ export default {
                     .setTitle(`Error fetching online players`)
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-                const foundAlliance = await database.AuroraDB.getAlliance(arg2)
+                const { foundAlliance } = await database.AuroraDB.getAlliance(arg2)
                 if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                     .setTitle("Error fetching alliance")
                     .setDescription("That alliance does not exist! Please try again.")
@@ -201,7 +201,7 @@ export default {
             }
 
             if (arg1 == "score") {
-                const foundAlliance = await database.AuroraDB.getAlliance(args[1])
+                const { foundAlliance } = await database.AuroraDB.getAlliance(args[1])
                 if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                     .setTitle("Error fetching alliance")
                     .setDescription("That alliance does not exist! Please try again.")
@@ -263,7 +263,7 @@ export default {
 
         // Checks the given alliances for non-existent nations.
         if (arg1 == "validate") {
-            const foundAlliance = await database.AuroraDB.getAlliance(arg2)
+            const { foundAlliance } = await database.AuroraDB.getAlliance(arg2)
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                 .setTitle("Error fetching alliance")
                 .setDescription("That alliance does not exist! Please try again.")
@@ -1303,7 +1303,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
 }
 
 async function sendSingleAlliance(client: Client, message: Message, m: Message, args: string[]) {
-    const foundAlliance = await database.AuroraDB.getAlliance(args[0])
+    const { foundAlliance } = await database.AuroraDB.getAlliance(args[0])
     if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
         .setTitle("Error fetching alliance")
         .setDescription("That alliance does not exist! Please try again.")
@@ -1359,7 +1359,7 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .addField("Residents", backtick(foundAlliance.residents), true)
         .setColor(colour)
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
-        .setDefaultAuthor(message)
+        .setBasicAuthorInfo(message.author)
         .setTimestamp()
 
     if (foundAlliance.online) {

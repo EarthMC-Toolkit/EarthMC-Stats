@@ -21,7 +21,7 @@ const errEmbed = (client: Client, msg: Message) => new EmbedBuilder()
 const resCmd: MessageCommand = {
     name: "resident",
     description: "Displays info for a specific resident.",
-    slashCommand: true,
+    //slashCommand: true,
     aliases: ["res", "player"],
     run: async (client: Client, message: Message, args: string[]) => {    
         const req = args.join(" ")

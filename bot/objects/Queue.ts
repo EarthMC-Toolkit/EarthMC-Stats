@@ -3,14 +3,21 @@ import type {
     SquaremapPlayersResponse
 } from 'earthmc'
 
-type Map = {
+type MapInfo = {
     online: boolean
     max: number
     count: number
     formatted: string
 }
 
-function format(map: Map) {
+const initMap = () => ({
+    online: true,
+    count: 0,
+    max: 400,
+    formatted: ""
+}) satisfies MapInfo as MapInfo
+
+function format(map: MapInfo) {
     const diff = map.max - map.count
     const freeSpots = diff > 0 ? diff : 0
 
@@ -22,13 +29,6 @@ function format(map: Map) {
     const spots = ` (${freeSpots} free spot${freeSpots == 1 ? "" : "s"})`
     return count.concat(spots)
 }
-
-const initMap = () => ({
-    online: true,
-    count: 0,
-    max: 400,
-    formatted: ""
-}) satisfies Map as Map
 
 // NOTE: This is no longer rly accurate since there is 
 //       no real queue, joining is instant in most cases.

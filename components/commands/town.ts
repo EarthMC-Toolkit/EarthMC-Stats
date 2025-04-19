@@ -6,7 +6,7 @@ import {
 export default {
     name: "town",
     description: "Displays info for a town.",
-    slashCommand: true,
+    //slashCommand: true,
     aliases: ["t"],
     run: async (_client: Client, message: Message, _args: string[]) => {
         return message.reply({embeds: [new EmbedBuilder()

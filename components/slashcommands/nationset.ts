@@ -100,7 +100,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
                 else nation.kingPrefix = value.substring(0, 10)
 
                 const embed = new EmbedBuilder()
-                    .setTitle("Nation Updated | " + nation.name)
+                    .setTitle(`Nation Updated | ${nation.name}`)
                     .setDescription(`The king prefix has been ${cleared ? "cleared" : "set to `" + nation.kingPrefix + "`"}.`)
                     .setColor(Colors.Aqua)
                     .setTimestamp()
@@ -125,7 +125,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
                 }
                 
                 await interaction.editReply({embeds: [new EmbedBuilder()
-                    .setTitle("Nation Updated | " + nation.name)
+                    .setTitle(`Nation Updated | ${nation.name}`)
                     .setDescription(`The nation's discord invite has been ${cleared ? "cleared" : "set to `" + value + "`"}.`) 
                     .setColor(Colors.Aqua)
                     .setTimestamp()
@@ -154,7 +154,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
                 }
 
                 const embed = new EmbedBuilder()
-                    .setTitle("Nation Updated | " + nation.name)
+                    .setTitle(`Nation Updated | ${nation.name}`)
                     .setDescription(`The nation's flag has been ${cleared ? "cleared." : "changed to:"}`)
                     .setColor(Colors.Aqua)
                     .setTimestamp()
