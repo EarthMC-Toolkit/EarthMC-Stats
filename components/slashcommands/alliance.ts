@@ -111,10 +111,13 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
         // Sort by lowest (best) rank and exclude any with a broken/missing `rank` key.
         alliances = alliances.filter(a => a.rank).sort((a1, a2) => a1.rank - a2.rank)
 
-        const choices = alliances.map(a => ({
-            name: a.fullName ? `${a.allianceName} | ${a.fullName} | #${a.rank}` : a.allianceName,
-            value: a.allianceName // What we send to actual cmd (run) to look it up.
-        }))
+        const choices = alliances.map(a => {
+            const name = a.fullName ? `${a.allianceName} | ${a.fullName}` : a.allianceName
+            return { 
+                name: name + ` | #${a.rank}`, 
+                value: a.allianceName // What we send to the actual cmd (run function).
+            }
+        })
 
         await interaction.respond(choices)
     },
