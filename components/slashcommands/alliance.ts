@@ -82,10 +82,13 @@ const cmdData = new SlashCommandBuilder()
     //     )
     // )
 
+// Filter by whether both fullName/label or short name include focusedValue.
 const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => 
     a.allianceName.toLowerCase().includes(key) ||
     (a.fullName && a.fullName.toLowerCase().includes(key))
 )
+
+const CHOICE_LIMIT = 25
 
 const allianceCmd: SlashCommand<typeof cmdData> = {
     name: "alliance",
@@ -93,13 +96,24 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
     data: cmdData,
     autocomplete: async (_, interaction) => {
         const focusedValue = interaction.options.getFocused()
+        let alliances = await database.AuroraDB.getAlliances()
 
-        const alliances = await database.AuroraDB.getAlliances()
-        const filtered = filterAlliances(alliances, focusedValue)
-        
-        const choices = filtered.map(a => ({
-            name: a.fullName ? `${a.allianceName} - ${a.fullName}` : a.allianceName,
-            value: a.allianceName
+        // Not a blank string, we typed something.
+        if (!focusedValue || focusedValue.trim().length > 0) {
+            alliances = filterAlliances(alliances, focusedValue)
+        }
+
+        // Make sure we only have X amt of choices (discord limit).
+        if (alliances.length > CHOICE_LIMIT) {
+            alliances = alliances.slice(0, CHOICE_LIMIT)
+        }
+
+        // Sort by lowest (best) rank and exclude any with a broken/missing `rank` key.
+        alliances = alliances.filter(a => a.rank).sort((a1, a2) => a1.rank - a2.rank)
+
+        const choices = alliances.map(a => ({
+            name: a.fullName ? `${a.allianceName} | ${a.fullName} | #${a.rank}` : a.allianceName,
+            value: a.allianceName // What we send to actual cmd (run) to look it up.
         }))
 
         await interaction.respond(choices)
