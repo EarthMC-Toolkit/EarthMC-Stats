@@ -1,4 +1,7 @@
-import { OfficialAPI } from "earthmc"
+import { 
+    type SquaremapPlayer,
+    Aurora, OfficialAPI
+} from "earthmc"
 
 import {
     Colors, ButtonStyle,
@@ -12,7 +15,8 @@ import type {
 import { 
     database, AURORA,
     backtick, backticks,
-    timestampDateTime
+    timestampDateTime,
+    paginatorInteraction
 } from '../../bot/utils/index.js'
 
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
@@ -38,6 +42,14 @@ import type { DBAlliance, SlashCommand } from "../../bot/types.js"
 // }
 
 const getNameOrLabel = (a: { fullName?: string, allianceName: string }) => a.fullName || a.allianceName
+
+const successEmbed = (interaction: ChatInputCommandInteraction) => new EmbedBuilder()
+    .setColor(Colors.DarkBlue)
+    .setTimestamp()
+    .setAuthor({
+        name: interaction.user.username,
+        iconURL: interaction.user.displayAvatarURL()
+    })
 
 const errorEmbed = (interaction: ChatInputCommandInteraction) => new EmbedBuilder()
     .setColor(Colors.Red)
@@ -142,7 +154,6 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
         switch(cmd) {
             case "lookup": {
                 await interaction.deferReply()
-
                 const name = interaction.options.getString("name")
 
                 //#region TODO: Replace with `AllianceLookup` class and call init(). 
@@ -241,7 +252,47 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
                 })
             }
             case "online": {
+                await interaction.deferReply()
+                const name = interaction.options.getString("name")
 
+                // TODO: Do this in getAlliance() so we dont req ops twice. 
+                const ops: SquaremapPlayer[] = await Aurora.Players.online(true).catch(() => null)
+                if (!ops) return interaction.editReply({embeds: [errorEmbed(interaction)
+                    .setTitle(`Error fetching online players`)
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+                const { foundAlliance } = await database.AuroraDB.getAlliance(name)
+                if (!foundAlliance) return interaction.editReply({embeds: [errorEmbed(interaction)
+                    .setTitle("Error fetching alliance")
+                    .setDescription("That alliance does not exist! Please try again.")
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+                const allianceName = getNameOrLabel(foundAlliance)
+                
+                const allianceOps = ops.filter(op => foundAlliance.online.some(p => p == op.name)) ?? []
+                if (allianceOps.length < 1) return interaction.editReply({embeds: [successEmbed(interaction)
+                    .setTitle(`Online in ${allianceName} [0]`)
+                    .setDescription("No players are online in this alliance :(")
+                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+                const embeds: EmbedBuilder[] = []
+                const allData = allianceOps
+                    .map(res => `${res.name} - ${res.town} | ${res.rank}`)
+                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+            
+                const len = allData.length
+                for (let i = 0; i < len; i++) {
+                    embeds[i] = successEmbed(interaction)
+                        .setTitle(`Online in ${allianceName} [${allianceOps.length}]`)
+                        .setDescription("```" + allData[i] + "```")
+                        .setFooter({ 
+                            text: `Page ${i+1}/${allData.length}`, 
+                            iconURL: client.user.avatarURL() 
+                        })
+                }
+
+                return await interaction.editReply({ embeds: [embeds[0]] })
+                    .then(() => paginatorInteraction(interaction, embeds, 0))
             }
             // case "create": {
             //     await checkEditor(interaction) 
