@@ -83,10 +83,17 @@ const cmdData = new SlashCommandBuilder()
     // )
 
 // Filter by whether both fullName/label or short name include focusedValue.
-const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => 
-    a.allianceName.toLowerCase().includes(key) ||
-    (a.fullName && a.fullName.toLowerCase().includes(key))
-)
+const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => {
+    const keyLower = key.toLowerCase()
+    if (a.fullName) {
+        if (a.fullName.toLowerCase().includes(keyLower)) return true
+    }
+    if (a.allianceName) {
+        if (a.allianceName.toLowerCase().includes(keyLower)) return true
+    }
+
+    return false
+})
 
 const CHOICE_LIMIT = 25
 
