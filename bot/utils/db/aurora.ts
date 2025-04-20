@@ -205,7 +205,7 @@ export async function getAlliance(name: string) {
 
         if (opData?.players) {
             const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
-            foundAlliance.online = fastMerge(foundAlliance.online, onlineInNation)
+            foundAlliance.online = fastMerge(foundAlliance.online ?? [], onlineInNation)
         }
 
         //foundAlliance.wealth += n.wealth
