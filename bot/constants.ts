@@ -35,4 +35,5 @@ export const AURORA: MapInstance = {
 // We update this every x seconds, so expiry isn't needed.
 export const cache = new TTLCache<string, any>({ ttl: Infinity })
 
+// Key is the player name
 export const lastSeenPlayers = new Map<string, SeenPlayer>()

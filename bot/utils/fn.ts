@@ -253,16 +253,16 @@ export const inWorldBorder = (x: number, z: number) => {
 }
 
 // Thoroughly tested, faster than both spread and concat w/ high No. of items.
-export const fastMerge = <T>(original: T[], args: any[]) => {
+export const fastMerge = <T>(original: T[], args: T[]) => {
     // eslint-disable-next-line prefer-spread
     original.push.apply(original, args)
     return original
 }
 
 // Fast merge, but convert to set and back to ensure duplicates are removed.
-export const fastMergeUnique = <T>(original: T[], args: any[]) => [...new Set(fastMerge(original, args))]
+export const fastMergeUnique = <T>(original: T[], args: T[]) => [...new Set(fastMerge(original, args))]
 
-export const fastMergeByKey = <T>(original: T[], arr: any[], key: string) => {
+export const fastMergeByKey = <T>(original: T[], arr: T[], key: string) => {
     const len = arr.length
     for (let i = 0; i < len; i++) {
         const cur = arr[i]

@@ -54,7 +54,15 @@ const cmdData = new SlashCommandBuilder()
     .addSubcommand(subCmd => subCmd.setName("lookup")
         .setDescription("Get information on an existing alliance.")
         .addStringOption(opt => opt.setName("name")
-            .setDescription("The colloquial/short name of the alliance to lookup.")
+            .setDescription("The colloquial/short name of the alliance.")
+            .setRequired(true)
+            .setAutocomplete(true)
+        )
+    )
+    .addSubcommand(subCmd => subCmd.setName("online")
+        .setDescription("Displays a list of all online players in the specified alliance. Includes info about them.")
+        .addStringOption(opt => opt.setName("name")
+            .setDescription("The colloquial/short name of the alliance.")
             .setRequired(true)
             .setAutocomplete(true)
         )
@@ -156,14 +164,9 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
                 else {
                     leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
                         const name = backtick(p.name)
-                
-                        if (p.town?.name) {
-                            return p.nation?.name
-                                ? `${name} of ${p.town.name} (**${p.nation.name}**)`
-                                : `${name} of ${p.town.name}`
-                        }
-                        
-                        return name
+                        return !p.town?.name ? name : p.nation?.name
+                            ? `${name} of ${p.town.name} (**${p.nation.name}**)`
+                            : `${name} of ${p.town.name}`
                     }).join("\n") : "None"
                 
                     // Too many characters to show leader affiliations, fall back to just names.
@@ -236,6 +239,9 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
                     files: thumbnail,
                     components: allianceEmbed.components
                 })
+            }
+            case "online": {
+
             }
             // case "create": {
             //     await checkEditor(interaction) 

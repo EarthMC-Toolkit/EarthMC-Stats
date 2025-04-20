@@ -23,6 +23,26 @@ import {
 
 const DEFAULT_ABOUT = "/res set about [msg]"
 
+function isDBResident(res: unknown): res is DBResident {
+    if (typeof res !== 'object') return false
+    
+    const name = res['name']
+    if (!name || typeof name !== 'string') return false
+
+    const townName = res['townName']
+    return townName && typeof townName === 'string'
+}
+
+function isResident(res: unknown): res is Resident {
+    if (typeof res !== 'object') return false
+    
+    const name = res['name']
+    if (!name || typeof name !== 'string') return false
+
+    const town = res['town']
+    return town && typeof town === 'string'
+}
+
 export default class ResidentLookup extends BaseCommandHelper {
     dbResident: DBResident | Resident = null
     dbPlayer: DBPlayer
@@ -143,21 +163,43 @@ export default class ResidentLookup extends BaseCommandHelper {
     }
 
     #setupResidentEmbed() {
-        const res: any = this.apiResident || this.dbResident
+        const res = this.apiResident || this.dbResident
         //const formattedPlayerName = res.name.replace(/_/g, "\\_")
         
-        // Tries OAPI then tries DB/Cache then tries NPM.
-        const affiliatedTown = (res.town?.name ?? res.townName) ?? res.town
-        const affiliatedNation = (res.nation?.name ?? res.townNation) ?? res.nation
-
         this.embed.setTitle(`Resident Info | ${backtick(res.name)}`)
 
-        if (res.about && res.about != DEFAULT_ABOUT) {
-            this.embed.setDescription(`*${res.about}*`)
+        // Tries OAPI then tries DB/Cache then tries NPM.
+        let affiliatedTown: string = null
+        let affiliatedNation: string = null
+        let rank: string = null
+
+        if (isDBResident(res)) {
+            affiliatedTown = res.townName
+            affiliatedNation = res.townNation
+            rank = res.rank
+        }
+        else if (isResident(res)) {
+            affiliatedTown = res.town
+            affiliatedNation = res.nation
+            rank = res.rank
+        } else { // Must be OAPI player (RawPlayerV3)
+            affiliatedTown = res.town?.name
+            affiliatedNation = res.nation?.name
+
+            // TODO: Determine and set `rank` here too.
+
+            if (res.about && res.about != DEFAULT_ABOUT) {
+                this.embed.setDescription(`*${res.about}*`)
+            }
         }
 
-        this.addField("Affiliation", `${affiliatedTown} (${affiliatedNation})`, true)
-        if (res.rank) this.addField("Rank", res.rank, true)
+        if (affiliatedTown) {
+            this.addField("Affiliation", `${affiliatedTown} (${affiliatedNation ?? "No Nation"})`, true)
+        }
+
+        if (rank) {
+            this.addField("Rank", rank, true)
+        }
 
         this.tryAddNickname()
         this.addCommonFields()

@@ -44,19 +44,15 @@ const send = (interaction: ChatInputCommandInteraction, allData: RegExpMatchArra
 }
 
 const townlessLastSeen = async () => {
-    //#region
+    //#region Get residents or throw
     const residents = await database.AuroraDB.getResidents()
     if (!residents) {
         console.warn(`[AURORA] Error getting townless, could not get residents!`)
         return null
     }
-
-    const residentNames = new Set<string>(residents.reduce((out: string[], cur) => {
-        out.push(cur.name)
-        return out
-    }, []))
     //#endregion
 
+    const residentNames = new Set(residents.map(r => r.name))
     return [...lastSeenPlayers.values()].filter(p => !residentNames.has(p.name))
 }
 

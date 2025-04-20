@@ -3,7 +3,7 @@ import {
 } from "discord.js"
 
 import ResidentLookup from '../common/lookup/resident.js'
-import { devsFooter } from "../../bot/utils/index.js"
+import { backtick, devsFooter } from "../../bot/utils/index.js"
 
 import type { SlashCommand } from "../../bot/types.js"
 
@@ -37,10 +37,10 @@ const residentCmd: SlashCommand<typeof slashCmdData> = {
         const resLookup = new ResidentLookup(client)
         const exists = await resLookup.init(name)
 
-        if (!exists || !resLookup.apiResident) {
+        if (!exists) {
             await interaction.deleteReply()
             return interaction.followUp({embeds: [new EmbedBuilder()
-                .setTitle(`${name} isn't a registered player name, please try again.`)
+                .setTitle(`${backtick(name)} isn't a registered player, please try again.`)
                 .setColor(Colors.Red)
                 .setFooter(devsFooter(client))
                 .setTimestamp()

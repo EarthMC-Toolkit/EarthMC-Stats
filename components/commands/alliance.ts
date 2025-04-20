@@ -183,7 +183,7 @@ export default {
 
                 const embeds: EmbedBuilder[] = []
                 const allData = allianceOps
-                    .map(res => res.name + " - " + res.town + " | " + res.rank)
+                    .map(res => `${res.name} - ${res.town} | ${res.rank}`)
                     .join('\n').match(/(?:^.*$\n?){1,10}/mg)
             
                 const len = allData.length
@@ -197,7 +197,8 @@ export default {
                         })
                 }
 
-                return await m.edit({ embeds: [embeds[0]] }).then(msg => paginator(message.author.id, msg, embeds, 0))
+                return await m.edit({ embeds: [embeds[0]] })
+                    .then(msg => paginator(message.author.id, msg, embeds, 0))
             }
 
             if (arg1 == "score") {
