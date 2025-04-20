@@ -221,7 +221,7 @@ export default {
                 const areaCalcStr = `**Area**: ${foundAlliance.area} * 15% = ${scores.area.toFixed(1)}`
                 //const wealthCalcStr = `${foundAlliance.wealth} × 10% = ${scores.economy.toFixed(1)}`
 
-                const totalScore = (scores.nations + scores.towns + scores.residents + scores.area).toFixed(0)
+                const totalScore = Math.round(scores.nations + scores.towns + scores.residents + scores.area)
 
                 const embed = new EmbedBuilder()
                     .setTitle(`EMCS Score | ${getNameOrLabel(foundAlliance)}`)
@@ -235,7 +235,7 @@ export default {
                         ${townsCalcStr}
                         ${residentsCalcStr}
                         ${areaCalcStr}\n
-                        **Total**: ${totalScore}
+                        **Total**: ${backtick(totalScore.toLocaleString())}
                     `)
 
                 return await m.edit({ 
@@ -340,6 +340,7 @@ export default {
                 nations: [] as string[],
                 type: 'normal' as AllianceType,
                 lastUpdated: Timestamp.now()
+                //rank: alliances.length + 1
             })
 
             try {
@@ -358,7 +359,7 @@ export default {
                 .setTitle("Alliance Created")
                 .setColor(Colors.DarkBlue)
                 .setDescription(`
-                    The alliance \`${allianceName}\` has been created.
+                    The alliance ${backtick(allianceName)} has been created.
                     For future reference, this alliance exists at index ${backtick(index)} in the database.
                 `)
             ]})
@@ -463,6 +464,7 @@ export default {
                 type: typeLower,
                 discordInvite,
                 lastUpdated: Timestamp.now(),
+                // alliances.length + 1,
                 ...{
                     fullName: info[1] || null,
                     imageURL: info[6] || null
@@ -663,10 +665,10 @@ export default {
                 }
             }
 
-            const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
-            alliances[allianceIndex] = foundAlliance
-
             if (nationsAdded.length > 0) {
+                const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
+                alliances[allianceIndex] = foundAlliance
+
                 await database.AuroraDB.setAlliances(alliances, [allianceIndex])
             }
             

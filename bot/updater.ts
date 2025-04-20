@@ -115,23 +115,31 @@ async function updateAlliances(map: MapInstance) {
 
     const len = alliances.length
     for (let i = 0; i < len; i++) {
-        const a = alliances[i]
+        const alliance = alliances[i]
 
-        const existing = nations.filter(n => a.nations.includes(n.name))
-        if (existing.length > 1) a.nations = existing.map(n => n.name)
+        const existing = nations.filter(n => alliance.nations.includes(n.name))
+        if (existing.length > 1) alliance.nations = existing.map(n => n.name)
         else {
-            console.log(`Alliance '${a.allianceName}' has no nations.`)
-
             // Bring back disband logic here if desired in future.
+            console.log(`Alliance '${alliance.allianceName}' has no nations.`)
         }
 
+        //#region Validate all non-default invites.
         const noInvite = "No discord invite has been set for this alliance"
-        if (a.discordInvite == noInvite) return
+        if (alliance.discordInvite != noInvite) {
+            // Invalid or will expire, set it back to none.
+            getClient().fetchInvite(alliance.discordInvite)
+                .then(inv => { if (inv.maxAge > 0) alliance.discordInvite = noInvite })
+                .catch(err => { if (err.code == 10006) alliance.discordInvite = noInvite })
+        }
+        //#endregion
+    }
 
-        // Invalid or will expire, set it back to none.
-        getClient().fetchInvite(a.discordInvite)
-            .then(inv => { if (inv.maxAge > 0) a.discordInvite = noInvite })
-            .catch(err => { if (err.code == 10006) a.discordInvite = noInvite })
+    if (len > 1) {
+        const computedAlliances = map.db.computeAlliances(alliances, nations)
+        alliances.forEach(a => {
+            a.rank = map.db.getAllianceRank(a, computedAlliances)
+        })
     }
 
     await map.db.setAlliances(alliances, null) // No need to set lastUpdated - auto stuff would confuse editors.
@@ -254,9 +262,10 @@ async function updateMapData(map: MapInstance) {
             const currentResident = currentTown.residents[j]
             let rank: ResidentRank = currentTown.mayor == currentResident ? "Mayor" : "Resident"
 
-            if (rank == "Mayor" && currentTown.flags.capital) 
+            if (rank == "Mayor" && currentTown.flags.capital) {
                 rank = "Nation Leader"
-                
+            }
+            
             residentsArray.push({
                 name: currentResident,
                 townName: currentTown.name,

@@ -82,8 +82,21 @@ export type MCSessionProfile = MCUserProfile & {
 }
 
 export interface MapDB {
+    /**
+     * Loops through the nations of every alliance specified within `alliances` and adds up values like
+     * residents, towns and area using the info provided by `nations`. Finally, it sorts them in a custom order.
+     * @param alliances The alliances to compute.
+     * @param nations The nations to use when adding up alliance values.
+     */
+    computeAlliances(alliances: DBAlliance[], nations: DBSquaremapNation[]): DBAlliance[]
+    getAllianceRank(alliance: DBAlliance, computedAlliances: DBAlliance[]): number
     getAlliance(name: string): Promise<{ foundAlliance: DBAlliance, alliances: DBAlliance[], nations: DBSquaremapNation[] }>
     getAlliances(skipCache: boolean): Promise<DBAlliance[]> 
+    /**
+     * Overwrites the alliances document with updated alliances data.
+     * @param alliances All existing alliances, including ones we just changed.
+     * @param changed The indexes of the alliances that changed.
+     */
     setAlliances(alliances: DBAlliance[], changed: number[]): Promise<WriteResult>
     getResidents(): Promise<DBResident[]>
     setResidents(residents: DBResident[]): Promise<void>

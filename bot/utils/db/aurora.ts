@@ -145,6 +145,13 @@ export async function setAlliances(alliances: DBAlliance[], changed: number[]) {
         return
     }
 
+    // TODO: Implement this
+    // const nations = await getNations()
+    // alliances.forEach(a => {
+    //     const computedAlliances = computeAlliances(alliances, nations)
+    //     a.rank = getAllianceRank(a, computedAlliances)
+    // })
+
     if (changed?.length > 0) {
         const now = Timestamp.now()
         changed.forEach(idx => {
@@ -164,6 +171,18 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
         return doc.data().allianceArray
     }).catch(e => { console.warn(`Error getting alliances:\n` + e); return null })
 }
+
+// export async function getAlliancesComputed(skipCache = false): Promise<DBAlliance[]> {
+//     const cached: DBAlliance[] = cache.get('aurora_alliances_computed')
+//     if (cached && !skipCache) return cached
+
+//     const alliances = await getAlliances(skipCache)
+
+//     const nations = await getNations()
+//     if (!nations) return null
+
+//     return computeAlliances(alliances, nations)
+// }
 
 export async function getAlliance(name: string) {
     // TODO: Handle these three errors instead null - throw with msg instead?
@@ -186,21 +205,32 @@ export async function getAlliance(name: string) {
 
         if (opData?.players) {
             const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
-            foundAlliance.online = fastMerge([], onlineInNation)
+            foundAlliance.online = fastMerge(foundAlliance.online, onlineInNation)
         }
 
         //foundAlliance.wealth += n.wealth
     }
 
     // Only get rank if 2 or more alliances exist.
-    if (alliances.length > 1) {
-        foundAlliance.rank = getAllianceRank(foundAlliance.allianceName, alliances, nations)
-    }
+    // if (alliances.length > 1) {
+    //     const computedAlliances = computeAlliances(alliances, nations)
+    //     foundAlliance.rank = getAllianceRank(foundAlliance, computedAlliances)
+    // }
 
     return { foundAlliance, alliances, nations }
 }
 
-export function getAllianceRank(allianceName: string, alliances: DBAlliance[], nations: DBSquaremapNation[]) {
+export function getAllianceRank(alliance: DBAlliance, computedAlliances: DBAlliance[]) {
+    return computedAlliances.findIndex(a => a.allianceName === alliance.allianceName) + 1
+}
+
+/**
+ * Loops through the nations of every alliance specified within `alliances` and adds up values like
+ * residents, towns and area using the info provided by `nations`. Finally, it sorts them in a custom order.
+ * @param alliances The alliances to compute.
+ * @param nations The nations to use when adding up alliance values.
+ */
+export function computeAlliances(alliances: DBAlliance[], nations: DBSquaremapNation[]) {
     const alliancesLen = alliances.length
     for (let i = 0; i < alliancesLen; i++) {
         const alliance = alliances[i]
@@ -236,7 +266,7 @@ export function getAllianceRank(allianceName: string, alliances: DBAlliance[], n
     ])
     //#endregion
 
-    return alliances.findIndex(a => a.allianceName == allianceName) + 1
+    return alliances
 }
 
 function validDBAlliance(alliance: unknown): alliance is DBAlliance {
