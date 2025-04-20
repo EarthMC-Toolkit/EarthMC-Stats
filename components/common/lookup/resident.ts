@@ -106,23 +106,20 @@ export default class ResidentLookup extends BaseCommandHelper {
         //#endregion
 
         if (apiRes) {
-            this.#apiResident = apiRes
-
-            if (apiRes.town?.name) {
-                const resTown = await OfficialAPI.V3.towns(apiRes.town.name.toLowerCase()).then(arr => arr[0])
-
-                const isMayor = resTown.mayor.name == apiRes.name
-                const rank = isMayor ? (resTown.status.isCapital ? "Nation Leader" : "Mayor") : "Resident"
-                
-                apiRes['rank'] = rank
+            const { status, town } = apiRes
+            if (town?.name) {
+                apiRes['rank'] = status.isKing ? "Nation Leader" : (status.isMayor ? "Mayor" : "Resident")
             }
-        }
-        
-        if (this.dbResident) {
-            this.dbPlayer = await database.getPlayer(resName).catch(e => {
-                console.error(`DB error occurred getting resident ${resName}:\n${e}`)
-                return null
-            })
+
+            this.#apiResident = apiRes
+        } else {
+            // Only need dbPlayer for lastOnline so only grab it if we didn't get OAPI player.
+            if (this.dbResident) {
+                this.dbPlayer = await database.getPlayer(resName).catch(e => {
+                    console.error(`DB error occurred getting resident ${resName}:\n${e}`)
+                    return null
+                })
+            }
         }
         
         this.status = this.onlinePlayer ? "Online" : "Offline"
@@ -171,22 +168,17 @@ export default class ResidentLookup extends BaseCommandHelper {
         // Tries OAPI then tries DB/Cache then tries NPM.
         let affiliatedTown: string = null
         let affiliatedNation: string = null
-        let rank: string = null
 
         if (isDBResident(res)) {
             affiliatedTown = res.townName
             affiliatedNation = res.townNation
-            rank = res.rank
         }
         else if (isResident(res)) {
             affiliatedTown = res.town
             affiliatedNation = res.nation
-            rank = res.rank
         } else { // Must be OAPI player (RawPlayerV3)
             affiliatedTown = res.town?.name
             affiliatedNation = res.nation?.name
-
-            // TODO: Determine and set `rank` here too.
 
             if (res.about && res.about != DEFAULT_ABOUT) {
                 this.embed.setDescription(`*${res.about}*`)
@@ -197,8 +189,9 @@ export default class ResidentLookup extends BaseCommandHelper {
             this.addField("Affiliation", `${affiliatedTown} (${affiliatedNation ?? "No Nation"})`, true)
         }
 
-        if (rank) {
-            this.addField("Rank", rank, true)
+        // All player types should have this (we set it ourselves if OAPI player).
+        if (res['rank']) {
+            this.addField("Rank", res['rank'], true)
         }
 
         this.tryAddNickname()
