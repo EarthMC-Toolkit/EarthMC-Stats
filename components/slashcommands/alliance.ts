@@ -9,7 +9,8 @@ import {
 } from "discord.js"
 
 import type {
-    ChatInputCommandInteraction
+    ChatInputCommandInteraction,
+    Client
 } from "discord.js"
 
 import { 
@@ -79,6 +80,14 @@ const cmdData = new SlashCommandBuilder()
             .setAutocomplete(true)
         )
     )
+    .addSubcommand(subCmd => subCmd.setName("score")
+        .setDescription("Outputs the specified alliance's score calculated using EMCS tailored weights.")
+        .addStringOption(opt => opt.setName("name")
+            .setDescription("The colloquial/short name of the alliance.")
+            .setRequired(true)
+            .setAutocomplete(true)
+        )
+    )
     // .addSubcommand(subCmd => subCmd.setName('create').setDescription('Create a new alliance.')
     //     .addStringOption(option => option.setName("map")
     //         .setDescription("Choose a map this new alliance will apply to.")
@@ -102,6 +111,15 @@ const cmdData = new SlashCommandBuilder()
     //     )
     // )
 
+const CHOICE_LIMIT = 25
+const SCORE_WEIGHTS = {
+    nations: 0.35,
+    towns: 0.3,
+    residents: 0.2,
+    area: 0.15
+    //wealth: 0.1
+}
+
 // Filter by whether both fullName/label or short name include focusedValue.
 const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => {
     const keyLower = key.toLowerCase()
@@ -115,7 +133,189 @@ const filterAlliances = (arr: DBAlliance[], key: string) => arr.filter(a => {
     return false
 })
 
-const CHOICE_LIMIT = 25
+export async function allianceLookup(name: string, client: Client, interaction: ChatInputCommandInteraction) {
+    //#region TODO: Replace with `AllianceLookup` class and call init(). 
+    const { foundAlliance } = await database.AuroraDB.getAlliance(name)
+    if (!foundAlliance) return interaction.editReply({embeds: [errorEmbed(interaction)
+        .setTitle("Error fetching alliance")
+        .setDescription("That alliance does not exist! Please try again.")
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+    const leaderNames = foundAlliance.leaderName.split(', ')
+    const leaderPlayers = await OfficialAPI.V3.players(...leaderNames)
+
+    let leadersStr = "None"
+
+    if (!leaderPlayers) {
+        // OAPI failed - fall back to just names.
+        leadersStr = leaderNames.map(name => backtick(name)).join(", ")
+    }
+    else {
+        leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
+            const name = backtick(p.name)
+            return !p.town?.name ? name : p.nation?.name
+                ? `${name} of ${p.town.name} (**${p.nation.name}**)`
+                : `${name} of ${p.town.name}`
+        }).join("\n") : "None"
+    
+        // Too many characters to show leader affiliations, fall back to just names.
+        if (leadersStr.length > 1024) {
+            leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")
+        }
+    }
+
+    const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
+    const allianceType = 
+        typeString == 'sub' ? "Sub-Meganation" : 
+        typeString == 'mega' ? "Meganation" : "Normal/Pact"
+
+    const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
+    
+    let colour: number = Colors.DarkBlue
+    const fill = foundAlliance.colours?.fill
+    if (fill) {
+        const fillHash = fill.startsWith("#") ? fill : "#" + fill
+        colour = parseInt(fillHash.replace('#', '0x'))
+    }
+    
+    const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
+        .addField("Leader(s)", leadersStr, false)
+        .addField("Type", backtick(allianceType), true)
+        .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
+        .addField("Towns", backtick(foundAlliance.towns), true)
+        .addField("Residents", backtick(foundAlliance.residents), true)
+        .setColor(colour)
+        .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
+        .setBasicAuthorInfo(interaction.user)
+        .setTimestamp()
+
+    if (foundAlliance.online) {
+        allianceEmbed.addField("Online", backtick(foundAlliance.online.length), true)
+    }
+
+    if (foundAlliance.lastUpdated) {
+        const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
+        allianceEmbed.addField("Last Updated", formattedTs)
+    }
+
+    if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
+        allianceEmbed.setURL(foundAlliance.discordInvite)
+    }
+    
+    const allianceNationsLen = foundAlliance.nations.length
+    const nationsString = foundAlliance.nations
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+        .join(", ")
+
+    if (nationsString.length < 1024) {
+        if (allianceNationsLen < 1) {
+            allianceEmbed.addField("Nations [0]", "There are no nations in this alliance.")
+        }
+        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsString))
+    }
+    else {
+        allianceEmbed.addField(
+            `Nations [${allianceNationsLen}]`, 
+            "Too many nations to display! Click the 'view all' button to see the full list."
+        )
+
+        allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
+    }
+
+    const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
+    //#endregion
+
+    return interaction.editReply({
+        embeds: [allianceEmbed],
+        files: thumbnail,
+        components: allianceEmbed.components
+    })
+}
+
+export async function allianceOnline(name: string, client: Client, interaction: ChatInputCommandInteraction) {
+    // TODO: Do this in getAlliance() so we dont req ops twice. 
+    const ops: SquaremapPlayer[] = await Aurora.Players.online(true).catch(() => null)
+    if (!ops) return interaction.editReply({embeds: [errorEmbed(interaction)
+        .setTitle(`Error fetching online players`)
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+    const { foundAlliance } = await database.AuroraDB.getAlliance(name)
+    if (!foundAlliance) return interaction.editReply({embeds: [errorEmbed(interaction)
+        .setTitle("Error fetching alliance")
+        .setDescription("That alliance does not exist! Please try again.")
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+    const allianceName = getNameOrLabel(foundAlliance)
+    
+    const allianceOps = ops.filter(op => foundAlliance.online.some(p => p == op.name)) ?? []
+    if (allianceOps.length < 1) return interaction.editReply({embeds: [successEmbed(interaction)
+        .setTitle(`Online in ${allianceName} [0]`)
+        .setDescription("No players are online in this alliance :(")
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+    const embeds: EmbedBuilder[] = []
+    const allData = allianceOps
+        .map(res => `${res.name} - ${res.town} | ${res.rank}`)
+        .join('\n').match(/(?:^.*$\n?){1,10}/mg)
+
+    const len = allData.length
+    for (let i = 0; i < len; i++) {
+        embeds[i] = successEmbed(interaction)
+            .setTitle(`Online in ${allianceName} [${allianceOps.length}]`)
+            .setDescription("```" + allData[i] + "```")
+            .setFooter({ 
+                text: `Page ${i+1}/${allData.length}`, 
+                iconURL: client.user.avatarURL() 
+            })
+    }
+
+    return await interaction.editReply({ embeds: [embeds[0]] })
+        .then(() => paginatorInteraction(interaction, embeds, 0))
+}
+
+async function allianceScore(name: string, interaction: ChatInputCommandInteraction) {
+    const { foundAlliance } = await database.AuroraDB.getAlliance(name)
+    if (!foundAlliance) return interaction.editReply({embeds: [errorEmbed(interaction)
+        .setTitle("Error fetching alliance")
+        .setDescription("That alliance does not exist! Please try again.")
+    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+    const scores = {
+        nations: foundAlliance.nations.length * SCORE_WEIGHTS.nations,
+        towns: foundAlliance.towns * SCORE_WEIGHTS.towns,
+        residents: foundAlliance.residents * SCORE_WEIGHTS.residents,
+        area: foundAlliance.area * SCORE_WEIGHTS.area
+        //economy: (foundAlliance.economy / 10000) * weights.economy, // Economy scaled down for readability
+    }
+    
+    const nationsCalcStr = `**Nations**: ${foundAlliance.nations.length} * 35% = ${scores.nations.toFixed(1)}`
+    const townsCalcStr = `**Towns**: ${foundAlliance.towns} * 30% = ${scores.towns.toFixed(1)}`
+    const residentsCalcStr = `**Residents**: ${foundAlliance.residents} * 20% = ${scores.residents.toFixed(1)}`
+    const areaCalcStr = `**Area**: ${foundAlliance.area} * 15% = ${scores.area.toFixed(1)}`
+    //const wealthCalcStr = `${foundAlliance.wealth} × 10% = ${scores.economy.toFixed(1)}`
+
+    const totalScore = Math.round(scores.nations + scores.towns + scores.residents + scores.area)
+
+    const embed = new EmbedBuilder()
+        .setTitle(`EMCS Score | ${getNameOrLabel(foundAlliance)}`)
+        .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
+        .setColor(foundAlliance.colours 
+            ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
+            : Colors.DarkBlue
+        )
+        .setDescription(`
+            ${nationsCalcStr}
+            ${townsCalcStr}
+            ${residentsCalcStr}
+            ${areaCalcStr}\n
+            **Total**: ${backtick(totalScore.toLocaleString())}
+        `)
+
+    return await interaction.editReply({ 
+        embeds: [embed],
+        files: foundAlliance.imageURL ? [] : [AURORA.thumbnail]
+    })
+}
 
 const allianceCmd: SlashCommand<typeof cmdData> = {
     name: "alliance",
@@ -156,143 +356,19 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
                 await interaction.deferReply()
                 const name = interaction.options.getString("name")
 
-                //#region TODO: Replace with `AllianceLookup` class and call init(). 
-                const { foundAlliance } = await database.AuroraDB.getAlliance(name)
-                if (!foundAlliance) return interaction.editReply({embeds: [errorEmbed(interaction)
-                    .setTitle("Error fetching alliance")
-                    .setDescription("That alliance does not exist! Please try again.")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const leaderNames = foundAlliance.leaderName.split(', ')
-                const leaderPlayers = await OfficialAPI.V3.players(...leaderNames)
-
-                let leadersStr = "None"
-
-                if (!leaderPlayers) {
-                    // OAPI failed - fall back to just names.
-                    leadersStr = leaderNames.map(name => backtick(name)).join(", ")
-                }
-                else {
-                    leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
-                        const name = backtick(p.name)
-                        return !p.town?.name ? name : p.nation?.name
-                            ? `${name} of ${p.town.name} (**${p.nation.name}**)`
-                            : `${name} of ${p.town.name}`
-                    }).join("\n") : "None"
-                
-                    // Too many characters to show leader affiliations, fall back to just names.
-                    if (leadersStr.length > 1024) {
-                        leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")
-                    }
-                }
-
-                const typeString = !foundAlliance.type ? "Normal" : foundAlliance.type.toLowerCase()
-                const allianceType = 
-                    typeString == 'sub' ? "Sub-Meganation" : 
-                    typeString == 'mega' ? "Meganation" : "Normal/Pact"
-
-                const rank = foundAlliance.rank > 0 ? ` | #${foundAlliance.rank}` : ``
-                
-                let colour: number = Colors.DarkBlue
-                const fill = foundAlliance.colours?.fill
-                if (fill) {
-                    const fillHash = fill.startsWith("#") ? fill : "#" + fill
-                    colour = parseInt(fillHash.replace('#', '0x'))
-                }
-                
-                const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
-                    .addField("Leader(s)", leadersStr, false)
-                    .addField("Type", backtick(allianceType), true)
-                    .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
-                    .addField("Towns", backtick(foundAlliance.towns), true)
-                    .addField("Residents", backtick(foundAlliance.residents), true)
-                    .setColor(colour)
-                    .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
-                    .setBasicAuthorInfo(interaction.user)
-                    .setTimestamp()
-
-                if (foundAlliance.online) {
-                    allianceEmbed.addField("Online", backtick(foundAlliance.online.length), true)
-                }
-
-                if (foundAlliance.lastUpdated) {
-                    const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
-                    allianceEmbed.addField("Last Updated", formattedTs)
-                }
-
-                if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
-                    allianceEmbed.setURL(foundAlliance.discordInvite)
-                }
-                
-                const nationsString = foundAlliance.nations.join(", ")
-                const allianceNationsLen = foundAlliance.nations.length
-
-                if (nationsString.length < 1024) {
-                    if (allianceNationsLen < 1) {
-                        allianceEmbed.addField("Nations [0]", "There are no nations in this alliance.")
-                    }
-                    else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsString))
-                }
-                else {
-                    allianceEmbed.addField(
-                        `Nations [${allianceNationsLen}]`, 
-                        "Too many nations to display! Click the 'view all' button to see the full list."
-                    )
-
-                    allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
-                }
-
-                const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
-                //#endregion
-
-                return interaction.editReply({
-                    embeds: [allianceEmbed],
-                    files: thumbnail,
-                    components: allianceEmbed.components
-                })
+                return await allianceLookup(name, client, interaction)
             }
             case "online": {
                 await interaction.deferReply()
                 const name = interaction.options.getString("name")
 
-                // TODO: Do this in getAlliance() so we dont req ops twice. 
-                const ops: SquaremapPlayer[] = await Aurora.Players.online(true).catch(() => null)
-                if (!ops) return interaction.editReply({embeds: [errorEmbed(interaction)
-                    .setTitle(`Error fetching online players`)
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+                return await allianceOnline(name, client, interaction)
+            }
+            case "score": {
+                await interaction.deferReply()
+                const name = interaction.options.getString("name")
 
-                const { foundAlliance } = await database.AuroraDB.getAlliance(name)
-                if (!foundAlliance) return interaction.editReply({embeds: [errorEmbed(interaction)
-                    .setTitle("Error fetching alliance")
-                    .setDescription("That alliance does not exist! Please try again.")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const allianceName = getNameOrLabel(foundAlliance)
-                
-                const allianceOps = ops.filter(op => foundAlliance.online.some(p => p == op.name)) ?? []
-                if (allianceOps.length < 1) return interaction.editReply({embeds: [successEmbed(interaction)
-                    .setTitle(`Online in ${allianceName} [0]`)
-                    .setDescription("No players are online in this alliance :(")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const embeds: EmbedBuilder[] = []
-                const allData = allianceOps
-                    .map(res => `${res.name} - ${res.town} | ${res.rank}`)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
-            
-                const len = allData.length
-                for (let i = 0; i < len; i++) {
-                    embeds[i] = successEmbed(interaction)
-                        .setTitle(`Online in ${allianceName} [${allianceOps.length}]`)
-                        .setDescription("```" + allData[i] + "```")
-                        .setFooter({ 
-                            text: `Page ${i+1}/${allData.length}`, 
-                            iconURL: client.user.avatarURL() 
-                        })
-                }
-
-                return await interaction.editReply({ embeds: [embeds[0]] })
-                    .then(() => paginatorInteraction(interaction, embeds, 0))
+                return await allianceScore(name, interaction)
             }
             // case "create": {
             //     await checkEditor(interaction) 

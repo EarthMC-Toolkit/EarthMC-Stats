@@ -494,7 +494,7 @@ export default {
                     nationsAdded.push(nation.name)
                 }
             }
-            //#region
+            //#endregion
 
             //#region Colors
             const fill = info[7]
@@ -607,8 +607,9 @@ export default {
                 .setDescription(`The alliance ${backtick(getNameOrLabel(foundAlliance))} has been disbanded.`)
             ]})
         }
-        
-        if (arg1 == "add") { // Adding nation(s) to an alliance
+
+        // Adding nation(s) to an alliance
+        if (arg1 == "add") { 
             const alliances = await database.AuroraDB.getAlliances()
             const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
             
@@ -1098,10 +1099,10 @@ export default {
                 .setTitle(`\`${arg2}\` isn't a valid JSON file, please try again.`)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
+            const alliances = await database.AuroraDB.getAlliances()
+
             const len = backupData.length
             const restored = []
-            
-            const alliances = await database.AuroraDB.getAlliances()
 
             for (let i = 0; i < len; i++) { 
                 const alliance = backupData[i]
@@ -1120,12 +1121,12 @@ export default {
                 .setDescription(`The following alliances have been restored:\n\n${backticks(restored.join(", "))}`) 
             ]}).catch(() => {})
         }
-        
+        //#endregion
+
         return m.edit({embeds: [errorEmbed(message)
             .setTitle("Invalid Usage!")
             .setDescription("Invalid dev argument: `" + args[0] + "`")
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-        //#endregion
     }
 }
 
