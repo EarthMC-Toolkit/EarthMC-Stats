@@ -178,20 +178,19 @@ export async function allianceLookup(name: string, client: Client, interaction: 
         colour = parseInt(fillHash.replace('#', '0x'))
     }
     
-    const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
-        .addField("Leader(s)", leadersStr, false)
-        .addField("Type", backtick(allianceType), true)
-        .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
-        .addField("Towns", backtick(foundAlliance.towns), true)
-        .addField("Residents", backtick(foundAlliance.residents), true)
+    const residentsStr = backtick(foundAlliance.residents)
+    const onlineStr = backtick(foundAlliance.online?.length ?? 0)
+
+    const allianceEmbed = new CustomEmbed(client, null, true)
         .setColor(colour)
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setBasicAuthorInfo(interaction.user)
-        .setTimestamp()
-
-    if (foundAlliance.online) {
-        allianceEmbed.addField("Online", backtick(foundAlliance.online.length), true)
-    }
+        .setTitle(`Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
+        .addField("Leader(s)", leadersStr, true)
+        .addField("Type", backtick(allianceType), true)
+        .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
+        .addField("Towns", backtick(foundAlliance.towns), true)
+        .addField("Residents", `${residentsStr} / ${onlineStr} Online`, true)
 
     if (foundAlliance.lastUpdated) {
         const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
@@ -203,15 +202,15 @@ export async function allianceLookup(name: string, client: Client, interaction: 
     }
     
     const allianceNationsLen = foundAlliance.nations.length
-    const nationsString = foundAlliance.nations
+    const nationsStr = foundAlliance.nations
         .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
         .join(", ")
 
-    if (nationsString.length < 1024) {
+    if (nationsStr.length < 1024) {
         if (allianceNationsLen < 1) {
             allianceEmbed.addField("Nations [0]", "There are no nations in this alliance.")
         }
-        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsString))
+        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsStr))
     }
     else {
         allianceEmbed.addField(
@@ -322,11 +321,11 @@ const allianceCmd: SlashCommand<typeof cmdData> = {
     description: desc,
     data: cmdData,
     autocomplete: async (_, interaction) => {
-        const focusedValue = interaction.options.getFocused()
+        const focusedValue = interaction.options.getFocused().trim()
         let alliances = await database.AuroraDB.getAlliances()
 
         // Not a blank string, we typed something.
-        if (!focusedValue || focusedValue.trim().length > 0) {
+        if (!focusedValue || focusedValue.length > 0) {
             alliances = filterAlliances(alliances, focusedValue)
         }
 

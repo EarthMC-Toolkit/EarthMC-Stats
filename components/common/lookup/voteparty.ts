@@ -48,7 +48,7 @@ export class VPLookup extends CommandLookup {
         return this.embed
     }
 
-    getDownloadAttachment (): AttachmentBuilder {
+    getDownloadAttachment(): AttachmentBuilder {
         throw new Error("Method not implemented.")
     }
 }

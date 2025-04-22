@@ -56,8 +56,9 @@ export const EMOJI_GOLD = "<:gold:1318944918118600764>"
 export const EMOJI_CHUNK = "<:chunk:1318944677562679398>"
 //#endregion
 
-//#region Autocomplete
+//#region Limits
 export const CHOICE_LIMIT = 25
+export const MAX_ROW_BTNS = 5
 //#endregion
 
 //#region Pagination

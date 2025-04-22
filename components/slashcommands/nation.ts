@@ -16,7 +16,7 @@ import {
     database, AURORA,
     auroraNationBonus, embedField,
     databaseError, fetchError,
-    devsFooter, fastMergeUnique, removeDuplicates, 
+    fastMergeUnique, removeDuplicates, 
     sortByOrder, unixFromDate, timestampRelative,
     backtick, EMOJI_CHUNK,
     CHOICE_LIMIT,
@@ -69,22 +69,21 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
     description: "Displays info for a nation.",
     data: slashCmdData,
     autocomplete: async (_, interaction) => {
-        const focusedValue = interaction.options.getFocused()
+        const focusedValue = interaction.options.getFocused().trim()
         let nations = await database.AuroraDB.getNations()
 
         // Sort with default nation sorter (residents -> area -> towns).
         const sorted = defaultSortNations(nations)
+        const nationIndexes = new Map(sorted.map((n, idx) => [n.name, idx]))
 
         // Not a blank string, we typed something.
-        if (!focusedValue || focusedValue.trim().length > 0) {
+        if (focusedValue && focusedValue.length > 0) {
             nations = filterNations(nations, focusedValue)
         }
 
-        // Sort filtered nations locally to match order of `sorted`.
-        // So that the visual order of choices remains in-line with it.
-        nations = nations.sort((a, b) => {
-            return sorted.findIndex(n => n.name === a.name) - sorted.findIndex(n => n.name === b.name)
-        })
+        // Keep the visual order based on the original `sorted` array.
+        const filteredNations = new Set(nations.map(n => n.name))
+        nations = sorted.filter(nation => filteredNations.has(nation.name))
 
         // Make sure we only have X amt of choices (discord limit).
         if (nations.length > CHOICE_LIMIT) {
@@ -92,7 +91,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
         }
 
         const choices = nations.map(nation => {
-            const idx = sorted.findIndex(n => n.name == nation.name)
+            const idx = nationIndexes.get(nation.name)
             return {
                 name: `${nation.name} | #${idx+1}`,
                 value: nation.name // What we send to the actual cmd (run function).
@@ -102,9 +101,8 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
         await interaction.respond(choices)
     },
     run: async (client, interaction) => {
-        const nationEmbed = new CustomEmbed(client)
+        const nationEmbed = new CustomEmbed(client, null, true)
             .setColour(Colors.Aqua)
-            .setTimestamp()
 
         const subCmd = interaction.options.getSubcommand()
         if (!subCmd) return await interaction.reply({embeds: [new EmbedBuilder()
@@ -329,6 +327,17 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
                 
                 const area = Math.round(nation.area)
                 const chunksStr = `${EMOJI_CHUNK} ${backtick(area.toString())} Chunks`
+                const bonusStr = `${EMOJI_CHUNK}} ${backtick(auroraNationBonus(nationResLength))} Chunks`
+
+                let onlineResidents = []
+                const ops = await Aurora.Players.online().catch(() => {})
+                if (ops) {
+                    const opNames = new Set(ops.map(op => op.name))
+                    onlineResidents = removeDuplicates(nation.residents.filter(res => opNames.has(res)))
+                }
+
+                const residentsStr = backtick(nationResLength)
+                const onlineStr = backtick(onlineResidents.length)
 
                 // TODO: Implement as `/nation worth <name>` instead.
                 //const worth = Math.round(nation.area * 16)
@@ -336,29 +345,17 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
 
                 nationEmbed.setTitle(`Nation Info | ${backtick(nationLabel)} | #${nationRank}`)
                     .setThumbnail(nation.flag || 'attachment://aurora.png')
-                    .setFooter(devsFooter(client))
                     .addFields(
                         embedField("Leader", backtick(nation.king, { prefix: kingPrefix }), true),
                         embedField("Capital", backtick(nation.capital.name), true), 
                         embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.getAsString()})`, true),
+                        embedField("Residents", `${residentsStr}/${onlineStr} Online`, true),
                         embedField("Size", chunksStr, true),
-                        embedField("Residents", backtick(nationResLength), true),
-                        embedField(`${EMOJI_CHUNK} Nation Bonus`, backtick(auroraNationBonus(nationResLength)), true)
+                        embedField(`Nation Bonus`, bonusStr, true)
                     )
     
                 if (nation.discord) {
                     nationEmbed.setURL(nation.discord)
-                }
-    
-                const ops = await Aurora.Players.online().catch(() => {})
-                if (ops) {
-                    // Filter nation residents by which are online
-                    const onlineNationResidents = removeDuplicates(nation.residents.filter(res => ops.some(op => res == op.name)))
-                    
-                    if (onlineNationResidents.length >= 1) nationEmbed.addFields(embedField(
-                        "Online Residents [" + onlineNationResidents.length + "]", 
-                        "```" + onlineNationResidents.join(", ") + "```"
-                    ))
                 }
                 //#endregion
     

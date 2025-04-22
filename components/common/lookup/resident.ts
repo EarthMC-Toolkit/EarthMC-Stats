@@ -1,7 +1,8 @@
-import type { AttachmentBuilder, Client } from "discord.js"
-
 import type { Resident, RawPlayerV3 } from 'earthmc'
 import { OfficialAPI, Aurora } from 'earthmc'
+
+import type { Client } from "discord.js"
+import { AttachmentBuilder } from "discord.js"
 
 import striptags from 'striptags'
 
@@ -140,7 +141,12 @@ export default class ResidentLookup extends BaseCommandHelper {
     }
 
     getDownloadAttachment(): AttachmentBuilder {
-        throw new Error("Method not implemented.")
+        const res = this.apiResident || this.dbResident
+
+        const buf = Buffer.from(this.raw())
+        return new AttachmentBuilder(buf, { 
+            name: `${res.name}_ResidentEmbed.json` 
+        })
     }
 
     #setupMcProfileEmbed() {

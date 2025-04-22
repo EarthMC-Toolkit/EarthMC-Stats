@@ -1,9 +1,3 @@
-import { 
-    devsFooter,
-    paginator,
-    paginatorInteraction
-} from '../utils/index.js'
-
 import type { 
     Client, ColorResolvable, 
     Message, CommandInteraction,
@@ -22,6 +16,13 @@ import {
     ButtonStyle
 } from "discord.js"
 
+import { 
+    devsFooter,
+    MAX_ROW_BTNS,
+    paginator,
+    paginatorInteraction
+} from '../utils/index.js'
+
 const EntityType = {
     Town: "town",
     Nation: "nation",
@@ -32,17 +33,9 @@ const EntityType = {
 type ObjectValues<T> = T[keyof T]
 type EntityType = ObjectValues<typeof EntityType>
 
-// type BasePayload = {
-//     embeds: EmbedBuilder[],
-//     components: BaseMessageOptions['components'],
-//     files: BaseMessageOptions['files']
-// }
-
 type AnyComponent = BaseMessageOptions['components'][number]
 type AnyFile = BaseMessageOptions['files'][number]
 type Author = Message['author'] | BaseInteraction['user']
-
-const MAX_ROW_BTNS = 5
 
 export default class CustomEmbed extends EmbedBuilder {
     client: Client = null
@@ -59,7 +52,7 @@ export default class CustomEmbed extends EmbedBuilder {
 
     buttonRows: ActionRowBuilder<ButtonBuilder>[] = []
 
-    constructor(client: Client = null, title: string = null) {
+    constructor(client: Client = null, title: string = null, timestamp = true) {
         super({ title })
 
         this.title = title
@@ -67,6 +60,10 @@ export default class CustomEmbed extends EmbedBuilder {
 
         if (this.client) {
             this.setFooter(devsFooter(client))
+        }
+
+        if (timestamp) {
+            this.setTimestamp()
         }
     }
 

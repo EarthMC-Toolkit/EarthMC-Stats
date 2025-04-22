@@ -25,10 +25,10 @@ import {
     fastMerge, isNumeric,
     backtick, backticks,
     jsonReq, removeDuplicates,
-    paginator
+    paginator,
+    EMOJI_CHUNK,
+    timestampDateTime
 } from "../../bot/utils/index.js"
-
-import * as DiscordUtils from "../../bot/utils/discord.js"
 
 const successEmbed = (msg: Message) => new EmbedBuilder()
     .setColor(Colors.DarkBlue)
@@ -1310,16 +1310,11 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
     else {
         leadersStr = leaderPlayers.length > 0 ? leaderPlayers.map(p => {
             const name = backtick(p.name)
-    
-            if (p.town?.name) {
-                return p.nation?.name
-                    ? `${name} of ${p.town.name} (**${p.nation.name}**)`
-                    : `${name} of ${p.town.name}`
-            }
-            
-            return name
+            return !p.town?.name ? name : p.nation?.name
+                ? `${name} of ${p.town.name} (**${p.nation.name}**)`
+                : `${name} of ${p.town.name}`
         }).join("\n") : "None"
-    
+        
         // Too many characters to show leader affiliations, fall back to just names.
         if (leadersStr.length > 1024) {
             leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")
@@ -1340,39 +1335,39 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         colour = parseInt(fillHash.replace('#', '0x'))
     }
     
-    const allianceEmbed = new CustomEmbed(client, `Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
-        .addField("Leader(s)", leadersStr, false)
-        .addField("Type", backtick(allianceType), true)
-        .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
-        .addField("Towns", backtick(foundAlliance.towns), true)
-        .addField("Residents", backtick(foundAlliance.residents), true)
+    const residentsStr = backtick(foundAlliance.residents)
+    const onlineStr = backtick(foundAlliance.online?.length ?? 0)
+
+    const allianceEmbed = new CustomEmbed(client, null, true)
         .setColor(colour)
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setBasicAuthorInfo(message.author)
-        .setTimestamp()
-
-    if (foundAlliance.online) {
-        allianceEmbed.addField("Online", backtick(foundAlliance.online.length), true)
-    }
+        .setTitle(`Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
+        .addField("Leader(s)", leadersStr, true)
+        .addField("Type", backtick(allianceType), true)
+        .addField(`Size`, `${EMOJI_CHUNK} ${backtick(Math.round(foundAlliance.area))} Chunks`, true)
+        .addField("Towns", backtick(foundAlliance.towns), true)
+        .addField("Residents", `${residentsStr} / ${onlineStr} Online`, true)
 
     if (foundAlliance.lastUpdated) {
-        const formattedTs = DiscordUtils.timestampDateTime(foundAlliance.lastUpdated)
+        const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
         allianceEmbed.addField("Last Updated", formattedTs)
     }
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
         allianceEmbed.setURL(foundAlliance.discordInvite)
     }
-    
-    const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
-    const nationsString = foundAlliance.nations.join(", ")
 
     const allianceNationsLen = foundAlliance.nations.length
-    if (nationsString.length < 1024) {
+    const nationsStr = foundAlliance.nations
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+        .join(", ")
+
+    if (nationsStr.length < 1024) {
         if (allianceNationsLen < 1) {
             allianceEmbed.addField("Nations [0]", "There are no nations in this alliance.")
         }
-        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsString))
+        else allianceEmbed.addField(`Nations [${allianceNationsLen}]`, backticks(nationsStr))
     }
     else {
         allianceEmbed.addField(
@@ -1383,6 +1378,7 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
     }
 
+    const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
     return m.edit({
         embeds: [allianceEmbed],
         files: thumbnail,

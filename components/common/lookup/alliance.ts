@@ -3,13 +3,17 @@ import { Colors } from "discord.js"
 
 import CommandLookup from "./base.js"
 
-class AllianceHelper extends CommandLookup {
+export default class AllianceLookup extends CommandLookup {
+    nameInput: string
+
     constructor(client: Client) {
         super(client)
         this.embed.setColor(Colors.DarkBlue)
     }
 
-    async init(_input: string) {
+    async init(input: string) {
+        this.nameInput = input
+        
         return false
     }
 
@@ -18,11 +22,7 @@ class AllianceHelper extends CommandLookup {
         return this.embed
     }
 
-    getDownloadAttachment (): AttachmentBuilder {
+    getDownloadAttachment(): AttachmentBuilder {
         throw new Error("Method not implemented.")
     }
-}
-
-export {
-    AllianceHelper
 }

@@ -15,8 +15,22 @@ export default abstract class CommandLookup {
         this.embed.setFooter(devsFooter(client)).setTimestamp()
     }
 
+    /**
+     * Initializes this lookup object with relevant data.
+     * @param input The name of the thing we want to lookup.
+     */
     abstract init(input: string): Promise<boolean>;
+
+    /**
+     * Creates an embed using data we initialized and acquired from other methods in this class.\
+     * This result of this method can be passed to the `embeds` Discord message option when sending it to the user.
+     */
     abstract createEmbed(): EmbedBuilder;
+
+    /**
+     * Creates a buffer from the raw embed data and returns it as an attachment.\
+     * The result of this method can be passed to the `files` Discord message option to attach it as a JSON file.
+     */
     abstract getDownloadAttachment(): AttachmentBuilder
 
     /**

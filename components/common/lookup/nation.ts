@@ -21,7 +21,8 @@ import {
     backtick,
     timestampDateTime,
     EMOJI_CHUNK, EMOJI_GOLD,
-    AURORA, auroraNationBonus
+    AURORA, auroraNationBonus,
+    backticks
 } from "../../../bot/utils/index.js"
 
 import News from "../../../bot/objects/News.js"
@@ -92,10 +93,6 @@ export default class NationLookup extends CommandLookup {
             : `Land of ${nationName}`
     }
 
-    /**
-     * Creates a buffer from the raw embed data and returns it as an attachment.\
-     * The result of this method can be passed to the `files` Discord message option to attach it as a JSON file.
-     */
     getDownloadAttachment() {
         const buf = Buffer.from(this.raw())
         return new AttachmentBuilder(buf, { 
@@ -126,8 +123,9 @@ export default class NationLookup extends CommandLookup {
             return []
         }
 
-        return alliances.filter(a => a.nations.map(e => e.toLowerCase()).includes(this.apiNation.name.toLowerCase()))
-            .map(a => a.allianceName)
+        return alliances.filter(a => 
+            a.nations.map(e => e.toLowerCase()).includes(this.apiNation.name.toLowerCase())
+        ).map(a => a.allianceName)
     }
 
     async fetchRecentNews() {
@@ -155,7 +153,6 @@ export default class NationLookup extends CommandLookup {
         const resLength = this.apiNation.residents.length
         
         const label = this.getLabel(resLength)
-        //const rank = this.getRank(resLength)
 
         const kingPrefix = /* dbNation.kingPrefix | */ this.getLeaderPrefix(resLength)
         const bonus = auroraNationBonus(resLength)
@@ -181,7 +178,7 @@ export default class NationLookup extends CommandLookup {
 
         const amtAlliances = this.affiliatedAlliances?.length
         if (amtAlliances > 0) {
-            this.addField(`Alliances [${amtAlliances}]`, "```" + this.affiliatedAlliances.join(", ") + "```")
+            this.addField(`Alliances [${amtAlliances}]`, backticks(this.affiliatedAlliances.join(", ")))
         }
 
         if (this.recentNews) {
