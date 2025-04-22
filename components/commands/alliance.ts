@@ -1100,18 +1100,14 @@ export default {
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
             const alliances = await database.AuroraDB.getAlliances()
+            const existing = new Set(alliances.map(a => a.allianceName))
 
-            const len = backupData.length
             const restored = []
+            for (const alliance of alliances) { 
+                if (!existing.has(alliance.allianceName)) continue
 
-            for (let i = 0; i < len; i++) { 
-                const alliance = backupData[i]
-                const exists = alliances.some(a => a.allianceName == alliance.allianceName)
-                
-                if (exists) {
-                    alliances.push(alliance)
-                    restored.push(alliance.allianceName)
-                }
+                alliances.push(alliance)
+                restored.push(alliance.allianceName)
             }
 
             await database.AuroraDB.setAlliances(alliances, null)
@@ -1129,17 +1125,6 @@ export default {
         ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
     }
 }
-
-// type AllianceMapping = { index: number, alliance: DBAlliance }
-// async function updateAlliances(alliances: DBAlliance[], changed: AllianceMapping[]) {
-//     const now = Timestamp.now()
-//     changed.forEach(mapping => {
-//         mapping.alliance.lastUpdated = now
-//         alliances[mapping.index] = mapping.alliance
-//     })
-
-//     return database.AuroraDB.setAlliances(alliances)
-// }
 
 /**
  * Removes duplicates from the input array of strings, then calls the API and returns an array of player names
