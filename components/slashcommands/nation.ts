@@ -16,8 +16,7 @@ import {
     database, AURORA,
     auroraNationBonus, embedField,
     databaseError, fetchError,
-    defaultSort, devsFooter, 
-    fastMergeUnique, removeDuplicates, 
+    devsFooter, fastMergeUnique, removeDuplicates, 
     sortByOrder, unixFromDate, timestampRelative,
     backtick, EMOJI_CHUNK,
     CHOICE_LIMIT,
@@ -73,23 +72,30 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
         const focusedValue = interaction.options.getFocused()
         let nations = await database.AuroraDB.getNations()
 
+        // Sort with default nation sorter (residents -> area -> towns).
+        const sorted = defaultSortNations(nations)
+
         // Not a blank string, we typed something.
         if (!focusedValue || focusedValue.trim().length > 0) {
             nations = filterNations(nations, focusedValue)
         }
 
-        // Sort with default nation sorter (residents -> area -> towns).
-        nations = defaultSortNations(nations)
+        // Sort filtered nations locally to match order of `sorted`.
+        // So that the visual order of choices remains in-line with it.
+        nations = nations.sort((a, b) => {
+            return sorted.findIndex(n => n.name === a.name) - sorted.findIndex(n => n.name === b.name)
+        })
 
         // Make sure we only have X amt of choices (discord limit).
         if (nations.length > CHOICE_LIMIT) {
             nations = nations.slice(0, CHOICE_LIMIT)
         }
 
-        const choices = nations.map((a, idx) => {
+        const choices = nations.map(nation => {
+            const idx = sorted.findIndex(n => n.name == nation.name)
             return {
-                name: `${a.name} | #${idx+1}`,
-                value: a.name // What we send to the actual cmd (run function).
+                name: `${nation.name} | #${idx+1}`,
+                value: nation.name // What we send to the actual cmd (run function).
             }
         })
 
@@ -195,7 +201,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
                         key: 'area'
                     }])
                 }
-                else nations = defaultSort(nations)
+                else nations = defaultSortNations(nations)
 
                 if (comparator != "online") {
                     const allData = nations
@@ -209,7 +215,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
                 }
             }
             else { // /n list
-                nations = defaultSort(nations)
+                nations = defaultSortNations(nations)
                 
                 const allData = nations
                     .map(n => `${n.name} - Residents: ${n.residents.length} | Chunks: ${n.area}`)
@@ -309,7 +315,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
                     : `Land of ${nation.name}`
                 //#endregion
     
-                defaultSort(nations)
+                defaultSortNations(nations)
 
                 // Custom prefix (via /nationset) otherwise Towny default.
                 const kingPrefix = nation.kingPrefix ? `${nation.kingPrefix} ` : nationLeaderPrefix 

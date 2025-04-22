@@ -189,7 +189,8 @@ export const defaultSort = <V extends object>(arr: V[]) => sortByOrder(arr, [{
 }])
 
 export const defaultSortNations = (arr: DBSquaremapNation[]) => sortByOrder(arr, [{ 
-    key: "residents"
+    key: "residents",
+    callback: len
 }, { 
     key: "area"
 }, { 
@@ -197,7 +198,7 @@ export const defaultSortNations = (arr: DBSquaremapNation[]) => sortByOrder(arr,
     callback: len
 }, { 
     key: "name",
-    callback: len
+    callback: (k: string) => k.toLowerCase()
 }])
 
 // TODO: Maybe add `name` as a filter too?
