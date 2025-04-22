@@ -17,7 +17,8 @@ import {
     database, AURORA,
     backtick, backticks,
     timestampDateTime,
-    paginatorInteraction
+    paginatorInteraction,
+    CHOICE_LIMIT
 } from '../../bot/utils/index.js'
 
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
@@ -111,7 +112,6 @@ const cmdData = new SlashCommandBuilder()
     //     )
     // )
 
-const CHOICE_LIMIT = 25
 const SCORE_WEIGHTS = {
     nations: 0.35,
     towns: 0.3,

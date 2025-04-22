@@ -56,6 +56,10 @@ export const EMOJI_GOLD = "<:gold:1318944918118600764>"
 export const EMOJI_CHUNK = "<:chunk:1318944677562679398>"
 //#endregion
 
+//#region Autocomplete
+export const CHOICE_LIMIT = 25
+//#endregion
+
 //#region Pagination
 // type ForwardCallback = (
 //     interaction: ButtonInteraction, 

@@ -5,9 +5,7 @@ import {
 } from 'earthmc'
 
 import {
-    type Client, 
     type TextChannel,
-    type ChatInputCommandInteraction, 
     EmbedBuilder, SlashCommandBuilder, 
     Colors, ButtonStyle
 } from "discord.js"
@@ -21,7 +19,9 @@ import {
     defaultSort, devsFooter, 
     fastMergeUnique, removeDuplicates, 
     sortByOrder, unixFromDate, timestampRelative,
-    backtick, EMOJI_CHUNK
+    backtick, EMOJI_CHUNK,
+    CHOICE_LIMIT,
+    defaultSortNations
 } from '../../bot/utils/index.js'
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -29,7 +29,7 @@ import { cache } from "../../bot/constants.js"
 
 import type {
     DBSquaremapNation,
-    NationItem, TownItem 
+    NationItem, SlashCommand, TownItem 
 } from '../../bot/types.js'
 
 const slashCmdData = new SlashCommandBuilder()
@@ -41,7 +41,7 @@ const slashCmdData = new SlashCommandBuilder()
             .setName("name")
             .setDescription("The name of the nation.")
             .setRequired(true)
-            //.setAutocomplete(true)
+            .setAutocomplete(true)
         )
     )
     .addSubcommand(subCmd => subCmd.setName('activity')
@@ -50,6 +50,7 @@ const slashCmdData = new SlashCommandBuilder()
             .setName("name")
             .setDescription("The name of the nation.")
             .setRequired(true)
+            .setAutocomplete(true)
         )
     )
     .addSubcommand(subCmd => subCmd.setName('list')
@@ -60,17 +61,47 @@ const slashCmdData = new SlashCommandBuilder()
         )
     )
 
-export default {
+const filterNations = (arr: DBSquaremapNation[], key: string) => arr.filter(a => {
+    return a.name && a.name.toLowerCase().includes(key.toLowerCase())
+})
+
+const nationCmd: SlashCommand<typeof slashCmdData> = {
     name: "nation",
     description: "Displays info for a nation.",
     data: slashCmdData,
-    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+    autocomplete: async (_, interaction) => {
+        const focusedValue = interaction.options.getFocused()
+        let nations = await database.AuroraDB.getNations()
+
+        // Not a blank string, we typed something.
+        if (!focusedValue || focusedValue.trim().length > 0) {
+            nations = filterNations(nations, focusedValue)
+        }
+
+        // Sort with default nation sorter (residents -> area -> towns).
+        nations = defaultSortNations(nations)
+
+        // Make sure we only have X amt of choices (discord limit).
+        if (nations.length > CHOICE_LIMIT) {
+            nations = nations.slice(0, CHOICE_LIMIT)
+        }
+
+        const choices = nations.map((a, idx) => {
+            return {
+                name: `${a.name} | #${idx+1}`,
+                value: a.name // What we send to the actual cmd (run function).
+            }
+        })
+
+        await interaction.respond(choices)
+    },
+    run: async (client, interaction) => {
         const nationEmbed = new CustomEmbed(client)
             .setColour(Colors.Aqua)
             .setTimestamp()
 
         const subCmd = interaction.options.getSubcommand()
-        if (!subCmd) return await interaction.reply({ embeds: [new EmbedBuilder()
+        if (!subCmd) return await interaction.reply({embeds: [new EmbedBuilder()
             .setColor(Colors.Red)
             .setTitle("No Arguments Given")
             .setDescription("To see nation usage, type `/help` and locate 'Nation Commands'")
@@ -168,7 +199,7 @@ export default {
 
                 if (comparator != "online") {
                     const allData = nations
-                        .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
+                        .map(n => `${n.name} - Residents: ${n.residents.length} | Chunks: ${n.area}`)
                         .join('\n').match(/(?:^.*$\n?){1,10}/mg)
 
                     return new CustomEmbed(client, `List of Nations`)
@@ -181,7 +212,7 @@ export default {
                 nations = defaultSort(nations)
                 
                 const allData = nations
-                    .map(nation => nation.name + " - Residents: " + nation.residents.length + " | Chunks: " + nation.area)
+                    .map(n => `${n.name} - Residents: ${n.residents.length} | Chunks: ${n.area}`)
                     .join('\n').match(/(?:^.*$\n?){1,15}/mg)
 
                 return new CustomEmbed(client, `List of Nations`)
@@ -382,8 +413,8 @@ export default {
     
                 // Add this nation to cache so we can reference it elsewhere like 
                 // if a button is pressed and we need the original nation data.
-                const msg = await interaction.fetchReply()
-                cache.set(`nation_lookup_${msg.id}`, nation)
+                //const msg = await interaction.fetchReply()
+                cache.set(`nation_lookup_${interaction.id}`, nation)
 
                 const thumbnail = nation.flag ? [] : [AURORA.thumbnail] 
                 return nationEmbed
@@ -398,3 +429,5 @@ export default {
         }
     }
 }
+
+export default nationCmd

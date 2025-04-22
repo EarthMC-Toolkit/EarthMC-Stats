@@ -2,7 +2,8 @@ import type {
     DBAlliance,
     StaffResponse,
     StaffMember, StaffRoleOrUnknown,
-    SkinOpts
+    SkinOpts,
+    DBSquaremapNation
 } from "../types.js"
 
 import type {
@@ -187,6 +188,19 @@ export const defaultSort = <V extends object>(arr: V[]) => sortByOrder(arr, [{
     callback: (k: string) => k.toLowerCase()
 }])
 
+export const defaultSortNations = (arr: DBSquaremapNation[]) => sortByOrder(arr, [{ 
+    key: "residents"
+}, { 
+    key: "area"
+}, { 
+    key: "towns",
+    callback: len
+}, { 
+    key: "name",
+    callback: len
+}])
+
+// TODO: Maybe add `name` as a filter too?
 export const defaultSortAlliances = (arr: DBAlliance[]) => sortByOrder(arr, [{ 
     key: "residents"
 }, { 

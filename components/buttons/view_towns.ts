@@ -13,8 +13,9 @@ import type { Button, DBSquaremapNation } from "../../bot/types.js"
 const viewTownsBtn: Button = {
     id: "view_all_towns",
     execute: (client: Client, interaction: ButtonInteraction) => {
-        // Original message this button is attached to.
-        const { id } = interaction.message
+        // Get original message this button is attached to.
+        const originalMsg = interaction.message
+        const { id } = originalMsg.interactionMetadata // The interaction that triggered the original message.
 
         const nation: DBSquaremapNation = cache.get(`nation_lookup_${id}`)
         if (!nation) return interaction.reply({
