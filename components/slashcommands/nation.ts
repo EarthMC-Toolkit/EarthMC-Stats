@@ -327,7 +327,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
                 
                 const area = Math.round(nation.area)
                 const chunksStr = `${EMOJI_CHUNK} ${backtick(area.toString())} Chunks`
-                const bonusStr = `${EMOJI_CHUNK}} ${backtick(auroraNationBonus(nationResLength))} Chunks`
+                const bonusStr = `${EMOJI_CHUNK} ${backtick(auroraNationBonus(nationResLength))} Chunks`
 
                 let onlineResidents = []
                 const ops = await Aurora.Players.online().catch(() => {})
