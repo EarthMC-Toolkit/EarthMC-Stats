@@ -66,15 +66,16 @@ const rdyEvent: DJSEvent = {
     }
 }
 
-// TODO: Replace with path.resolve and use process.cwd()
-const CMDS_PATH = `../../components/commands`
-const SLASH_CMDS_PATH = `../../components/slashcommands`
-const SLASH_CMDS_DEV_PATH = `../../components/slashcommands/dev`
-const BUTTONS_PATH = `../../components/buttons`
-//const MODALS_PATH = `../../components/modals`
+const CMDS_PATH = `components/commands`
+const SLASH_CMDS_PATH = `components/slashcommands`
+const SLASH_CMDS_DEV_PATH = `components/slashcommands/dev`
+const BUTTONS_PATH = `components/buttons`
+//const MODALS_PATH = `components/modals`
 
 async function importDefault<T>(path: string): Promise<T> {
-    const module = await import(path)
+    // TODO: This is relative, we probably want to make the paths absolute instead.
+    //       That way we can just use `path` and readTsFiles *should* continue to work.
+    const module = await import(`../../${path}`)
     return module.default
 }
 

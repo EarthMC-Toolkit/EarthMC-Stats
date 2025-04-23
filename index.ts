@@ -88,7 +88,7 @@ setDatabase(db)
 
 //#region Event Handler
 const EVENTS_PATH = `bot/events`
-const EVENT_FILES = readTsFiles(EVENTS_PATH, false)
+const EVENT_FILES = readTsFiles(EVENTS_PATH)
 
 for (const file of EVENT_FILES) {
     const eventFile = await import(`./${EVENTS_PATH}/${file}`)
