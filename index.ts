@@ -87,12 +87,16 @@ setDatabase(db)
 //#endregion
 
 //#region Event Handler
+export async function importDefault<T>(path: string): Promise<T> {
+    const module = await import(path)
+    return module.default
+}
+
 const EVENTS_PATH = `bot/events`
 const EVENT_FILES = readTsFiles(EVENTS_PATH)
 
 for (const file of EVENT_FILES) {
-    const eventFile = await import(`./${EVENTS_PATH}/${file}`)
-    const event: DJSEvent = eventFile.default
+    const event: DJSEvent = await importDefault(`./${EVENTS_PATH}/${file}`)
 
     if (event.once) client.once(event.name, (...args) => event.execute(...args)) 
     else client.on(event.name, (...args) => event.execute(...args))

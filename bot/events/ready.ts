@@ -2,9 +2,7 @@
 import type { 
     Client,
     SlashCommandBuilder,
-    ApplicationCommandDataResolvable,
-    ApplicationCommandManager,
-    GuildApplicationCommandManager
+    ApplicationCommandDataResolvable
 } from "discord.js"
 
 import {
@@ -71,24 +69,22 @@ const rdyEvent: DJSEvent = {
     }
 }
 
+export async function importDefault<T>(path: string): Promise<T> {
+    const module = await import(path)
+    return module.default
+}
+
 const CMDS_PATH = `components/commands`
 const SLASH_CMDS_PATH = `components/slashcommands`
 const SLASH_CMDS_DEV_PATH = `components/slashcommands/dev`
 const BUTTONS_PATH = `components/buttons`
 //const MODALS_PATH = `components/modals`
 
-async function importDefault<T>(path: string): Promise<T> {
-    // TODO: This is relative, we probably want to make the paths absolute instead.
-    //       That way we can just use `path` and readTsFiles *should* continue to work.
-    const module = await import(`../../${path}`)
-    return module.default
-}
-
 async function registerCommands(client: ExtendedClient) {
     const cmds = readTsFiles(CMDS_PATH)
 
     for (const file of cmds) {
-        const cmd: BaseCommand = await importDefault(`${CMDS_PATH}/${file}`)
+        const cmd: BaseCommand = await importDefault(`../../${CMDS_PATH}/${file}`)
 
         if (cmd.disabled) continue
         client.commands.set(cmd.name, cmd)
@@ -97,16 +93,15 @@ async function registerCommands(client: ExtendedClient) {
     console.log(`Registered ${client.commands.size} regular commands.`)
 }
 
-type CmdManager = ApplicationCommandManager | GuildApplicationCommandManager
 async function registerSlashCommands(client: ExtendedClient) {
     const slashCmds = readTsFiles(SLASH_CMDS_PATH)
     const data: ApplicationCommandDataResolvable[] = []
 
     for (const file of slashCmds) {
-        const slashCmd: SlashCommand<SlashCommandBuilder> = await importDefault(`${SLASH_CMDS_PATH}/${file}`)
+        const slashCmd: SlashCommand<SlashCommandBuilder> = await importDefault(`../../${SLASH_CMDS_PATH}/${file}`)
 
         if (slashCmd.disabled) continue
-        client.commands.set(slashCmd.name, slashCmd)
+        client.slashCommands.set(slashCmd.name, slashCmd)
 
         if (!slashCmd.data) {
             console.warn(`Cannot register slash cmd '${slashCmd.name}' without a valid \`data\` property.`)
@@ -122,15 +117,14 @@ async function registerSlashCommands(client: ExtendedClient) {
     }
 
     //#region Register cmds globally or to guild according to prod/dev
-    let cmdManager: CmdManager = client.application.commands
-    if (!getProduction()) {
-        const devGuild = await client.guilds.fetch(process.env.DEBUG_GUILD)
-        if (devGuild) cmdManager = devGuild.commands
+    if (getProduction()) {
+        await client.application.commands.set(data)
     }
-
-    if (cmdManager) {
-        await cmdManager.set(data)
-    }
+    
+    // else {
+    //     const devGuild = await client.guilds.fetch(process.env.DEBUG_GUILD)
+    //     if (devGuild) await devGuild.commands.set(data)
+    // }
     //#endregion
 
     console.log(`Registered ${data.length} slash commands.`)
@@ -141,7 +135,7 @@ async function registerDevCommands(client: ExtendedClient) {
     const data: ApplicationCommandDataResolvable[] = []
 
     for (const file of devSlashCmds) {
-        const slashCmd: SlashCommand<SlashCommandBuilder> = await importDefault(`${SLASH_CMDS_DEV_PATH}/${file}`)
+        const slashCmd: SlashCommand<SlashCommandBuilder> = await importDefault(`../../${SLASH_CMDS_DEV_PATH}/${file}`)
 
         if (slashCmd.disabled) continue
         client.slashCommands.set(slashCmd.name, slashCmd)
@@ -173,7 +167,7 @@ async function registerButtons(client: ExtendedClient) {
     const buttons = readTsFiles(BUTTONS_PATH)
 
     for (const file of buttons) {
-        const button: Button = await importDefault(`${BUTTONS_PATH}/${file}`)
+        const button: Button = await importDefault(`../../${BUTTONS_PATH}/${file}`)
 
         if (!button) {
             console.warn(`Could not register button: ${file}. Default export not found.`)
