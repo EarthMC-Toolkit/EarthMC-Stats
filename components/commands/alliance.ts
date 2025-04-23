@@ -1314,7 +1314,7 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
                 ? `${name} of ${p.town.name} (**${p.nation.name}**)`
                 : `${name} of ${p.town.name}`
         }).join("\n") : "None"
-        
+
         // Too many characters to show leader affiliations, fall back to just names.
         if (leadersStr.length > 1024) {
             leadersStr = leaderPlayers.map(p => backtick(p.name)).join(", ")

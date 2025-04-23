@@ -184,16 +184,22 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
 //     return computeAlliances(alliances, nations)
 // }
 
-export async function getAlliance(name: string) {
+type AllianceGetResult = {
+    foundAlliance: DBAllianceExtended
+    alliances: DBAlliance[]
+    nations: DBSquaremapNation[]
+}
+
+export async function getAlliance(name: string): Promise<AllianceGetResult> {
     // TODO: Handle these three errors instead null - throw with msg instead?
     const alliances = await getAlliances() as DBAlliance[]
-    if (!alliances) return null
+    if (!alliances) return { foundAlliance: null, alliances: null, nations: null }
 
     const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase()) as DBAllianceExtended
-    if (!foundAlliance) return null
+    if (!foundAlliance) return { foundAlliance: null, alliances, nations: null }
 
     const nations = await getNations()
-    if (!nations) return null
+    if (!nations) return { foundAlliance, alliances, nations: null }
 
     // Get nations that are in the input alliance.
     const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
@@ -204,7 +210,8 @@ export async function getAlliance(name: string) {
         const n = allianceNations[i]
 
         if (opData?.players) {
-            const onlineInNation = n.residents.filter(res => opData.players.some(op => op.name == res))
+            const opNames = new Set(opData.players.map(op => op.name))
+            const onlineInNation = n.residents.filter(res => opNames.has(res))
             foundAlliance.online = fastMerge(foundAlliance.online ?? [], onlineInNation)
         }
 
