@@ -30,10 +30,21 @@ const rdyEvent: DJSEvent = {
         console.log(`${client.user.username} is up!`)
         client.user.setPresence({ activities: [{ name: 'Startup Complete!' }], status: 'online' })
 
+        //#region Regular, non-slash commands
         await registerCommands(client)
+        //#endregion
+
+        //#region Slash Commands
+        await registerSlashCommands(client)
+        await registerDevCommands(client)
+        //#endregion
+
+        //#region Other commands/interactions
         await registerButtons(client)
         //await registerModals()
+        //#endregion
 
+        //#region Schedule status/activity updates
         const watchingActivities = [
             `${client.guilds.cache.size} Servers`, 'towns being created.',
             'emctoolkit.vercel.app', 'for map updates', 'for /help', 
@@ -49,82 +60,126 @@ const rdyEvent: DJSEvent = {
     
             lastActivity = randomNum
         }, 90 * 1000)
+        //#endregion
 
         await initUpdates()
     }
 }
 
-const CMDS_PATH = `components/commands`
-const SLASH_CMDS_PATH = `components/slashcommands`
-const BUTTONS_PATH = `components/buttons`
-//const MODALS_PATH = `components/modals`
+// TODO: Replace with path.resolve and use process.cwd()
+const CMDS_PATH = `../../components/commands`
+const SLASH_CMDS_PATH = `../../components/slashcommands`
+const SLASH_CMDS_DEV_PATH = `../../components/slashcommands/dev`
+const BUTTONS_PATH = `../../components/buttons`
+//const MODALS_PATH = `../../components/modals`
+
+async function importDefault<T>(path: string): Promise<T> {
+    const module = await import(path)
+    return module.default
+}
 
 async function registerCommands(client: ExtendedClient) {
-    const auroraCmds = readTsFiles(CMDS_PATH)
+    const cmds = readTsFiles(CMDS_PATH)
 
-    for (const file of auroraCmds) {
-        const commandFile = await import(`../../${CMDS_PATH}/${file}`)
-        const cmd = commandFile.default as BaseCommand
+    for (const file of cmds) {
+        const cmd: BaseCommand = await importDefault(`${CMDS_PATH}/${file}`)
 
         if (cmd.disabled) continue
-        client.auroraCommands.set(cmd.name, cmd)
+        client.commands.set(cmd.name, cmd)
     }
-    
+
+    console.log(`Registered ${client.commands.size} regular commands.`)
+}
+
+async function registerSlashCommands(client: ExtendedClient) {
     const slashCmds = readTsFiles(SLASH_CMDS_PATH)
     const data: ApplicationCommandDataResolvable[] = []
 
     for (const file of slashCmds) {
-        const commandFile = await import(`../../${SLASH_CMDS_PATH}/${file}`)
-        const slashCmd = commandFile.default as SlashCommand<SlashCommandBuilder>
+        const slashCmd: SlashCommand<SlashCommandBuilder> = await importDefault(`${SLASH_CMDS_PATH}/${file}`)
+
+        if (slashCmd.disabled) continue
+        client.commands.set(slashCmd.name, slashCmd)
+
+        if (!slashCmd.data) {
+            console.warn(`Cannot register slash cmd '${slashCmd.name}' without a valid \`data\` property.`)
+            continue
+        }
+
+        try {
+            const json = slashCmd.data.toJSON()
+            if (json) data.push(json)
+        } catch (e) {
+            console.error(`Error registering slash cmd: ${slashCmd.name}\n${e}`)
+        }
+        
+        // data.push({
+        //     name: slashCmd.name,
+        //     description: slashCmd.description
+        // })
+    }
+
+    const cmdManager = getProduction() ? client.application.commands : client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands
+    if (cmdManager) await cmdManager.set(data)
+
+    console.log(`Registered ${data.length} slash commands.`)
+}
+
+async function registerDevCommands(client: ExtendedClient) {
+    const devSlashCmds = readTsFiles(SLASH_CMDS_DEV_PATH)
+    const data: ApplicationCommandDataResolvable[] = []
+
+    for (const file of devSlashCmds) {
+        const slashCmd: SlashCommand<SlashCommandBuilder> = await importDefault(`${SLASH_CMDS_DEV_PATH}/${file}`)
 
         if (slashCmd.disabled) continue
         client.slashCommands.set(slashCmd.name, slashCmd)
 
-        if (slashCmd.data) {
-            try {
-                const json = slashCmd.data.toJSON()
-                if (json) data.push(json)
-            } catch (e) {
-                console.error(`Error registering slash cmd: ${slashCmd.name}\n${e}`)
-            }
-
+        if (!slashCmd.data) {
+            console.warn(`Cannot register dev slash cmd '${slashCmd.name}' without a valid \`data\` property.`)
             continue
         }
-        
-        data.push({
-            name: slashCmd.name,
-            description: slashCmd.description
-        })
+
+        try {
+            const json = slashCmd.data.toJSON()
+            if (json) data.push(json)
+        } catch (e) {
+            console.error(`Error registering dev slash cmd: ${slashCmd.name}\n${e}`)
+        }
+
+        // data.push({
+        //     name: slashCmd.name,
+        //     description: slashCmd.description
+        // })
     }
 
-    const prod = getProduction()
+    const devGuild = client.guilds.cache.get(process.env.DEBUG_GUILD)
+    if (devGuild) await devGuild.commands.set(data)
 
-    const cmds = prod ? client.application.commands : client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands
-    if (cmds) await cmds.set(data)
-
-    console.log(`Commands registered ${prod ? "globally" : "in dev guild"}.\n
-        Regular: ${auroraCmds.length}
-        Slash: ${slashCmds.length}\n`
-    )
+    console.log(`Registered ${data.length} dev slash commands in debug guild.`)
 }
 
 async function registerButtons(client: ExtendedClient) {
     const buttons = readTsFiles(BUTTONS_PATH) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
 
     for (const file of buttons) {
-        const buttonFile = await import(`../../${BUTTONS_PATH}/${file}`)
-        const button: Button = buttonFile.default
+        const button: Button = await importDefault(`${BUTTONS_PATH}/${file}`)
 
         if (!button) {
-            console.log(`Could not register button: ${file}. Default export not found.`)
+            console.warn(`Could not register button: ${file}. Default export not found.`)
             continue
         }
 
-        if (button.id) {
-            console.log("Registering button: " + button.id)
-            client.buttons.set(button.id, button)
+        if (!button.id) {
+            console.warn(`Button from file '${file}' cannot be registered without a valid id.`)
+            continue
         }
+
+        if (button.disabled) continue
+        client.buttons.set(button.id, button)
     }
+
+    console.log(`Registered ${client.buttons.size} buttons.`)
 }
 
 // async function registerModals() {

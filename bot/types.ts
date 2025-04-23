@@ -21,7 +21,7 @@ export type ErrorWithCode = Error & { code: number }
 export type ReqMethod = 'GET' | 'PUT' | 'POST'
 
 export type CustomClientData = {
-    auroraCommands?: Map<string, BaseCommand>
+    commands?: Map<string, BaseCommand>
     slashCommands?: Map<string, SlashCommand<SharedNameAndDescription>>
     buttons?: Collection<string, Button>
 }

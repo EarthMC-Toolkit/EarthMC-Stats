@@ -9,8 +9,8 @@ import {
 
 import { request } from "undici"
 
-import { cache } from "../../bot/constants.js"
-import { database, backtick, botDevs } from '../../bot/utils/index.js'
+import { cache } from "../../../bot/constants.js"
+import { database, backtick, botDevs } from '../../../bot/utils/index.js'
 
 // import dotenv from 'dotenv'
 // dotenv.config()

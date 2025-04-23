@@ -62,7 +62,7 @@ const msgCreate: DJSEvent = {
     name: 'messageCreate',
     async execute(message: Message) {
         if (message.author.bot) return
-        if (prefix(message, "/")) return runCmd(message, 1, 'auroraCommands')
+        if (prefix(message, "/")) return runCmd(message, 1, 'commands')
     }
 }
 

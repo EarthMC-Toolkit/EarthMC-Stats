@@ -1,12 +1,11 @@
 import {
     ActionRowBuilder,
     ButtonBuilder, ButtonStyle,
-    ComponentType, ChannelType,
-    PermissionFlagsBits
+    ComponentType
 } from "discord.js"
 
 import type { 
-    Client, Message, Channel,
+    Client, Message,
     ButtonInteraction, CommandInteraction,
     EmbedBuilder, EmojiIdentifierResolvable,
     APIActionRowComponent, APIMessageActionRowComponent
@@ -185,18 +184,18 @@ export const emojiButton = (
 export const getUserCount = (client: Client) => client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
 
 /** Checks whether the client can view and send messages in a channel */
-export function canViewAndSend(channel: Channel) {
-    switch (channel.type) {
-        case ChannelType.GuildText:
-        case ChannelType.GuildAnnouncement: {
-            if (!channel.viewable) return false
-            return channel.permissionsFor(channel.guild.members.me).has(PermissionFlagsBits.SendMessages)
-        }
-        case ChannelType.AnnouncementThread:
-        case ChannelType.PublicThread:
-        case ChannelType.PrivateThread: {
-            return channel.joinable && channel.sendable
-        }
-        default: return false
-    }
-}
+// function canViewAndSend(channel: Channel) {
+//     switch (channel.type) {
+//         case ChannelType.GuildText:
+//         case ChannelType.GuildAnnouncement: {
+//             if (!channel.viewable) return false
+//             return channel.permissionsFor(channel.guild.members.me).has(PermissionFlagsBits.SendMessages)
+//         }
+//         case ChannelType.AnnouncementThread:
+//         case ChannelType.PublicThread:
+//         case ChannelType.PrivateThread: {
+//             return channel.joinable && channel.sendable
+//         }
+//         default: return false
+//     }
+// }
