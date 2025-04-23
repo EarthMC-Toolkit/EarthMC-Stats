@@ -53,7 +53,7 @@ const client: ExtendedClient = new Client({
 
 client.login(process.env.DISCORD_BOT_TOKEN).then(token => {
     client.slashCommands = new Collection()
-    client.auroraCommands = new Collection()
+    client.commands = new Collection()
     client.buttons = new Collection()
 
     console.log(`Logged into Discord.\nToken: ${token}`)
@@ -88,7 +88,7 @@ setDatabase(db)
 
 //#region Event Handler
 const EVENTS_PATH = `bot/events`
-const EVENT_FILES = readTsFiles(EVENTS_PATH)
+const EVENT_FILES = readTsFiles(EVENTS_PATH, false)
 
 for (const file of EVENT_FILES) {
     const eventFile = await import(`./${EVENTS_PATH}/${file}`)

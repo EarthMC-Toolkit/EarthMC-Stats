@@ -160,7 +160,7 @@ async function registerDevCommands(client: ExtendedClient) {
 }
 
 async function registerButtons(client: ExtendedClient) {
-    const buttons = readTsFiles(BUTTONS_PATH) // Reads cwd. In our case it will read all files in ~./aurora/buttons/
+    const buttons = readTsFiles(BUTTONS_PATH)
 
     for (const file of buttons) {
         const button: Button = await importDefault(`${BUTTONS_PATH}/${file}`)

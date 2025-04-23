@@ -234,11 +234,11 @@ export const jsonReq = (url: string) => request(url).then(res => res.body.json()
 
 /**
  * Reads all TypeScript files (.ts) in the directory at the specified path starting from the project root (cwd).
- * @param str 
+ * @param str
  */
-export const readTsFiles = (dirPath: string) => {
-    const absPath = path.resolve(process.cwd(), dirPath)
-    return fs.readdirSync(absPath).filter(file => file.endsWith('.ts'))
+export const readTsFiles = (dirPath: string, relative = true) => {
+    const pathToFiles = relative ? dirPath : path.resolve(process.cwd(), dirPath)
+    return fs.readdirSync(pathToFiles).filter(file => file.endsWith('.ts'))
 }
 
 export class ArgsHelper<T extends string> {
