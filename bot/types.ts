@@ -129,6 +129,13 @@ export type DBAlliance = {
     rank: number
 }>
 
+// Represents an alliance that has extra info (to be displayed on embeds)
+// but doesn't need to be stored in the DB. Info set here is always after getAlliances().
+export type DBAllianceExtended = DBAlliance & {
+    online: string[]
+    //wealth: number
+}
+
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'
 export type DBResident = {
     name: string

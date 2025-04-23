@@ -18,7 +18,8 @@ import {
     backtick, backticks,
     timestampDateTime,
     paginatorInteraction,
-    CHOICE_LIMIT
+    CHOICE_LIMIT,
+    EMOJI_CHUNK
 } from '../../bot/utils/index.js'
 
 import CustomEmbed from "../../bot/objects/CustomEmbed.js"
@@ -186,15 +187,28 @@ export async function allianceLookup(name: string, client: Client, interaction: 
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setBasicAuthorInfo(interaction.user)
         .setTitle(`Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
-        .addField("Leader(s)", leadersStr, true)
-        .addField("Type", backtick(allianceType), true)
-        .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), true)
-        .addField("Towns", backtick(foundAlliance.towns), true)
-        .addField("Residents", `${residentsStr} / ${onlineStr} Online`, true)
+        .addField("Leader(s)", leadersStr) // Leave as is, inlining doesn't work well with multiple leaders.
+        .addField("Type", backtick(allianceType)) // Leave as is since leaders can't be inlined.
 
-    if (foundAlliance.lastUpdated) {
-        const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
-        allianceEmbed.addField("Last Updated", formattedTs)
+        let statsStr = `Size: ${backtick(Math.round(foundAlliance.area).toLocaleString())} ${EMOJI_CHUNK}`
+        statsStr += `\nTowns: ${backtick(foundAlliance.towns)}`
+        statsStr += `\nResidents: ${residentsStr} / ${onlineStr} Online`
+
+        allianceEmbed.addField("Stats", statsStr, true)
+
+        // .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), false)
+        // .addField("Towns", backtick(foundAlliance.towns), true)
+        // .addField("Residents", `${residentsStr} / ${onlineStr} Online`, true)
+
+    if (foundAlliance.colours) {
+        const fill = foundAlliance.colours.fill
+        const outline = foundAlliance.colours.outline
+
+        allianceEmbed.addField("Colours", 
+            `Fill: ${backtick(fill ?? "Not set")}\n` +
+            `Outline: ${backtick(outline ?? "Not set")}`,
+            true
+        )
     }
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
@@ -219,6 +233,11 @@ export async function allianceLookup(name: string, client: Client, interaction: 
         )
 
         allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
+    }
+
+    if (foundAlliance.lastUpdated) {
+        const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
+        allianceEmbed.addField("Last Updated", formattedTs)
     }
 
     const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]

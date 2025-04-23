@@ -16,7 +16,7 @@ import {
 } from "../fn.js"
 
 import type {
-    DBAlliance, DBResident, 
+    DBAlliance, DBAllianceExtended, DBResident, 
     DBSquaremapNation, DBSquaremapTown
 } from '../../types.js'
 
@@ -113,13 +113,6 @@ export async function setTowns(towns: DBSquaremapTown[]) {
 }
 
 const length = <T>(x: string | Array<T>) => x.length
-
-// Represents an alliance that has extra info (to be displayed on embeds)
-// but doesn't need to be stored in the DB. Info set here is always after getAlliances().
-type DBAllianceExtended = DBAlliance & {
-    online: string[]
-    //wealth: number
-}
 
 /**
  * Overwrites the alliances document with updated alliances data.

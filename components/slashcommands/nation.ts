@@ -4,8 +4,12 @@ import {
     Aurora
 } from 'earthmc'
 
+import type {
+    ChatInputCommandInteraction,
+    TextChannel
+} from "discord.js"
+
 import {
-    type TextChannel,
     EmbedBuilder, SlashCommandBuilder, 
     Colors, ButtonStyle
 } from "discord.js"
@@ -20,7 +24,8 @@ import {
     sortByOrder, unixFromDate, timestampRelative,
     backtick, EMOJI_CHUNK,
     CHOICE_LIMIT,
-    defaultSortNations
+    defaultSortNations,
+    backticks
 } from '../../bot/utils/index.js'
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -63,6 +68,160 @@ const slashCmdData = new SlashCommandBuilder()
 const filterNations = (arr: DBSquaremapNation[], key: string) => arr.filter(a => {
     return a.name && a.name.toLowerCase().includes(key.toLowerCase())
 })
+
+const nationLookup = async(
+    nation: DBSquaremapNation, nations: DBSquaremapNation[], 
+    nationEmbed: CustomEmbed, interaction: ChatInputCommandInteraction
+) => {
+    defaultSortNations(nations)
+
+    const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: SquaremapTown) => {
+        return t instanceof NotFoundError ? null : t.colours
+    })
+
+    const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
+    nationEmbed.setColor(colour)
+    
+    //#region Prefixes
+    const nationResLength = nation.residents.length
+    const nationLeaderPrefix = nationResLength >= 60 ? "God Emperor "
+        : nationResLength >= 40 ? "Emperor "
+        : nationResLength >= 30 ? "King "
+        : nationResLength >= 20 ? "Duke "
+        : nationResLength >= 10 ? "Count "
+        : nationResLength >= 0 ? "Leader " : ""
+    
+    // Includes prefix
+    const nationLabel = nationResLength >= 60 ? `The ${nation.name} Realm`
+        : nationResLength >= 40 ? `The ${nation.name} Empire`
+        : nationResLength >= 30 ? `Kingdom of ${nation.name}`
+        : nationResLength >= 20 ? `Dominion of ${nation.name}`
+        : nationResLength >= 10 ? `Federation of ${nation.name}`
+        : `Land of ${nation.name}`
+    //#endregion
+
+    // Custom prefix (via /nationset) otherwise Towny default.
+    const kingPrefix = nation.kingPrefix ? `${nation.kingPrefix} ` : nationLeaderPrefix 
+    const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
+
+    //#region Embed Stuff
+    const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
+    const mapUrl = new Aurora.URLBuilder({ x: capitalX, z: capitalZ }, 5)
+
+    //const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
+    
+    const area = Math.round(nation.area)
+    const chunksStr = `${EMOJI_CHUNK} ${backtick(area.toString())} Chunks`
+    const bonusStr = `${EMOJI_CHUNK} ${backtick(auroraNationBonus(nationResLength))} Chunks`
+
+    let onlineResidents = []
+    const ops = await Aurora.Players.online().catch(() => {})
+    if (ops) {
+        const opNames = new Set(ops.map(op => op.name))
+        onlineResidents = removeDuplicates(nation.residents.filter(res => opNames.has(res)))
+    }
+
+    const residentsStr = backtick(nationResLength)
+    const onlineStr = backtick(onlineResidents.length)
+
+    // TODO: Implement as `/nation worth <name>` instead.
+    //const worth = Math.round(nation.area * 16)
+    //const goldStr = `<:gold:1318944918118600764> \`${worth}\`G`
+
+    nationEmbed.setTitle(`Nation Info | ${backtick(nationLabel)} | #${nationRank}`)
+        .setThumbnail(nation.flag || 'attachment://aurora.png')
+        .addFields(
+            embedField("Leader", backtick(nation.king, { prefix: kingPrefix }), true),
+            embedField("Capital", backtick(nation.capital.name), true), 
+            embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.getAsString()})`, true),
+            embedField("Residents", `${residentsStr}/${onlineStr} Online`, true),
+            embedField("Size", chunksStr, true),
+            embedField(`Nation Bonus`, bonusStr, true)
+        )
+
+    if (nation.discord) {
+        nationEmbed.setURL(nation.discord)
+    }
+    //#endregion
+    
+    const nationTowns = nation.towns
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+        .join(", ")
+
+    const nationTownsStr = nationTowns.toString().trim()
+    
+    if (nationTownsStr.length >= 1024) {
+        nationEmbed.addFields(embedField(
+            `Towns [${nation.towns.length}]`, 
+            "Too many towns to display!\nClick the **View All Towns** button to see the full list."
+        ))
+
+        nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
+    } else {
+        nationEmbed.addFields(embedField(
+            `Towns [${nation.towns.length}]`, 
+            backticks(nationTownsStr)
+        ))
+    }
+
+    const alliances = await database.AuroraDB.getAlliances()
+    if (alliances) {
+        const nationAlliances = alliances
+            .filter(a => a.nations.map(e => e.toLowerCase()).includes(nation.name.toLowerCase()))
+            .map(a => a.allianceName)
+
+        const len = nationAlliances?.length
+        if (len > 0) nationEmbed.addFields(embedField(
+            `Alliances [${len}]`, 
+            backticks(nationAlliances.join(", "))
+        ))
+    }
+
+    //#region Recent news logic
+    const newsChannel = interaction.client.channels.cache.get(AURORA.newsChannel) as TextChannel
+    const newsChannelMsgs = await newsChannel?.messages.fetch()
+
+    const filteredNewsMsgs = newsChannelMsgs?.filter(msg => {
+        const nationName = nation.name.toLowerCase()
+
+        // Message includes nation name. Either exactly or where underscores became spaces.
+        return msg.content.toLowerCase().includes(nationName || nationName.replace(/_/g, " "))
+    })
+
+    // Sort ascending (oldest first).
+    const sortedNews = filteredNewsMsgs.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+    const latestTwoNews = sortedNews.last(2)
+    const [recentNews, secondRecentNews] = latestTwoNews
+    //#endregion
+
+    if (recentNews) {
+        const news1 = new News(recentNews)
+
+        const img1 = news1?.images ? news1.images[0] : null
+        let recentNewsDesc = `${news1.message} ${img1 ? "([Image](" + img1 + "))" : ""}`
+
+        if (secondRecentNews) {
+            const news2 = new News(secondRecentNews)
+            const img2 = news2?.images ? news2.images[0] : null
+            recentNewsDesc += `\n\n${news2.message} ${img2 ? "([Image](" + img2 + "))" : ""}`
+        }
+
+        nationEmbed.addFields(embedField(
+            "Recent News", 
+            recentNewsDesc
+        ))
+    }
+
+    // Add this nation to cache so we can reference it elsewhere like 
+    // if a button is pressed and we need the original nation data.
+    //const msg = await interaction.fetchReply()
+    cache.set(`nation_lookup_${interaction.id}`, nation)
+
+    const thumbnail = nation.flag ? [] : [AURORA.thumbnail] 
+    return nationEmbed
+        .setFiles(thumbnail)
+        .editInteraction(interaction)
+}
 
 const nationCmd: SlashCommand<typeof slashCmdData> = {
     name: "nation",
@@ -227,13 +386,11 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
         } else {
             const nameArg = interaction.options.getString("name", true)
             const nation = nations.find(n => n.name.toLowerCase() == nameArg.toLowerCase())
-            if (!nation) {
-                nationEmbed.setTitle("Invalid Nation!")
-                nationEmbed.setDescription(`No nation with name \`${nameArg}\` exists.`)
-                nationEmbed.setColor(Colors.Red)
-
-                return interaction.editReply({ embeds: [nationEmbed] })
-            }
+            if (!nation) return interaction.editReply({ embeds: [nationEmbed
+                .setTitle("Invalid Nation!")
+                .setDescription(`No nation with name ${backtick(nameArg)} exists.`)
+                .setColor(Colors.Red)]
+            })
 
             // TODO: Use timestamps from OAPI - keep current logic (DB dates) as fallback.
             if (subCmd == "activity") {
@@ -288,141 +445,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
 
             // /n <nation>
             if (subCmd == "lookup") {
-                const capitalColours = await Aurora.Towns.get(nation.capital.name).then((t: SquaremapTown) => {
-                    return t instanceof NotFoundError ? null : t.colours
-                })
-    
-                const colour = capitalColours ? parseInt(capitalColours.fill.replace('#', '0x')) : Colors.Aqua
-                nationEmbed.setColor(colour)
-                
-                //#region Prefixes
-                const nationResLength = nation.residents.length
-                const nationLeaderPrefix = nationResLength >= 60 ? "God Emperor "
-                    : nationResLength >= 40 ? "Emperor "
-                    : nationResLength >= 30 ? "King "
-                    : nationResLength >= 20 ? "Duke "
-                    : nationResLength >= 10 ? "Count "
-                    : nationResLength >= 0 ? "Leader " : ""
-                
-                // Includes prefix
-                const nationLabel = nationResLength >= 60 ? `The ${nation.name} Realm`
-                    : nationResLength >= 40 ? `The ${nation.name} Empire`
-                    : nationResLength >= 30 ? `Kingdom of ${nation.name}`
-                    : nationResLength >= 20 ? `Dominion of ${nation.name}`
-                    : nationResLength >= 10 ? `Federation of ${nation.name}`
-                    : `Land of ${nation.name}`
-                //#endregion
-    
-                defaultSortNations(nations)
-
-                // Custom prefix (via /nationset) otherwise Towny default.
-                const kingPrefix = nation.kingPrefix ? `${nation.kingPrefix} ` : nationLeaderPrefix 
-                const nationRank = (nations.findIndex(n => n.name == nation.name)) + 1
-
-                //#region Embed Stuff
-                const [capitalX, capitalZ] = [nation.capital.x, nation.capital.z]
-                const mapUrl = new Aurora.URLBuilder({ x: capitalX, z: capitalZ }, 5)
-
-                //const nationName = nation.wiki ? `[${nationLabel}](${nation.wiki})` : backtick(nationLabel)
-                
-                const area = Math.round(nation.area)
-                const chunksStr = `${EMOJI_CHUNK} ${backtick(area.toString())} Chunks`
-                const bonusStr = `${EMOJI_CHUNK} ${backtick(auroraNationBonus(nationResLength))} Chunks`
-
-                let onlineResidents = []
-                const ops = await Aurora.Players.online().catch(() => {})
-                if (ops) {
-                    const opNames = new Set(ops.map(op => op.name))
-                    onlineResidents = removeDuplicates(nation.residents.filter(res => opNames.has(res)))
-                }
-
-                const residentsStr = backtick(nationResLength)
-                const onlineStr = backtick(onlineResidents.length)
-
-                // TODO: Implement as `/nation worth <name>` instead.
-                //const worth = Math.round(nation.area * 16)
-                //const goldStr = `<:gold:1318944918118600764> \`${worth}\`G`
-
-                nationEmbed.setTitle(`Nation Info | ${backtick(nationLabel)} | #${nationRank}`)
-                    .setThumbnail(nation.flag || 'attachment://aurora.png')
-                    .addFields(
-                        embedField("Leader", backtick(nation.king, { prefix: kingPrefix }), true),
-                        embedField("Capital", backtick(nation.capital.name), true), 
-                        embedField("Location", `[${capitalX}, ${capitalZ}](${mapUrl.getAsString()})`, true),
-                        embedField("Residents", `${residentsStr}/${onlineStr} Online`, true),
-                        embedField("Size", chunksStr, true),
-                        embedField(`Nation Bonus`, bonusStr, true)
-                    )
-    
-                if (nation.discord) {
-                    nationEmbed.setURL(nation.discord)
-                }
-                //#endregion
-    
-                //#region Recent news logic
-                const newsChannel = client.channels.cache.get(AURORA.newsChannel) as TextChannel
-                const newsChannelMsgs = await newsChannel?.messages.fetch()
-
-                const filteredNewsMsgs = newsChannelMsgs?.filter(msg => {
-                    const nationName = nation.name.toLowerCase()
-
-                    // Message includes nation name. Either exactly or where underscores became spaces.
-                    return msg.content.toLowerCase().includes(nationName || nationName.replace(/_/g, " "))
-                })
-
-                const mostRecentTimestamp = Math.max(...filteredNewsMsgs.map(e => e.createdTimestamp))
-                const recentNews = filteredNewsMsgs?.find(e => e.createdTimestamp === mostRecentTimestamp)
-                //#endregion
-                
-                const nationTowns = nation.towns.join(", ")
-                const nationTownsString = nationTowns.toString().trim()
-                
-                if (nationTownsString.length >= 1024) {
-                    nationEmbed.addFields(embedField(
-                        `Towns [${nation.towns.length}]`, 
-                        "Too many towns to display!\nClick the **View All Towns** button to see the full list."
-                    ))
-            
-                    nationEmbed.addButton('view_all_towns', 'View All Towns', ButtonStyle.Primary)
-                } else {                   
-                    nationEmbed.addFields(embedField(
-                        `Towns [${nation.towns.length}]`, 
-                        "```" + nationTownsString + "```"
-                    ))
-                }
-    
-                const alliances = await database.AuroraDB.getAlliances()
-                if (alliances) {
-                    const nationAlliances = alliances
-                        .filter(a => a.nations.map(e => e.toLowerCase()).includes(nation.name.toLowerCase()))
-                        .map(a => a.allianceName)
-    
-                    const len = nationAlliances?.length
-                    if (len > 0) nationEmbed.addFields(embedField(
-                        `Alliances [${len}]`, 
-                        "```" + nationAlliances.join(", ") + "```"
-                    ))
-                }
-    
-                if (recentNews) {
-                    const news = new News(recentNews)
-                    const img = news?.images ? news.images[0] : null
-    
-                    nationEmbed.addFields(embedField(
-                        "Recent News", 
-                        news.message + (img ? " ([Image](" + img + "))" : "")
-                    ))
-                }
-    
-                // Add this nation to cache so we can reference it elsewhere like 
-                // if a button is pressed and we need the original nation data.
-                //const msg = await interaction.fetchReply()
-                cache.set(`nation_lookup_${interaction.id}`, nation)
-
-                const thumbnail = nation.flag ? [] : [AURORA.thumbnail] 
-                return nationEmbed
-                    .setFiles(thumbnail)
-                    .editInteraction(interaction)
+                return await nationLookup(nation, nations, nationEmbed, interaction)
             }
 
             if (subCmd == "worth") {

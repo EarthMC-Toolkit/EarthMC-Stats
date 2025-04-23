@@ -1,6 +1,5 @@
 import { 
-    Aurora, OfficialAPI, 
-    type SquaremapPlayer 
+    OfficialAPI
 } from "earthmc"
 
 import { 
@@ -16,7 +15,10 @@ import { Timestamp } from "firebase-admin/firestore"
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
 import * as database from "../../bot/utils/db/index.js"
-import type { AllianceType, DBAlliance } from "../../bot/types.js"
+import type { 
+    AllianceType,
+    DBAlliance, DBAllianceExtended
+} from "../../bot/types.js"
 
 import { 
     ArgsHelper,
@@ -95,14 +97,6 @@ const setAddedNationsInfo = (
     }
 }
 
-const SCORE_WEIGHTS = {
-    nations: 0.35,
-    towns: 0.3,
-    residents: 0.2,
-    area: 0.15
-    //wealth: 0.1
-}
-
 const editorArgs = [
     "backup", "new", "create", "delete", "disband", "add", 
     "remove", "set", "merge", "rename", "wizard", "validate", "kill"
@@ -155,95 +149,23 @@ export default {
 
         // /alliance <allianceName>
         if (args.length == 1 && !subCmds.includes(arg1)) {
-            return sendSingleAlliance(client, message, m, args)
+            const { foundAlliance } = await database.AuroraDB.getAlliance(args[0])
+            if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
+                .setTitle("Error fetching alliance")
+                .setDescription("That alliance does not exist! Please try again.")
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+            const msgPayload = await allianceLookup(client, message, foundAlliance)
+            return m.edit(msgPayload)
         }
 
-        // There is an argument, but not an editor one, must be a sub cmd.
+        // There is an argument, but not an editor one.
         if (arg1 && !editorArgs.includes(arg1)) {
-            if (arg1 == "online") {
-                // TODO: Do this in getAlliance() so we dont req ops twice. 
-                const ops = await Aurora.Players.online(true).catch(() => null) as SquaremapPlayer[]
-                if (!ops) return m.edit({embeds: [errorEmbed(message)
-                    .setTitle(`Error fetching online players`)
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const { foundAlliance } = await database.AuroraDB.getAlliance(arg2)
-                if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-                    .setTitle("Error fetching alliance")
-                    .setDescription("That alliance does not exist! Please try again.")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const name = getNameOrLabel(foundAlliance)
-                
-                const allianceOps = ops.filter(op => foundAlliance.online.some(p => p == op.name)) ?? []
-                if (allianceOps.length < 1) return m.edit({embeds: [successEmbed(message)
-                    .setTitle(`Online in ${name} [0]`)
-                    .setDescription("No players are online in this alliance :(")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const embeds: EmbedBuilder[] = []
-                const allData = allianceOps
-                    .map(res => `${res.name} - ${res.town} | ${res.rank}`)
-                    .join('\n').match(/(?:^.*$\n?){1,10}/mg)
-            
-                const len = allData.length
-                for (let i = 0; i < len; i++) {
-                    embeds[i] = successEmbed(message)
-                        .setTitle(`Online in ${name} [${allianceOps.length}]`)
-                        .setDescription("```" + allData[i] + "```")
-                        .setFooter({ 
-                            text: `Page ${i+1}/${allData.length}`, 
-                            iconURL: client.user.avatarURL() 
-                        })
-                }
-
-                return await m.edit({ embeds: [embeds[0]] })
-                    .then(msg => paginator(message.author.id, msg, embeds, 0))
-            }
-
-            if (arg1 == "score") {
-                const { foundAlliance } = await database.AuroraDB.getAlliance(args[1])
-                if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-                    .setTitle("Error fetching alliance")
-                    .setDescription("That alliance does not exist! Please try again.")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-                const scores = {
-                    nations: foundAlliance.nations.length * SCORE_WEIGHTS.nations,
-                    towns: foundAlliance.towns * SCORE_WEIGHTS.towns,
-                    residents: foundAlliance.residents * SCORE_WEIGHTS.residents,
-                    area: foundAlliance.area * SCORE_WEIGHTS.area
-                    //economy: (foundAlliance.economy / 10000) * weights.economy, // Economy scaled down for readability
-                }
-                
-                const nationsCalcStr = `**Nations**: ${foundAlliance.nations.length} * 35% = ${scores.nations.toFixed(1)}`
-                const townsCalcStr = `**Towns**: ${foundAlliance.towns} * 30% = ${scores.towns.toFixed(1)}`
-                const residentsCalcStr = `**Residents**: ${foundAlliance.residents} * 20% = ${scores.residents.toFixed(1)}`
-                const areaCalcStr = `**Area**: ${foundAlliance.area} * 15% = ${scores.area.toFixed(1)}`
-                //const wealthCalcStr = `${foundAlliance.wealth} × 10% = ${scores.economy.toFixed(1)}`
-
-                const totalScore = Math.round(scores.nations + scores.towns + scores.residents + scores.area)
-
-                const embed = new EmbedBuilder()
-                    .setTitle(`EMCS Score | ${getNameOrLabel(foundAlliance)}`)
-                    .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
-                    .setColor(foundAlliance.colours 
-                        ? parseInt(foundAlliance.colours?.fill.replace('#', '0x')) 
-                        : Colors.DarkBlue
-                    )
-                    .setDescription(`
-                        ${nationsCalcStr}
-                        ${townsCalcStr}
-                        ${residentsCalcStr}
-                        ${areaCalcStr}\n
-                        **Total**: ${backtick(totalScore.toLocaleString())}
-                    `)
-
-                return await m.edit({ 
-                    embeds: [embed],
-                    files: foundAlliance.imageURL ? [] : [AURORA.thumbnail]
-                })
-            }
+            return m.edit({embeds: [new EmbedBuilder()
+                .setTitle("Invalid command!")
+                .setDescription(`Usage: ${backtick(`/a <name>`)}, ${backtick(`/alliances`)} or ${backtick(`/alliances search <key>`)}`)
+                .setColor(Colors.Red)
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
 
         //#region Alliance editing
@@ -1291,13 +1213,7 @@ async function sendAllianceList(message: Message, m: Message, args: string[], ty
     //#endregion
 }
 
-async function sendSingleAlliance(client: Client, message: Message, m: Message, args: string[]) {
-    const { foundAlliance } = await database.AuroraDB.getAlliance(args[0])
-    if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-        .setTitle("Error fetching alliance")
-        .setDescription("That alliance does not exist! Please try again.")
-    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
+async function allianceLookup(client: Client, message: Message, foundAlliance: DBAllianceExtended) {
     const leaderNames = foundAlliance.leaderName.split(', ')
     const leaderPlayers = await OfficialAPI.V3.players(...leaderNames)
 
@@ -1343,15 +1259,28 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         .setThumbnail(foundAlliance.imageURL ? foundAlliance.imageURL : 'attachment://aurora.png')
         .setBasicAuthorInfo(message.author)
         .setTitle(`Alliance Info | ${getNameOrLabel(foundAlliance)}${rank}`)
-        .addField("Leader(s)", leadersStr, true)
-        .addField("Type", backtick(allianceType), true)
-        .addField(`Size`, `${EMOJI_CHUNK} ${backtick(Math.round(foundAlliance.area))} Chunks`, true)
-        .addField("Towns", backtick(foundAlliance.towns), true)
-        .addField("Residents", `${residentsStr} / ${onlineStr} Online`, true)
+        .addField("Leader(s)", leadersStr) // Leave as is, inlining doesn't work well with multiple leaders.
+        .addField("Type", backtick(allianceType)) // Leave as is since leaders can't be inlined.
 
-    if (foundAlliance.lastUpdated) {
-        const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
-        allianceEmbed.addField("Last Updated", formattedTs)
+        let statsStr = `Size: ${backtick(Math.round(foundAlliance.area).toLocaleString())} ${EMOJI_CHUNK}`
+        statsStr += `\nTowns: ${backtick(foundAlliance.towns)}`
+        statsStr += `\nResidents: ${residentsStr} / ${onlineStr} Online`
+
+        allianceEmbed.addField("Stats", statsStr, true)
+
+        // .addField("Size", backtick(Math.round(foundAlliance.area), { postfix: " Chunks" }), false)
+        // .addField("Towns", backtick(foundAlliance.towns), true)
+        // .addField("Residents", `${residentsStr} / ${onlineStr} Online`, true)
+
+    if (foundAlliance.colours) {
+        const fill = foundAlliance.colours.fill
+        const outline = foundAlliance.colours.outline
+
+        allianceEmbed.addField("Colours", 
+            `Fill: ${backtick(fill ?? "Not set")}\n` +
+            `Outline: ${backtick(outline ?? "Not set")}`,
+            true
+        )
     }
 
     if (foundAlliance.discordInvite != "No discord invite has been set for this alliance") {
@@ -1378,10 +1307,15 @@ async function sendSingleAlliance(client: Client, message: Message, m: Message, 
         allianceEmbed.addButton('view_all_nations', 'View All Nations', ButtonStyle.Primary)
     }
 
+    if (foundAlliance.lastUpdated) {
+        const formattedTs = timestampDateTime(foundAlliance.lastUpdated)
+        allianceEmbed.addField("Last Updated", formattedTs)
+    }
+
     const thumbnail = foundAlliance.imageURL ? [] : [AURORA.thumbnail]
-    return m.edit({
+    return {
         embeds: [allianceEmbed],
         files: thumbnail,
         components: allianceEmbed.components
-    })
+    }
 }

@@ -149,7 +149,7 @@ export default class NationLookup extends CommandLookup {
         
     }
 
-    #setupEmbed() {
+    createEmbed() {
         const resLength = this.apiNation.residents.length
         
         const label = this.getLabel(resLength)
@@ -187,10 +187,7 @@ export default class NationLookup extends CommandLookup {
 
             this.addField("Recent News", this.recentNews.message + link)
         }
-    }
 
-    createEmbed() {
-        this.#setupEmbed()
         return this.embed
     }
 }
