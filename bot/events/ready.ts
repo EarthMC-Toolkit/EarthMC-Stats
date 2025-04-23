@@ -1,9 +1,14 @@
 //#region Imports
-import { 
-    ActivityType,
-    type Client,
-    type SlashCommandBuilder,
-    type ApplicationCommandDataResolvable
+import type { 
+    Client,
+    SlashCommandBuilder,
+    ApplicationCommandDataResolvable,
+    ApplicationCommandManager,
+    GuildApplicationCommandManager
+} from "discord.js"
+
+import {
+    ActivityType
 } from "discord.js"
 
 import { getProduction } from "../constants.js"
@@ -92,6 +97,7 @@ async function registerCommands(client: ExtendedClient) {
     console.log(`Registered ${client.commands.size} regular commands.`)
 }
 
+type CmdManager = ApplicationCommandManager | GuildApplicationCommandManager
 async function registerSlashCommands(client: ExtendedClient) {
     const slashCmds = readTsFiles(SLASH_CMDS_PATH)
     const data: ApplicationCommandDataResolvable[] = []
@@ -113,15 +119,19 @@ async function registerSlashCommands(client: ExtendedClient) {
         } catch (e) {
             console.error(`Error registering slash cmd: ${slashCmd.name}\n${e}`)
         }
-        
-        // data.push({
-        //     name: slashCmd.name,
-        //     description: slashCmd.description
-        // })
     }
 
-    const cmdManager = getProduction() ? client.application.commands : client.guilds.cache.get(process.env.DEBUG_GUILD)?.commands
-    if (cmdManager) await cmdManager.set(data)
+    //#region Register cmds globally or to guild according to prod/dev
+    let cmdManager: CmdManager = client.application.commands
+    if (!getProduction()) {
+        const devGuild = await client.guilds.fetch(process.env.DEBUG_GUILD)
+        if (devGuild) cmdManager = devGuild.commands
+    }
+
+    if (cmdManager) {
+        await cmdManager.set(data)
+    }
+    //#endregion
 
     console.log(`Registered ${data.length} slash commands.`)
 }
@@ -147,14 +157,9 @@ async function registerDevCommands(client: ExtendedClient) {
         } catch (e) {
             console.error(`Error registering dev slash cmd: ${slashCmd.name}\n${e}`)
         }
-
-        // data.push({
-        //     name: slashCmd.name,
-        //     description: slashCmd.description
-        // })
     }
 
-    const devGuild = client.guilds.cache.get(process.env.DEBUG_GUILD)
+    const devGuild = await client.guilds.fetch(process.env.DEBUG_GUILD)
     if (devGuild) await devGuild.commands.set(data)
 
     console.log(`Registered ${data.length} dev slash commands in debug guild.`)
