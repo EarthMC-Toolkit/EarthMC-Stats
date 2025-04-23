@@ -159,10 +159,14 @@ async function registerDevCommands(client: ExtendedClient) {
         }
     }
 
-    const devGuild = await client.guilds.fetch(process.env.DEBUG_GUILD)
-    if (devGuild) await devGuild.commands.set(data)
+    try {
+        const devGuild = await client.guilds.fetch(process.env.DEBUG_GUILD)
+        if (devGuild) await devGuild.commands.set(data)
 
-    console.log(`Registered ${data.length} dev slash commands in debug guild.`)
+        console.log(`Registered ${data.length} dev slash commands in debug guild.`)
+    } catch (e) {
+        console.error(`Error registering dev slash commands: ${e}`)
+    }
 }
 
 async function registerButtons(client: ExtendedClient) {
