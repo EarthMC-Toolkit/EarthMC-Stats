@@ -1,15 +1,24 @@
 import {
     type Client,
     type ChatInputCommandInteraction,
-    Colors, EmbedBuilder
+    Colors, EmbedBuilder,
+    SlashCommandBuilder
 } from "discord.js"
 
 import { AURORA, devsFooter } from "../../bot/utils/index.js"
+import type { SlashCommand } from "../../bot/types.js"
+
 import { VPLookup } from "../common/lookup/voteparty.js"
 
-export default {
+const desc = "Displays VoteParty info and its current status."
+const slashCmdData = new SlashCommandBuilder()
+    .setName("voteparty")
+    .setDescription(desc)
+
+const votePartyCmd: SlashCommand<typeof slashCmdData> = {
     name: "voteparty",
-    description: "Displays VoteParty info and its current status.",
+    description: desc,
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
@@ -32,3 +41,5 @@ export default {
         })
     }
 }
+
+export default votePartyCmd

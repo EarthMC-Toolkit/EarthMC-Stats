@@ -6,6 +6,7 @@ import {
     Colors, EmbedBuilder, SlashCommandBuilder
 } from "discord.js"
 
+import type { SlashCommand } from '../../bot/types.js'
 import { lastSeenPlayers } from "../../bot/constants.js"
 import { 
     database,
@@ -56,13 +57,14 @@ const townlessLastSeen = async () => {
     return [...lastSeenPlayers.values()].filter(p => !residentNames.has(p.name))
 }
 
+const desc = "Lists all online players without a town."
 const slashCmdData = new SlashCommandBuilder()
     .setName("townless")
-    .setDescription("Lists all online townless players.")
+    .setDescription(desc)
 
-export default {
+const townlessCmd: SlashCommand<typeof slashCmdData> ={
     name: "townless",
-    description: "Lists all online players without a town.",
+    description: desc,
     data: slashCmdData,
     run: async (_: Client, interaction: ChatInputCommandInteraction) => {
         let townless = await townlessLastSeen()
@@ -109,3 +111,5 @@ export default {
         return send(interaction, allData, townless)
     }
 }
+
+export default townlessCmd

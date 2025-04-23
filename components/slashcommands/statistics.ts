@@ -1,7 +1,8 @@
 import {
     type Client,
     type ChatInputCommandInteraction,
-    Colors, EmbedBuilder
+    EmbedBuilder, SlashCommandBuilder,
+    Colors
 } from "discord.js" 
 
 import {
@@ -10,9 +11,17 @@ import {
     devsFooter
 } from '../../bot/utils/index.js'
 
-export default {
+import type { SlashCommand } from '../../bot/types.js'
+
+const desc = "Sends bot-related statistics."
+const slashCmdData = new SlashCommandBuilder()
+    .setName("stats")
+    .setDescription(desc)
+
+const statsCmd: SlashCommand<typeof slashCmdData> ={
     name: "stats",
     description: "Sends bot-related statistics",
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {    
         return interaction.reply({embeds: [new EmbedBuilder()
             .setColor(Colors.Green)
@@ -27,3 +36,5 @@ export default {
         ]})
     }
 }
+
+export default statsCmd

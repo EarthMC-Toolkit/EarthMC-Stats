@@ -3,7 +3,8 @@ import { MojangLib } from 'earthmc'
 import {
     type Client,
     type ChatInputCommandInteraction,
-    Colors, EmbedBuilder
+    EmbedBuilder, SlashCommandBuilder,
+    Colors
 } from "discord.js"
 
 import {
@@ -12,13 +13,21 @@ import {
     embedField
 } from "../../bot/utils/index.js"
 
+import type { SlashCommand } from '../../bot/types.js'
+
 function status(data: unknown) {
     return !data ? "Offline :red_circle:" : "Online :green_circle:"
 }
 
-export default {
+const desc = "Displays the current server status."
+const slashCmdData = new SlashCommandBuilder()
+    .setName("status")
+    .setDescription(desc)
+
+const statusCmd: SlashCommand<typeof slashCmdData> = {
     name: "status",
-    description: "Displays the current server status.",
+    description: desc,
+    data: slashCmdData,
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         await interaction.deferReply()
 
@@ -43,3 +52,5 @@ export default {
         await interaction.editReply({ embeds: [embed] })
     }
 }
+
+export default statusCmd
