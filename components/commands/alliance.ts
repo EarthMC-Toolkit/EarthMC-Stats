@@ -812,14 +812,22 @@ export default {
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
 
                 //#region Validate input
-                const urlInput = args[3]
-                if (!urlInput.includes(flagsChannel)) {
-                    return m.edit({embeds: [successEmbed(message)
-                        .setColor(Colors.Orange)
-                        .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                        .setDescription(`Naughty editor! Read the description of the flags channel.\nMake sure to maintain the original size.`)
-                        .setImage("https://cdn.7tv.app/emote/01F6R50PYR0004V0XPDH2CKXCH/4x.gif") // SMH
-                    ]}).catch(() => {})
+                let urlInput = args[3]
+                const reset = urlInput?.toLowerCase() == "none" || urlInput?.toLowerCase() == "null"
+
+                if (reset) urlInput = null
+                else {
+                    const fromFlagChannel = urlInput.includes(flagsChannel)
+                    const fullSize = urlInput.startsWith("https://media.discordapp")
+
+                    if (!fromFlagChannel || !fullSize) {
+                        return m.edit({embeds: [successEmbed(message)
+                            .setColor(Colors.Orange)
+                            .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                            .setDescription(`Naughty editor! Read the description of the flags channel.\nMake sure to maintain the original size.`)
+                            .setImage("https://cdn.7tv.app/emote/01FQ98TKT0000FX658SRNP1BXC/3x.avif") // SMH
+                        ]}).catch(() => {})    
+                    }
                 }
 
                 if (foundAlliance.imageURL == urlInput) {
@@ -841,13 +849,20 @@ export default {
 
                 database.AuroraDB.setAlliances(alliances, [allianceIndex])
                 
+                if (reset) {
+                    return m.edit({embeds: [successEmbed(message)
+                        .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+                        .setDescription("The alliance image/flag has been removed.")
+                    ]}).catch(() => {})
+                }
+
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                    .setDescription("The alliance image has been set to:") 
+                    .setDescription("The alliance image/flag has been set to:") 
                     .setImage(urlInput)
                 ]}).catch(() => {})
             }
-            //#endregion                
+            //#endregion
 
             //#region /a set type
             if (arg2 == "type") { 
