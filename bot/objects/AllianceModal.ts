@@ -59,9 +59,14 @@ class AllianceModal extends ModalBuilder {
     }
 
     main = (options: CommandInteractionOptionResolver) => {
+        const leaders = this.alliance?.leaders.map(l => {
+            const [name] = l.split(":")
+            return name
+        }).join(", ")
+
         this.rows = [
             this.createRow('nations', 'List of Nations', this.alliance?.nations.join(", "), INPUT_STYLE),
-            this.createRow('leaders', 'Leader(s)', this.alliance?.leaderName, INPUT_STYLE),
+            this.createRow('leaders', 'Leader(s)', leaders, INPUT_STYLE),
             this.createRow('flag', 'Flag Image Link (Optional)', this.alliance?.imageURL),
             this.createRow('discord', 'Discord Invite Link (Optional)', this.alliance?.discordInvite),
             this.createRow('full_name', 'Full Name (Optional)', this.alliance?.fullName)

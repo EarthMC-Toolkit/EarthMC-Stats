@@ -17,7 +17,8 @@ import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 import * as database from "../../bot/utils/db/index.js"
 import type { 
     AllianceType,
-    DBAlliance, DBAllianceExtended
+    DBAlliance, DBAllianceExtended,
+    Entity
 } from "../../bot/types.js"
 
 import { 
@@ -258,16 +259,17 @@ export default {
 
             const index = alliances.push({
                 allianceName: allianceName,
+                leaders: [],
                 leaderName: "None",
                 discordInvite: "No discord invite has been set for this alliance",
-                nations: [] as string[],
+                nations: [],
                 type: 'normal' as AllianceType,
                 lastUpdated: Timestamp.now()
-                //rank: alliances.length + 1
             })
 
             try {
-                await database.AuroraDB.setAlliances(alliances, null) // TODO: No need for lastUpdated. Implement createdAt instead?
+                // TODO: No need to set `lastUpdated` when creating. Implement createdAt also?
+                await database.AuroraDB.setAlliances(alliances, null) 
             } catch(err: any) {
                 console.error(`[/a new] Error creating alliance: ${allianceName}\n${err}`)
 
@@ -359,16 +361,19 @@ export default {
             //#endregion
 
             //#region Check if leaders exist before adding them.
-            const leaderName = info[2].replaceAll(' ', '')
+            const leaderName = info[2]?.replaceAll(' ', '') || "None"
+            let existingLeaders: string[] = []
 
             // Empty or explicitly set not to have any leader(s).
-            const noLeader = !leaderName || leaderName.toLowerCase() == "none" || leaderName.toLowerCase() == "null"
+            const noLeader = leaderName.toLowerCase() == "none" || leaderName.toLowerCase() == "null"
             if (!noLeader) {
-                const missingPlayers = await checkPlayersExist(leaderName.split(","))
-                if (missingPlayers.length > 0) {
+                const [missing, existing] = await checkPlayersExist(leaderName.split(","))
+                existingLeaders = existing.map(l => `${l.name}:${l.uuid}`)
+
+                if (missing.length > 0) {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Failed to update alliance`)
-                        .setDescription(`The following leaders do not exist:\n\n${backticks(missingPlayers.join(", "))}`)
+                        .setDescription(`The following leaders do not exist:\n\n${backticks(missing.join(", "))}`)
                         .setColor(Colors.Orange)
                         .setTimestamp()
                         .setAuthor({
@@ -382,12 +387,12 @@ export default {
 
             const alliance: DBAlliance = {
                 allianceName,
-                leaderName: noLeader ? "None" : leaderName,
+                leaders: existingLeaders,
+                leaderName: leaderName,
                 nations: [],
                 type: typeLower,
                 discordInvite,
                 lastUpdated: Timestamp.now(),
-                // alliances.length + 1,
                 ...{
                     fullName: info[1] || null,
                     imageURL: info[6] || null
@@ -712,7 +717,7 @@ export default {
                     }
 
                     //#region Check if leaders exist adding them.
-                    const missingPlayers = await checkPlayersExist(playerArgs)
+                    const [missingPlayers] = await checkPlayersExist(playerArgs)
                     if (missingPlayers.length > 0) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Failed to update alliance`)
                         .setDescription(`The following leaders do not exist:\n\n${backticks(missingPlayers.join(", "))}`)
@@ -1051,13 +1056,14 @@ export default {
 /**
  * Removes duplicates from the input array of strings, then calls the API and returns an array of player names
  * that were missing (in the original array but not api). If none are missing, all players must exist.
- * @param leaderNames Names of players.
+ * @param playerIdentifiers Array that contain both names and UUIDs.
  */
-async function checkPlayersExist(playerNames: string[]) {
-    playerNames = removeDuplicates(playerNames)
-    const apiPlayers = await OfficialAPI.V3.players(...playerNames) // TODO: Maybe fall back to NPM here?
+async function checkPlayersExist(playerIdentifiers: string[]): Promise<[string[], Entity[]]> {
+    playerIdentifiers = removeDuplicates(playerIdentifiers)
+    const apiPlayers = await OfficialAPI.V3.players(...playerIdentifiers) // TODO: Maybe fall back to NPM here?
  
-    return playerNames.filter(name => !apiPlayers.some(p => p.name.toLowerCase() == name.toLowerCase()))
+    const existing = new Set(apiPlayers.map(p => p.name.toLowerCase()))
+    return [playerIdentifiers.filter(name => !existing.has(name.toLowerCase())), apiPlayers]
 }
 
 const hasDiscord = (a: DBAlliance) => {

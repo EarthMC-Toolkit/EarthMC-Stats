@@ -111,6 +111,7 @@ export interface MapDB {
 export type AllianceType = 'sub' | 'mega' | 'normal'
 export type DBAlliance = {
     allianceName: string
+    leaders: string[] // Follows the format "name:uuid"
     leaderName: string
     type: AllianceType
     nations: string[]
@@ -235,5 +236,10 @@ export type StaffRoleOrUnknown = StaffRole | "unknown"
 export type StaffMember = {
     player: RawPlayerV3
     role: StaffRoleOrUnknown
+}
+
+export type Entity = {
+    name: string
+    uuid: string
 }
 //#endregion
