@@ -24,7 +24,7 @@ import {
     ArgsHelper,
     AURORA, botDevs,
     defaultSortAlliances,
-    fastMerge, isNumeric,
+    isNumeric,
     backtick, backticks,
     jsonReq, removeDuplicates,
     paginator,
@@ -986,47 +986,47 @@ export default {
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
         
-        if (arg1 == "merge") {
-            const alliances = await database.AuroraDB.getAlliances()
+        // if (arg1 == "merge") {
+        //     const alliances = await database.AuroraDB.getAlliances()
 
-            const allianceName = arg2
-            const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
+        //     const allianceName = arg2
+        //     const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
             
-            if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-                .setTitle("Error updating alliance")
-                .setDescription("Unable to update that alliance as it does not exist!")
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        //     if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
+        //         .setTitle("Error updating alliance")
+        //         .setDescription("Unable to update that alliance as it does not exist!")
+        //     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             
-            const alliancesToMerge = args.slice(2)
-            const alliancesLen = alliancesToMerge.length
+        //     const alliancesToMerge = args.slice(2)
+        //     const alliancesLen = alliancesToMerge.length
             
-            for (let i = 0; i < alliancesLen; i++) {
-                const allianceToMerge = alliancesToMerge[i]
+        //     for (let i = 0; i < alliancesLen; i++) {
+        //         const allianceToMerge = alliancesToMerge[i]
                 
-                // If an alliance is a number, return an error message.
-                if (isNumeric(allianceToMerge)) {
-                    return m.edit({embeds: [errorEmbed(message)
-                        .setTitle("Error updating alliance")
-                        .setDescription("Cannot use a number as an alliance name! Please try again.")
-                    ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-                }
+        //         // If an alliance is a number, return an error message.
+        //         if (isNumeric(allianceToMerge)) {
+        //             return m.edit({embeds: [errorEmbed(message)
+        //                 .setTitle("Error updating alliance")
+        //                 .setDescription("Cannot use a number as an alliance name! Please try again.")
+        //             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+        //         }
             
-                const foundMergeAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceToMerge.toLowerCase())
-                if (foundMergeAlliance) {
-                    fastMerge(foundAlliance.nations, foundMergeAlliance.nations)
-                }
-            }
+        //         const foundMergeAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceToMerge.toLowerCase())
+        //         if (foundMergeAlliance) {
+        //             fastMerge(foundAlliance.nations, foundMergeAlliance.nations)
+        //         }
+        //     }
 
-            const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-            alliances[allianceIndex] = foundAlliance
+        //     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+        //     alliances[allianceIndex] = foundAlliance
             
-            database.AuroraDB.setAlliances(alliances, [allianceIndex])
+        //     database.AuroraDB.setAlliances(alliances, [allianceIndex])
 
-            return m.edit({embeds: [successEmbed(message)
-                .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                .setDescription(`The following alliances have been merged:\n\n${backticks(alliancesToMerge.join(", "))}`)
-            ]})
-        }
+        //     return m.edit({embeds: [successEmbed(message)
+        //         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
+        //         .setDescription(`The following alliances have been merged:\n\n${backticks(alliancesToMerge.join(", "))}`)
+        //     ]})
+        // }
 
         if (arg1 == "restore") {
             if (!botDev) return sendDevsOnly(m)
