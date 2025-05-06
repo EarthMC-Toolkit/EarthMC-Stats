@@ -12,7 +12,8 @@ import {
 
 import { 
     database,
-    botDevs
+    botDevs,
+    backtick
 } from '../../bot/utils/index.js'
 
 import type { 
@@ -96,25 +97,25 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
         const type = interaction.options.getString("type")
         switch (type.toLowerCase()) {
             case "prefix": {
-                if (cleared) nation.kingPrefix = ""
+                if (cleared) nation.kingPrefix = null
                 else nation.kingPrefix = value.substring(0, 10)
 
-                const embed = new EmbedBuilder()
+                await interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle(`Nation Updated | ${nation.name}`)
-                    .setDescription(`The king prefix has been ${cleared ? "cleared" : "set to `" + nation.kingPrefix + "`"}.`)
+                    .setDescription(`The king prefix has been ${cleared ? "cleared" : "set to: " + backtick(nation.kingPrefix)}.`)
                     .setColor(Colors.Aqua)
                     .setTimestamp()
+                ]})
 
-                await interaction.editReply({ embeds: [embed] })
                 return save(nation)
             }
             case "discord": {
-                if (cleared) nation.discord = ""
+                if (cleared) nation.discord = null
                 else {
+                    // TODO: Replace with logic used in `/a set discord`. Also check if user owns the discord?
                     const inviteRegex = new RegExp(/discord(?:\.com|app\.com|\.gg)[\/invite\/]?(?:[a-zA-Z0-9\-]{2,32})/)
                     if (!inviteRegex.test(value)) {
-                        return interaction.editReply({embeds: [
-                            new EmbedBuilder()
+                        return interaction.editReply({embeds: [new EmbedBuilder()
                             .setDescription(`${value} is not a valid discord invite, please try again.`)
                             .setColor(Colors.Red)
                             .setTimestamp()
@@ -126,7 +127,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
                 
                 await interaction.editReply({embeds: [new EmbedBuilder()
                     .setTitle(`Nation Updated | ${nation.name}`)
-                    .setDescription(`The nation's discord invite has been ${cleared ? "cleared" : "set to `" + value + "`"}.`) 
+                    .setDescription(`The nation's discord invite has been ${cleared ? "cleared" : "set to: " + backtick(nation.discord)}.`) 
                     .setColor(Colors.Aqua)
                     .setTimestamp()
                 ]})
@@ -134,7 +135,7 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
                 return save(nation)
             }
             case "flag": {
-                if (cleared) nation.flag = ""
+                if (cleared) nation.flag = null
                 else {
                     //const imageRegex = new RegExp("(https?://(?:[^/.]+)(?:\.[^/.]+)+/[^/]*\.(?:png|jpg|jpeg))")
                     const imageRegex = /https?:\/\/[^\s'"()]+\.(?:png|jpe?g)(?:\?[^'"()\s]*)?/i
@@ -158,11 +159,11 @@ const nationSetCmd: SlashCommand<typeof cmdData> = {
 
                 const embed = new EmbedBuilder()
                     .setTitle(`Nation Updated | ${nation.name}`)
-                    .setDescription(`The nation's flag has been ${cleared ? "cleared." : "changed to:"}`)
+                    .setDescription(`The nation's flag has been ${cleared ? "cleared." : "set to:"}`)
                     .setColor(Colors.Aqua)
                     .setTimestamp()
                 
-                if (!cleared) embed.setThumbnail(value)
+                if (!cleared) embed.setImage(nation.flag)
                 await interaction.editReply({ embeds: [embed] })
 
                 return save(nation)

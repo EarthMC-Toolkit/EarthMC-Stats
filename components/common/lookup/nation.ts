@@ -19,7 +19,7 @@ import {
 import { 
     database,
     backtick,
-    timestampDateTime,
+    timestampRelative,
     EMOJI_CHUNK, EMOJI_GOLD,
     AURORA, auroraNationBonus,
     backticks
@@ -153,19 +153,19 @@ export default class NationLookup extends CommandLookup {
         const resLength = this.apiNation.residents.length
         
         const label = this.getLabel(resLength)
+        const foundedTimestamp = timestampRelative(this.apiNation.timestamps.registered)
 
         const kingPrefix = /* dbNation.kingPrefix | */ this.getLeaderPrefix(resLength)
-        const bonus = auroraNationBonus(resLength)
 
         const spawnPoint = this.getSpawnPoint(true, true)
         const mapUrl = new Aurora.URLBuilder(spawnPoint, 5)
 
+        const bonus = auroraNationBonus(resLength)
         const area = Math.round(this.apiNation.stats.numTownBlocks)
-        const foundedTimestamp = timestampDateTime(this.apiNation.timestamps.registered)
 
         this.embed.setTitle(`Nation Info | ${backtick(label)}`)
             .setDescription(`*${this.apiNation.board}*`)
-            //.setThumbnail(this.dbNation.flag || 'attachment://aurora.png')
+            .setThumbnail(/*this.dbNation.flag ||*/ 'attachment://aurora.png')
             
         this.addField("Founded", foundedTimestamp, true)
             .addField("Leader", backtick(this.apiNation.king.name, { prefix: kingPrefix }), true)
