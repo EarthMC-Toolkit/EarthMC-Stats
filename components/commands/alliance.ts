@@ -69,32 +69,47 @@ const getType = (a: { type: string }) => a.type == 'mega'
     ? 'Meganation' : a.type == 'sub' 
     ? 'Sub-Meganation' : 'Normal/Pact'
 
+
+type UpdateStatus = 'success' | 'partial' | 'error'
+type NationsInfo = {
+    skipped: string[]
+    added: string[]
+    present?: string[]
+}
+
 const setAddedNationsInfo = (
     type: 'creating' | 'updating',
-    nationsSkipped: string[], nationsAdded: string[], 
-    allianceName: string, allianceEmbed: EmbedBuilder
+    nationsInfo: NationsInfo,
+    allianceName: string,
+    allianceEmbed: EmbedBuilder
 ) => {
-    const amtSkipped = nationsSkipped.length
-    const amtAdded = nationsAdded.length
+    const added = nationsInfo.added.length > 0
+    const skipped = nationsInfo.skipped.length > 0
+    const present = (nationsInfo.present?.length ?? 0) > 0
 
-    if (amtSkipped >= 1) {
-        const skippedStr = nationsSkipped.join(", ")
+    const descParts: string[] = []
+    if (added) descParts.push("The following nations have been added:\n\n" + backticks(nationsInfo.added.join(", ")))
+    if (skipped) descParts.push("The following nations were skipped as they don't exist:\n\n" + backticks(nationsInfo.skipped.join(", ")))
+    if (present) descParts.push("The following nations already exist in this alliance:\n\n" + backticks(nationsInfo.present!.join(", ")))
 
-        // Some skipped, some added.
-        if (amtAdded >= 1) {
-            allianceEmbed.setColor(Colors.Orange).setDescription(
-                "The following nations have been added:\n\n```" + nationsAdded.join(", ") + 
-                "```\n\nThe following nations do not exist:\n\n```" + skippedStr + "```"
-            )
-        } else { // All skipped, none added.
-            allianceEmbed.setColor(Colors.Red)
-                .setTitle(`Error ${type} alliance | ${allianceName}`)
-                .setDescription(`The following nations do not exist:\n\n${backticks(skippedStr)}`)
-        }
-    } else if (amtAdded >= 1) { // All added, none skipped.
-        allianceEmbed.setColor(Colors.DarkBlue)
-            .setDescription(`The following nations have been added:\n\n${backticks(nationsAdded.join(", "))}`)
-    }
+    let status: UpdateStatus = 'error'
+    if (added && !skipped && !present) status = 'success'
+    else if (added) status = 'partial'
+    else if (present && skipped) status = 'partial'
+
+    const colour =
+        status === 'success' ? Colors.DarkBlue :
+        status === 'partial' ? Colors.Orange :
+        Colors.Red
+
+    const title = status === 'error'
+        ? `Error ${type} alliance | ${allianceName}`
+        : `Alliance Updated | ${allianceName}`
+
+    allianceEmbed
+        .setColor(colour)
+        .setTitle(title)
+        .setDescription(descParts.join("\n\n"))
 }
 
 const editorArgs = [
@@ -396,24 +411,25 @@ export default {
 
             //#region Nations
             const nations = await database.AuroraDB.getNations()
-
-            const nationsSkipped = []
-            const nationsAdded = []
+            const nationsInfo: NationsInfo = {
+                skipped: [],
+                added: []
+            }
+            
             const len = nationsToAdd.length
-
             for (let i = 0; i < len; i++) {   
-                const cur = nationsToAdd[i]                                              
-                const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
+                const cur = nationsToAdd[i]   
 
+                const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
                 if (!nation) {
-                    nationsSkipped.push(cur)
+                    nationsInfo.skipped.push(cur)
                     continue
                 }
 
                 const foundNation = alliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
                 if (!foundNation) {
                     alliance.nations.push(nation.name)
-                    nationsAdded.push(nation.name)
+                    nationsInfo.added.push(nation.name)
                 }
             }
             //#endregion
@@ -457,18 +473,45 @@ export default {
                         : `Leader(s): ${backtick(leaderName)}`
                 })
 
-            setAddedNationsInfo('creating', nationsSkipped, nationsAdded, name, embed)
+            setAddedNationsInfo('creating', nationsInfo, name, embed)
             //#endregion
 
             return m.edit({ embeds: [embed] })
         }
         
-        if (arg1 == "rename") {
-            const alliances = await database.AuroraDB.getAlliances()
+        if (arg1 == "delete" || arg1 == "disband" || arg1 == "nuke") {
+            if (!botDev && !isEditor) return sendDevsOnly(m)
+            if (isEditor && !seniorEditor) return m.edit({embeds: [successEmbed(message)
+                .setTitle("Silly editor!")
+                .setDescription("Only senior editors have permissions to delete alliances.")
+                .setColor(Colors.Orange)
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
             const allianceName = arg2
-            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
+            const alliances = await database.AuroraDB.getAlliances()
 
+            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
+            if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
+                .setTitle("Error disbanding alliance")
+                .setDescription("The alliance you're trying to disband does not exist! Please try again.")
+            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+
+            const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
+
+            alliances.splice(allianceIndex, 1)
+            database.AuroraDB.setAlliances(alliances, null) // Disbanding, no need to set lastUpdated.
+        
+            return m.edit({embeds: [successEmbed(message)
+                .setTitle("Alliance Disbanded")
+                .setDescription(`The alliance ${backtick(getNameOrLabel(foundAlliance))} has been disbanded.`)
+            ]})
+        }
+
+        if (arg1 == "rename") {
+            const allianceName = arg2
+            const alliances = await database.AuroraDB.getAlliances()
+
+            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                 .setTitle("Error renaming alliance")
                 .setDescription("The alliance you're trying to rename does not exist! Please try again.")
@@ -500,41 +543,11 @@ export default {
                 .setDescription(`The alliance ${backticks(oldName)} has been renamed to ${backticks(args[2])}`)
             ]})
         }
-        
-        if (arg1 == "delete" || arg1 == "disband" || arg1 == "kill") {
-            if (!botDev && !isEditor) return sendDevsOnly(m)
-            if (isEditor && !seniorEditor) return m.edit({embeds: [successEmbed(message)
-                .setTitle("Silly editor!")
-                .setDescription("Only senior editors have permissions to delete alliances.")
-                .setColor(Colors.Orange)
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
+        if (arg1 == "add") {
             const alliances = await database.AuroraDB.getAlliances()
 
-            const allianceName = arg2
-            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
-
-            if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-                .setTitle("Error disbanding alliance")
-                .setDescription("The alliance you're trying to disband does not exist! Please try again.")
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-
-            const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
-
-            alliances.splice(allianceIndex, 1)
-            database.AuroraDB.setAlliances(alliances, null) // Disbanding, no need to set lastUpdated.
-        
-            return m.edit({embeds: [successEmbed(message)
-                .setTitle("Alliance Disbanded")
-                .setDescription(`The alliance ${backtick(getNameOrLabel(foundAlliance))} has been disbanded.`)
-            ]})
-        }
-
-        // Adding nation(s) to an alliance
-        if (arg1 == "add") { 
-            const alliances = await database.AuroraDB.getAlliances()
             const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
-            
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                 .setTitle("Error updating alliance")
                 .setDescription("Unable to update that alliance as it does not exist!")
@@ -549,7 +562,7 @@ export default {
 
                 return m.edit({embeds: [errorEmbed(message)
                     .setTitle("Error updating alliance")
-                    .setDescription("Something went wrong removing nations. Ping Owen.")
+                    .setDescription("Something went wrong adding nations. Ping Owen.")
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
 
@@ -566,18 +579,20 @@ export default {
             }
 
             const nations = await database.AuroraDB.getNations()
+            const nationsInfo: NationsInfo = { 
+                skipped: [],
+                added: [],
+                present: []
+            }
 
-            const nationsSkipped: string[] = []
-            const nationsAdded: string[] = []
             const len = nationsToAdd.length
-
             for (let i = 0; i < len; i++) {   
                 const cur = nationsToAdd[i]                                              
                 const nation = nations.find(n => n.name.toLowerCase() == cur.toLowerCase())
 
                 // Invalid/non-existent nation, skip.
                 if (!nation) {
-                    nationsSkipped.push(cur)
+                    nationsInfo.skipped.push(cur)
                     continue
                 }
 
@@ -585,11 +600,13 @@ export default {
                 const nationExists = foundAlliance.nations.some(n => n.toLowerCase() == cur.toLowerCase())
                 if (!nationExists) {
                     foundAlliance.nations.push(nation.name)
-                    nationsAdded.push(nation.name)
+                    nationsInfo.added.push(nation.name)
+                } else {
+                    nationsInfo.present.push(nation.name)
                 }
             }
 
-            if (nationsAdded.length > 0) {
+            if (nationsInfo.added.length > 0) {
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == arg2.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
 
@@ -605,10 +622,11 @@ export default {
                     iconURL: message.author.displayAvatarURL()
                 })
             
-            setAddedNationsInfo('updating', nationsSkipped, nationsAdded, name, allianceEmbed)
+
+            setAddedNationsInfo('updating', nationsInfo, name, allianceEmbed)
             
             return m.edit({ embeds: [allianceEmbed] })
-        } 
+        }
         
         if (arg1 == "remove") {
             const alliances = await database.AuroraDB.getAlliances()
@@ -985,48 +1003,6 @@ export default {
                 .setTitle(`${args[1]} isn't a valid option, please try again.`)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
         }
-        
-        // if (arg1 == "merge") {
-        //     const alliances = await database.AuroraDB.getAlliances()
-
-        //     const allianceName = arg2
-        //     const foundAlliance = alliances.find(alliance => alliance.allianceName.toLowerCase() == allianceName.toLowerCase())
-            
-        //     if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-        //         .setTitle("Error updating alliance")
-        //         .setDescription("Unable to update that alliance as it does not exist!")
-        //     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-            
-        //     const alliancesToMerge = args.slice(2)
-        //     const alliancesLen = alliancesToMerge.length
-            
-        //     for (let i = 0; i < alliancesLen; i++) {
-        //         const allianceToMerge = alliancesToMerge[i]
-                
-        //         // If an alliance is a number, return an error message.
-        //         if (isNumeric(allianceToMerge)) {
-        //             return m.edit({embeds: [errorEmbed(message)
-        //                 .setTitle("Error updating alliance")
-        //                 .setDescription("Cannot use a number as an alliance name! Please try again.")
-        //             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-        //         }
-            
-        //         const foundMergeAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceToMerge.toLowerCase())
-        //         if (foundMergeAlliance) {
-        //             fastMerge(foundAlliance.nations, foundMergeAlliance.nations)
-        //         }
-        //     }
-
-        //     const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-        //     alliances[allianceIndex] = foundAlliance
-            
-        //     database.AuroraDB.setAlliances(alliances, [allianceIndex])
-
-        //     return m.edit({embeds: [successEmbed(message)
-        //         .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-        //         .setDescription(`The following alliances have been merged:\n\n${backticks(alliancesToMerge.join(", "))}`)
-        //     ]})
-        // }
 
         if (arg1 == "restore") {
             if (!botDev) return sendDevsOnly(m)

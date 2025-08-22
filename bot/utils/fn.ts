@@ -242,23 +242,25 @@ export const readTsFiles = (dirPath: string) => {
 }
 
 export class ArgsHelper<T extends string> {
-    original: T[]
-    spliced: string[] = []
-    
-    spliceAmt: number
+    originalArgs: T[]
+    slicedArgs?: string[]
+    sliceAmt: number
 
-    constructor(args: T[], spliceAmt: number) {
-        this.original = args
-        this.spliceAmt = spliceAmt
+    constructor(args: T[], sliceAmt: number) {
+        this.originalArgs = args
+        this.sliceAmt = sliceAmt
     }
 
     format = () => { 
-        this.spliced = this.original.splice(this.spliceAmt).map((e: string) => e.replace(/,/g, ''))
-        return this.spliced
+        this.slicedArgs = this.originalArgs.slice(this.sliceAmt).map((e: string) => e.replace(/,/g, ''))
+        return this.slicedArgs
     }
 
-    asArray = () => this.spliced?.length < 1 ? this.format() : this.spliced
-    asString = (delimiter = ", "): string => this.asArray().join(delimiter)
+    asString = (delimiter = ", ") => this.asArray().join(delimiter)
+    asArray = () => {
+        const format = !this.slicedArgs || this.slicedArgs.length < 1
+        return format ? this.format() : this.slicedArgs
+    }
 }
 
 export const inWorldBorder = (x: number, z: number) => {
