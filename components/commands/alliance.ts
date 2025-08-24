@@ -1,5 +1,6 @@
 import { 
-    OfficialAPI
+    OfficialAPI,
+    type RawPlayerV3
 } from "earthmc"
 
 import { 
@@ -379,11 +380,11 @@ export default {
             // Empty or explicitly set not to have any leader(s).
             const noLeader = !leaderName || leaderName.toLowerCase() == "none" || leaderName.toLowerCase() == "null"
             if (!noLeader) {
-                const missingPlayers = await checkPlayersExist(leaderName.split(","))
-                if (missingPlayers.length > 0) {
+                const { missing } = await checkPlayersExist(leaderName.split(","))
+                if (missing.length > 0) {
                     return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Failed to update alliance`)
-                        .setDescription(`The following leaders do not exist:\n\n${backticks(missingPlayers.join(", "))}`)
+                        .setDescription(`The following leaders do not exist:\n\n${backticks(missing.join(", "))}`)
                         .setColor(Colors.Orange)
                         .setTimestamp()
                         .setAuthor({
@@ -562,7 +563,7 @@ export default {
 
                 return m.edit({embeds: [errorEmbed(message)
                     .setTitle("Error updating alliance")
-                    .setDescription("Something went wrong adding nations. Ping Owen.")
+                    .setDescription("Something went wrong adding nations. <@263377802647175170>") // Ping the almighty bot owner O_O!!!1!1
                 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
             }
 
@@ -729,11 +730,11 @@ export default {
                         ]}).catch(() => {})
                     }
 
-                    //#region Check if leaders exist adding them.
-                    const missingPlayers = await checkPlayersExist(playerArgs)
-                    if (missingPlayers.length > 0) return m.edit({embeds: [new EmbedBuilder()
+                    //#region Check if leaders exist when adding them.
+                    const { players, missing } = await checkPlayersExist(playerArgs)
+                    if (missing.length > 0) return m.edit({embeds: [new EmbedBuilder()
                         .setTitle(`Failed to update alliance`)
-                        .setDescription(`The following leaders do not exist:\n\n${backticks(missingPlayers.join(", "))}`)
+                        .setDescription(`The following leaders do not exist:\n\n${backticks(missing.join(", "))}`)
                         .setColor(Colors.Orange)
                         .setTimestamp()
                         .setAuthor({
@@ -742,9 +743,11 @@ export default {
                         })
                     ]})
                     //#endregion
-                }
 
-                foundAlliance.leaderName = removing ? "None" : playerArgsStr
+                    foundAlliance.leaderName = players.map(p => p.name).join(", ")
+                } else {
+                    foundAlliance.leaderName = "None"
+                }
 
                 const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
                 alliances[allianceIndex] = foundAlliance
@@ -753,7 +756,7 @@ export default {
                 
                 return m.edit({embeds: [successEmbed(message)
                     .setTitle(`Alliance Updated | ${getNameOrLabel(foundAlliance)}`)
-                    .setDescription(`The alliance leader has been set to: ${backtick(foundAlliance.leaderName)}`)
+                    .setDescription(`The alliance leader(s) are now: ${backtick(foundAlliance.leaderName)}`)
                 ]})
             }
             //#endregion
@@ -1044,11 +1047,13 @@ export default {
  * that were missing (in the original array but not api). If none are missing, all players must exist.
  * @param leaderNames Names of players.
  */
-async function checkPlayersExist(playerNames: string[]) {
+async function checkPlayersExist(playerNames: string[]): Promise<{ players: RawPlayerV3[], missing: string[] }> {
     playerNames = removeDuplicates(playerNames)
-    const apiPlayers = await OfficialAPI.V3.players(...playerNames) // TODO: Maybe fall back to NPM here?
- 
-    return playerNames.filter(name => !apiPlayers.some(p => p.name.toLowerCase() == name.toLowerCase()))
+
+    const players = await OfficialAPI.V3.players(...playerNames) // TODO: Maybe fall back to NPM here?
+    const missing = playerNames.filter(name => !players.some(p => p.name.toLowerCase() == name.toLowerCase()))
+
+    return { players, missing } 
 }
 
 const hasDiscord = (a: DBAlliance) => {
