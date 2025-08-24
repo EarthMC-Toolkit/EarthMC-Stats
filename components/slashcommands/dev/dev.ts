@@ -7,15 +7,10 @@ import {
     AttachmentBuilder
 } from "discord.js"
 
-import { request } from "undici"
-
 import { cache } from "../../../bot/constants.js"
 import { database, backtick, botDevs } from '../../../bot/utils/index.js'
 
-// import dotenv from 'dotenv'
-// dotenv.config()
-
-//const serviceID = "32ed6d7c-e2b2-4ddd-bd40-f574e154fc0a"
+import type { DBAlliance } from "../../../bot/types.js"
 
 const leftEmbed = new EmbedBuilder()
     .setTitle("Notice of Departure")
@@ -49,14 +44,23 @@ const slashCmdData = new SlashCommandBuilder().setName("dev")
         )
     )
 
-interface MapExtAlliance {
-    name: string
-    type: "alliances" | "meganations" // Doesn't matter for now
-    nations: string[]
-    colours: {
-        fill: string
-        outline: string
-    }
+// interface MapExtAlliance {
+//     name: string
+//     type: "alliances" | "meganations" // Doesn't matter for now
+//     nations: string[]
+//     colours: {
+//         fill: string
+//         outline: string
+//     }
+// }
+
+function createAllianceBackupFile(alliances: DBAlliance[]) {
+    const json = JSON.stringify(alliances, null, 2) // Pretty print with 2 spaces
+    const buf = Buffer.from(json)
+
+    return new AttachmentBuilder(buf, { 
+        name: `alliances-${new Date().toISOString()}.json` 
+    })
 }
 
 export default {
@@ -82,34 +86,6 @@ export default {
 
         const subCmdName = interaction.options.getSubcommand().toLowerCase()
         switch(subCmdName) {
-            // case "restart": {
-            //     await interaction.reply({embeds: [embed
-            //         .setColor(Colors.Blue)
-            //         .setTitle(":repeat: Re-deploying the bot service..")
-            //     ]})
-
-            //     return await service.redeploy()
-            // }
-            // case "resume": {
-            //     await interaction.reply({embeds: [embed
-            //         .setColor(Colors.Green)
-            //         .setTitle(":white_check_mark: Bot service resumed.")
-            //     ]})
-
-            //     return await service.resume()
-            // }
-            // case "pause": {
-            //     const paused = await service.pause()
-            //     if (!paused) return await interaction.reply({embeds: [embed
-            //         .setColor(Colors.Red)
-            //         .setTitle("An error occurred while trying to pause the service!")
-            //     ]})
-
-            //     return await interaction.reply({embeds: [embed
-            //         .setColor(Colors.Gold)
-            //         .setTitle(":pause_button: Bot service paused.")
-            //     ]})
-            // }
             case "purge": {
                 await interaction.deferReply()
 
@@ -149,43 +125,6 @@ export default {
 
                 return await interaction.editReply({ content: `Left ${leftAmt} guilds.` })
             }
-            // case "fixonline": {
-            //     let fixedPlayersAmt = 0
-
-            //     const dbPlayers = await getPlayers(true)
-            //     const toRemove = []
-
-            //     for (const player of dbPlayers) {
-            //         if (!player.lastOnline) {
-            //             toRemove.push(player.name)
-            //             fixedPlayersAmt++
-
-            //             continue
-            //         }
-
-            //         delete player.lastOnline['nova']
-            //         delete player.linkedID
-
-            //         const badAurora = player.lastOnline['Aurora']
-            //         if (badAurora) {
-            //             player.lastOnline.aurora = badAurora
-            //             delete player.lastOnline['Aurora']
-            //         }
-
-            //         const missingOnlineDates = !player.lastOnline.aurora
-            //         if (missingOnlineDates) {
-            //             toRemove.push(player.name)
-            //         }
-
-            //         if (missingOnlineDates || badAurora) {
-            //             fixedPlayersAmt++
-            //         }
-            //     }
-
-            //     await setPlayers(dbPlayers.filter(p => !toRemove.includes(p.name)))
-
-            //     return await interaction.editReply({ content: `Corrected DB errors for ${fixedPlayersAmt} players.` })
-            // }
             case "clearcache": {
                 await interaction.deferReply()
 
@@ -202,69 +141,62 @@ export default {
                     ephemeral: true
                 })
 
-                const json = JSON.stringify(alliances, null, 2) // Pretty print with 2 spaces
-                const buf = Buffer.from(json)
-
-                const file = new AttachmentBuilder(buf, { 
-                    name: `alliances-${new Date().toISOString()}.json` 
-                })
-
                 return await interaction.followUp({
                     content: `Successfully created a backup of alliances.`,
-                    files: [file]
+                    files: [createAllianceBackupFile(alliances)]
                 })
             }
-            case "rebuild_alliances": {
-                await interaction.deferReply()
+            // case "rebuild_alliances": {
+            //     await interaction.deferReply()
 
-                const inputFile = await interaction.options.getAttachment("cache_file")
-                if (!inputFile) return await interaction.editReply({ content: `Something went wrong with the input file.` })
+            //     const inputFile = await interaction.options.getAttachment("cache_file")
+            //     if (!inputFile) return await interaction.editReply({ content: `Something went wrong with the input file.` })
 
-                const cachedAlliances = (await request(inputFile.url).then(res => res.body.json())) as MapExtAlliance[]
-                if (!cachedAlliances || cachedAlliances.length < 0) {
-                    return await interaction.editReply({ content: `Failed to parse JSON.` })
-                }
+            //     const cachedAlliances = (await request(inputFile.url).then(res => res.body.json())) as MapExtAlliance[]
+            //     if (!cachedAlliances || cachedAlliances.length < 0) {
+            //         return await interaction.editReply({ content: `Failed to parse JSON.` })
+            //     }
 
-                await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
+            //     await interaction.editReply({ content: `Found ${cachedAlliances.length} alliances in JSON.` })
 
-                const alliances = await database.AuroraDB.getAlliances(true)
-                if (!alliances) return await interaction.reply({
-                    content: `Failed to fetch alliances.`,
-                    ephemeral: true
-                })
+            //     const alliances = await database.AuroraDB.getAlliances(true)
+            //     if (!alliances) return await interaction.reply({
+            //         content: `Failed to fetch alliances.`,
+            //         ephemeral: true
+            //     })
 
-                // const skip = [
-                //     "HRE", "Holy Roman Empire", 
-                //     "OFN", "Organization of Free Nations", 
-                //     "RSAA", "Realm of South Africa and Antartica",
-                //     "UAA", "United Aurora Accord",
-                //     "RSA", "Realm of South Africa",
-                //     "Uzbek", "Federation Of Uzbekistan",
-                //     "ALC", "American Liberty Coalition",
-                //     "Africa"
-                // ]
+            //     // const skip = [
+            //     //     "HRE", "Holy Roman Empire", 
+            //     //     "OFN", "Organization of Free Nations", 
+            //     //     "RSAA", "Realm of South Africa and Antartica",
+            //     //     "UAA", "United Aurora Accord",
+            //     //     "RSA", "Realm of South Africa",
+            //     //     "Uzbek", "Federation Of Uzbekistan",
+            //     //     "ALC", "American Liberty Coalition",
+            //     //     "Africa"
+            //     // ]
                 
-                // for (const cachedAlliance of cachedAlliances) {
-                //     if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
-                //     if (alliances.some(a => a.fullName.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
+            //     // for (const cachedAlliance of cachedAlliances) {
+            //     //     if (skip.some(s => s.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
+            //     //     if (alliances.some(a => a.fullName.toLowerCase() == cachedAlliance.name.toLowerCase())) continue
 
-                //     // Exists already
+            //     //     // Exists already
 
 
-                //     // Doesn't exist already
-                //     alliances.push({
-                //         allianceName: cachedAlliance.name.replaceAll(" ", "_"),
-                //         fullName: cachedAlliance.name,
-                //         type: "normal",
-                //         nations: cachedAlliance.nations,
-                //         leaderName: "None",
-                //         colours: cachedAlliance.colours
-                //     })
-                // }
+            //     //     // Doesn't exist already
+            //     //     alliances.push({
+            //     //         allianceName: cachedAlliance.name.replaceAll(" ", "_"),
+            //     //         fullName: cachedAlliance.name,
+            //     //         type: "normal",
+            //     //         nations: cachedAlliance.nations,
+            //     //         leaderName: "None",
+            //     //         colours: cachedAlliance.colours
+            //     //     })
+            //     // }
 
-                //await AuroraDB.setAlliances(alliances)
-                return await interaction.followUp({ content: `Successfully rebuilt alliances.` })
-            }
+            //     //await AuroraDB.setAlliances(alliances)
+            //     return await interaction.followUp({ content: `Successfully rebuilt alliances.` })
+            // }
             default: return await interaction.reply({embeds: [embed
                 .setColor(Colors.Red)
                 .setTitle("Invalid Arguments")

@@ -6,8 +6,10 @@ import {
 import { 
     type Client,
     type Message, 
-    ButtonStyle, EmbedBuilder, Colors,
-    ChannelType
+    type TextChannel,
+    ChannelType,
+    ButtonStyle, Colors,
+    AttachmentBuilder, EmbedBuilder
 } from "discord.js"
 
 import { request } from "undici"
@@ -488,23 +490,34 @@ export default {
                 .setColor(Colors.Orange)
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
-            const allianceName = arg2
+            const allianceNameArg = arg2
             const alliances = await database.AuroraDB.getAlliances()
 
-            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceName)
+            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceNameArg)
             if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
                 .setTitle("Error disbanding alliance")
                 .setDescription("The alliance you're trying to disband does not exist! Please try again.")
             ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+            
+            const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceNameArg)
+            const allianceName = getNameOrLabel(foundAlliance)
 
-            const allianceIndex = alliances.findIndex(alliance => alliance.allianceName.toLowerCase() == allianceName)
+            // Before overwriting the alliances, create a snapshot of current alliances and send it to the backup channel.
+            const backupChannel = await client.channels.fetch("1358787912946286844") as TextChannel
+            if (backupChannel) {
+                const reason = `Reason: **${message.author.username}** disbanded alliance ${backtick(allianceName)}.`
+                await backupChannel.send({
+                    content: "Successfully created a backup of alliances\n" + reason,
+                    files: [createAllianceBackupFile(alliances)]
+                })
+            }
 
             alliances.splice(allianceIndex, 1)
             database.AuroraDB.setAlliances(alliances, null) // Disbanding, no need to set lastUpdated.
-        
+
             return m.edit({embeds: [successEmbed(message)
                 .setTitle("Alliance Disbanded")
-                .setDescription(`The alliance ${backtick(getNameOrLabel(foundAlliance))} has been disbanded.`)
+                .setDescription(`The alliance ${backtick(allianceName)} has been disbanded.`)
             ]})
         }
 
@@ -1314,4 +1327,13 @@ async function allianceLookup(client: Client, message: Message, foundAlliance: D
         files: thumbnail,
         components: allianceEmbed.components
     }
+}
+
+function createAllianceBackupFile(alliances: DBAlliance[]) {
+    const json = JSON.stringify(alliances, null, 2) // Pretty print with 2 spaces
+    const buf = Buffer.from(json)
+
+    return new AttachmentBuilder(buf, { 
+        name: `alliances-${new Date().toISOString()}.json` 
+    })
 }
