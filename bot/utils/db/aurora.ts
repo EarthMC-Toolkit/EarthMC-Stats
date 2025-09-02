@@ -11,8 +11,9 @@ import { db, cache } from '../../constants.js'
 
 import { 
     divideArray, 
-    fastMerge,
-    sortByOrder 
+    fastMerge, 
+    removeDuplicates,
+    sortByOrder
 } from "../fn.js"
 
 import type {
@@ -194,22 +195,24 @@ export async function getAlliance(name: string): Promise<AllianceGetResult> {
     const nations = await getNations()
     if (!nations) return { foundAlliance, alliances, nations: null }
 
-    // Get nations that are in the input alliance.
-    const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
-    const len = allianceNations.length
-
     const opData = await getOnlinePlayerData()
-    for (let i = 0; i < len; i++) {
-        const n = allianceNations[i]
 
-        if (opData?.players) {
-            const opNames = new Set(opData.players.map(op => op.name))
-            const onlineInNation = n.residents.filter(res => opNames.has(res))
-            foundAlliance.online = fastMerge(foundAlliance.online ?? [], onlineInNation)
+    foundAlliance.online = []
+    if (opData?.players) {
+        const opNames = new Set(opData.players.map(op => op.name) ?? [])
+        const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
+
+        for (let i = 0; i < allianceNations.length; i++) {
+            const an = allianceNations[i]
+            const onlineInNation = an.residents.filter(res => opNames.has(res))
+
+            foundAlliance.online = fastMerge(foundAlliance.online, onlineInNation)
         }
 
-        //foundAlliance.wealth += n.wealth
+        foundAlliance.online = removeDuplicates(foundAlliance.online)
     }
+
+    console.log(`Online in alliance ${foundAlliance.allianceName}:\n${foundAlliance.online.toString()}`)
 
     // Only get rank if 2 or more alliances exist.
     // if (alliances.length > 1) {

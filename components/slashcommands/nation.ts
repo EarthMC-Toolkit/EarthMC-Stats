@@ -20,12 +20,13 @@ import {
     database, AURORA,
     auroraNationBonus, embedField,
     databaseError, fetchError,
-    fastMergeUnique, removeDuplicates, 
+    removeDuplicates, 
     sortByOrder, unixFromDate, timestampRelative,
     backtick, EMOJI_CHUNK,
     CHOICE_LIMIT,
     defaultSortNations,
-    backticks
+    backticks,
+    fastMerge
 } from '../../bot/utils/index.js'
 
 import { CustomEmbed, EntityType } from "../../bot/objects/CustomEmbed.js"
@@ -329,7 +330,7 @@ const nationCmd: SlashCommand<typeof slashCmdData> = {
 
                         // If it already exists, add up stuff.
                         ctx[town.nation].chunks += town.chunks
-                        ctx[town.nation].residents = fastMergeUnique(ctx[town.nation].residents, town.residents)
+                        ctx[town.nation].residents = removeDuplicates(fastMerge(ctx[town.nation].residents, town.residents))
                         ctx[town.nation].onlineResidents = ctx[town.nation].residents.filter(resident => 
                             onlinePlayers.some(op => resident === op.name || resident.includes(op.name)
                         ))

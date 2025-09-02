@@ -103,9 +103,6 @@ export function unixFromDate(date: Date | Timestamp): number {
     return null
 }
 
-export const listInputToArr = (str: string) => str.replace(/,/g, ' ').split(' ').filter(Boolean)
-export const removeDuplicates = <T>(arr: T[]) => [...new Set(arr)]
-
 //export const deepCopy = <T>(arr: T[]) => JSON.parse(JSON.stringify(arr))
 //export const isEmpty = (str: string) => (!str || str.length === 0)
 
@@ -277,7 +274,7 @@ export const fastMerge = <T>(original: T[], args: T[]) => {
 }
 
 // Fast merge, but convert to set and back to ensure duplicates are removed.
-export const fastMergeUnique = <T>(original: T[], args: T[]) => [...new Set(fastMerge(original, args))]
+//export const fastMergeUnique = <T>(original: T[], args: T[]) => removeDuplicates(fastMerge(original, args))
 
 export const fastMergeByKey = <T>(original: T[], arr: T[], key: string) => {
     const len = arr.length
@@ -288,6 +285,9 @@ export const fastMergeByKey = <T>(original: T[], arr: T[], key: string) => {
 
     return original
 }
+
+export const listInputToArr = (str: string) => str.replace(/,/g, ' ').split(' ').filter(Boolean)
+export const removeDuplicates = <T>(arr: T[]) => [...new Set(arr)]
 
 // The unary plus operator here coerces the value into a number.
 // This apparentely mitigates some pitfalls of `isNaN()` and should be more reliable.
