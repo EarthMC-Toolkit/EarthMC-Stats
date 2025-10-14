@@ -90,7 +90,7 @@ export interface MapDB {
      */
     computeAlliances(alliances: DBAlliance[], nations: DBSquaremapNation[]): DBAlliance[]
     getAllianceRank(alliance: DBAlliance, computedAlliances: DBAlliance[]): number
-    getAlliance(name: string): Promise<{ foundAlliance: DBAlliance, alliances: DBAlliance[], nations: DBSquaremapNation[] }>
+    getAlliance(name: string): Promise<AllianceGetResult>
     getAlliances(skipCache: boolean): Promise<DBAlliance[]> 
     /**
      * Overwrites the alliances document with updated alliances data.
@@ -134,6 +134,12 @@ export type DBAlliance = {
 export type DBAllianceExtended = DBAlliance & {
     online: string[]
     //wealth: number
+}
+
+export type AllianceGetResult = {
+    foundAlliance: DBAllianceExtended
+    alliances: DBAlliance[]
+    nations: DBSquaremapNation[]
 }
 
 export type ResidentRank = 'Nation Leader' | 'Mayor' | 'Resident'

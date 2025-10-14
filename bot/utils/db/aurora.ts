@@ -17,6 +17,7 @@ import {
 } from "../fn.js"
 
 import type {
+    AllianceGetResult,
     DBAlliance, DBAllianceExtended, DBResident, 
     DBSquaremapNation, DBSquaremapTown
 } from '../../types.js'
@@ -178,15 +179,9 @@ export async function getAlliances(skipCache = false): Promise<DBAlliance[]> {
 //     return computeAlliances(alliances, nations)
 // }
 
-type AllianceGetResult = {
-    foundAlliance: DBAllianceExtended
-    alliances: DBAlliance[]
-    nations: DBSquaremapNation[]
-}
-
 export async function getAlliance(name: string): Promise<AllianceGetResult> {
     // TODO: Handle these three errors instead null - throw with msg instead?
-    const alliances = await getAlliances() as DBAlliance[]
+    const alliances = await getAlliances()
     if (!alliances) return { foundAlliance: null, alliances: null, nations: null }
 
     const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase()) as DBAllianceExtended
@@ -212,7 +207,7 @@ export async function getAlliance(name: string): Promise<AllianceGetResult> {
         foundAlliance.online = removeDuplicates(foundAlliance.online)
     }
 
-    console.log(`Online in alliance ${foundAlliance.allianceName}:\n${foundAlliance.online.toString()}`)
+    //console.log(`Online in alliance ${foundAlliance.allianceName}:\n${foundAlliance.online.toString()}`)
 
     // Only get rank if 2 or more alliances exist.
     // if (alliances.length > 1) {
