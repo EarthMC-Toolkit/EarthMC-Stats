@@ -189,18 +189,19 @@ export async function getAlliance(name: string): Promise<AllianceGetResult> {
 
     // Clone so we dont affect cache
     const foundAllianceCpy = structuredClone(foundAlliance) as DBAllianceExtended
+    foundAllianceCpy.lastUpdated = new Timestamp(foundAlliance.lastUpdated.seconds, foundAlliance.lastUpdated.nanoseconds)
+    foundAllianceCpy.online = []
 
     const nations = await getNations()
     if (!nations) return { foundAlliance: foundAllianceCpy, alliances, nations: null }
 
     const opData = await getOnlinePlayerData()
-
-    foundAllianceCpy.online = []
     if (opData?.players) {
         const opNames = new Set(opData.players.map(op => op.name) ?? [])
         const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
 
-        for (let i = 0; i < allianceNations.length; i++) {
+        const len = allianceNations.length
+        for (let i = 0; i < len; i++) {
             const an = allianceNations[i]
             const onlineInNation = an.residents.filter(res => opNames.has(res))
 

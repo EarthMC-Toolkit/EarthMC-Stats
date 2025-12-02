@@ -339,6 +339,7 @@ const latinize = (str: string) => formatString(str, true)
 async function apiPlayerList() {
     const playuhs = await OfficialAPI.V3.playerList()
     if (!playuhs) return []
+    if (!Array.isArray(playuhs)) return []
 
     return playuhs.map(p => p.name)
 }

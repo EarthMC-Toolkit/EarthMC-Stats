@@ -1064,8 +1064,10 @@ async function checkPlayersExist(playerNames: string[]): Promise<{ players: RawP
     playerNames = removeDuplicates(playerNames)
 
     const players = await OfficialAPI.V3.players(...playerNames) // TODO: Maybe fall back to NPM here?
+    if (!players) return { players: [], missing: [] } 
+    if (!Array.isArray(players)) return { players: [], missing: [] } 
+    
     const missing = playerNames.filter(name => !players.some(p => p.name.toLowerCase() == name.toLowerCase()))
-
     return { players, missing } 
 }
 
