@@ -184,15 +184,18 @@ export async function getAlliance(name: string): Promise<AllianceGetResult> {
     const alliances = await getAlliances()
     if (!alliances) return { foundAlliance: null, alliances: null, nations: null }
 
-    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase()) as DBAllianceExtended
+    const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == name.toLowerCase())
     if (!foundAlliance) return { foundAlliance: null, alliances, nations: null }
 
+    // Clone so we dont affect cache
+    const foundAllianceCpy = structuredClone(foundAlliance) as DBAllianceExtended
+
     const nations = await getNations()
-    if (!nations) return { foundAlliance, alliances, nations: null }
+    if (!nations) return { foundAlliance: foundAllianceCpy, alliances, nations: null }
 
     const opData = await getOnlinePlayerData()
 
-    foundAlliance.online = []
+    foundAllianceCpy.online = []
     if (opData?.players) {
         const opNames = new Set(opData.players.map(op => op.name) ?? [])
         const allianceNations = nations.filter(nation => foundAlliance.nations.some(n => n.toLowerCase() == nation.name.toLowerCase()))
@@ -201,10 +204,10 @@ export async function getAlliance(name: string): Promise<AllianceGetResult> {
             const an = allianceNations[i]
             const onlineInNation = an.residents.filter(res => opNames.has(res))
 
-            foundAlliance.online = fastMerge(foundAlliance.online, onlineInNation)
+            foundAllianceCpy.online = fastMerge(foundAllianceCpy.online, onlineInNation)
         }
 
-        foundAlliance.online = removeDuplicates(foundAlliance.online)
+        foundAllianceCpy.online = removeDuplicates(foundAllianceCpy.online)
     }
 
     //console.log(`Online in alliance ${foundAlliance.allianceName}:\n${foundAlliance.online.toString()}`)
