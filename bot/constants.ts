@@ -1,6 +1,6 @@
 import { Aurora } from "earthmc"
 
-import TTLCache from '@isaacs/ttlcache'
+import { TTLCache } from '@isaacs/ttlcache'
 import type { Firestore } from "firebase-admin/firestore"
 
 import type { ExtendedClient, MapInstance, SeenPlayer } from "./types.js"

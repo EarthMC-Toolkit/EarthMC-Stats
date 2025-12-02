@@ -17,9 +17,9 @@
     "deploy": "pm2 deploy production"
   },
   "dependencies": {
-    "@isaacs/ttlcache": "^1.4.1",
+    "@isaacs/ttlcache": "^2.1.3",
     "discord.js": "14.18.0",
-    "dotenv": "^16.5",
+    "dotenv": "^17.2.3",
     "earthmc": "^10",
     "firebase": "11.6.0",
     "firebase-admin": "13.2.0",
@@ -33,7 +33,7 @@
     "@typescript-eslint/parser": "^6.7.5",
     "eslint": "^8.49.0",
     "eslint-plugin-named-import-spacing": "^1.0.3",
-    "rimraf": "^5.0.5",
+    "rimraf": "^6.1.2",
     "tsx": "latest",
     "typescript": "^5.8.3"
   },
