@@ -337,7 +337,12 @@ const isInactive = (timestamp: Timestamp, now: Date) => {
 const latinize = (str: string) => formatString(str, true)
 
 async function apiPlayerList() {
-    return (await OfficialAPI.V3.playerList()).map(p => p.name)
+    const plist = await OfficialAPI.V3.playerList()
+    if (plist == null) {
+        return []
+    }
+
+    return plist.map(p => p.name)
 }
 
 async function purgeInactive(players: DBPlayer[]) {

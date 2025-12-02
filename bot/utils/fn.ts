@@ -273,9 +273,6 @@ export const fastMerge = <T>(original: T[], args: T[]) => {
     return original
 }
 
-// Fast merge, but convert to set and back to ensure duplicates are removed.
-//export const fastMergeUnique = <T>(original: T[], args: T[]) => removeDuplicates(fastMerge(original, args))
-
 export const fastMergeByKey = <T>(original: T[], arr: T[], key: string) => {
     const len = arr.length
     for (let i = 0; i < len; i++) {
@@ -308,8 +305,6 @@ export function embedField(name: string, value: string, inline = false): APIEmbe
     return { name, value, inline }
 }
 
-// TODO: Customizing params to make player face left reduces image quality,
-//       consider mirroring it after and sending it as a local discord `File`.
 export const buildSkinURL = (opts: SkinOpts) => {
     const domain = "https://vzge.me/"
     const params = `y=${opts.yaw ?? 0}&p=${opts.pitch ?? 0}&r=${opts.roll ?? 0}`
