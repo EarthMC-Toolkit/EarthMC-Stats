@@ -210,8 +210,6 @@ export async function getAlliance(name: string): Promise<AllianceGetResult> {
         foundAllianceCpy.online = removeDuplicates(foundAllianceCpy.online)
     }
 
-    //console.log(`Online in alliance ${foundAlliance.allianceName}:\n${foundAlliance.online.toString()}`)
-
     // Only get rank if 2 or more alliances exist.
     // if (alliances.length > 1) {
     //     const computedAlliances = computeAlliances(alliances, nations)
