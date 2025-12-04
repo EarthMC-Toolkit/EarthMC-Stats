@@ -1,7 +1,8 @@
 import { OfficialAPI } from "earthmc"
-import CommandLookup from "./base.js"
-
 import type { AttachmentBuilder, Client } from "discord.js"
+
+import CommandLookup from "./base.js"
+import { backtick } from "../../../bot/utils/fn.js"
 
 export class VPLookup extends CommandLookup {
     #target: number
@@ -27,6 +28,8 @@ export class VPLookup extends CommandLookup {
         try {
             const info = await OfficialAPI.V3.serverInfo()
         
+            console.log(info)
+
             this.#target = info.voteParty.target
             this.#remaining = info.voteParty.numRemaining
 
@@ -41,9 +44,9 @@ export class VPLookup extends CommandLookup {
         this.embed.setTitle("Current VoteParty Status")
         this.embed.setThumbnail('attachment://aurora.png')
 
-        this.addField("Target", `\`${this.target.toString()}\``, true)
-        this.addField("Current", `\`${this.current.toString()}\``, true)
-        this.addField("Remaining", `\`${this.remaining.toString()}\``)
+        this.addField("Target", `${backtick(this.target.toString())}`, true)
+        this.addField("Current", `${backtick(this.current.toString())}`, true)
+        this.addField("Remaining", `${backtick(this.remaining.toString())}`)
 
         return this.embed
     }

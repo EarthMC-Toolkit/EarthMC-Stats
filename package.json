@@ -20,7 +20,7 @@
     "@isaacs/ttlcache": "^2.1.3",
     "discord.js": "14.18.0",
     "dotenv": "^17.2.3",
-    "earthmc": "^10",
+    "earthmc": "latest",
     "firebase": "11.6.0",
     "firebase-admin": "13.2.0",
     "striptags": "^3.2.0",
@@ -38,7 +38,7 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=21"
   },
   "trustedDependencies": [
     "protobufjs",
