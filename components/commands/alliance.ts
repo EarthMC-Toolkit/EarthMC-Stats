@@ -6,10 +6,9 @@ import {
 import { 
     type Client,
     type Message, 
-    type TextChannel,
     ChannelType,
     ButtonStyle, Colors,
-    AttachmentBuilder, EmbedBuilder
+    EmbedBuilder
 } from "discord.js"
 
 import { request } from "undici"
@@ -18,10 +17,7 @@ import { Timestamp } from "firebase-admin/firestore"
 import { CustomEmbed } from "../../bot/objects/CustomEmbed.js"
 
 import * as database from "../../bot/utils/db/index.js"
-import type { 
-    AllianceType,
-    DBAlliance, DBAllianceExtended
-} from "../../bot/types.js"
+import type { DBAlliance, DBAllianceExtended } from "../../bot/types.js"
 
 import { 
     ArgsHelper,
@@ -63,7 +59,7 @@ const sendDevsOnly = (msg: Message) => msg.edit({embeds: [new EmbedBuilder()
 ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
 
 const editorID = "966359842417705020"
-const seniorEditorID = "1143253762039873646"
+//const seniorEditorID = "1143253762039873646"
 const allowedChannels = ["971408026516979813", "966369739679080578"]
 const flagsChannel = "966372674236481606"
 
@@ -200,7 +196,7 @@ export default {
         const isEditor = message.member.roles.cache.has(editorID)
         if (!botDev && !isEditor) return sendDevsOnly(m)
 
-        const seniorEditor = message.member.roles.cache.has(seniorEditorID)
+        //const seniorEditor = message.member.roles.cache.has(seniorEditorID)
 
         // Checks the given alliances for non-existent nations.
         if (arg1 == "validate") {
@@ -250,60 +246,73 @@ export default {
         }
 
         // Creating an alliance
-        if (arg1 == "create" || arg1 == "new") {   
-            const allianceName = args[1] 
-            if (isNumeric(allianceName)) {
-                return m.edit({embeds: [errorEmbed(message)
-                    .setTitle("Error creating alliance")
-                    .setDescription("Alliance names cannot be numbers! Please try again.")
-                ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-            }
-            
-            const alliances = await database.AuroraDB.getAlliances()
-
-            const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
-            if (foundAlliance) return m.edit({embeds: [errorEmbed(message)
-                .setTitle("Error creating alliance")
-                .setDescription("The alliance you're trying to create already exists! Please use /alliance add.")
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-            
-            const embed = new EmbedBuilder()
-                .setTimestamp()
+        if (arg1 == "create" || arg1 == "new") {      
+            return m.edit({embeds: [new EmbedBuilder()
+                .setTitle("The rewrite is upon us!")
+                .setColor(Colors.Orange)
+                .setDescription(
+                    "Creation of any further alliances is no longer possible, use <@1145157780605501542> instead where" +
+                    "you can use the wizard you all asked for 🎉.\nPlease migrate any existing alliances in addition."
+                )
                 .setAuthor({ 
                     name: message.author.username, 
                     iconURL: message.author.displayAvatarURL() 
                 })
-
-            const index = alliances.push({
-                allianceName: allianceName,
-                leaderName: "None",
-                discordInvite: "No discord invite has been set for this alliance",
-                nations: [] as string[],
-                type: 'normal' as AllianceType,
-                lastUpdated: Timestamp.now()
-                //rank: alliances.length + 1
-            })
-
-            try {
-                await database.AuroraDB.setAlliances(alliances, null) // TODO: No need for lastUpdated. Implement createdAt instead?
-            } catch(err: any) {
-                console.error(`[/a new] Error creating alliance: ${allianceName}\n${err}`)
-
-                return m.edit({embeds: [embed
-                    .setTitle("Error creating alliance")
-                    .setDescription(`Could not be create the alliance due to a database issue. Please check the logs.`)
-                    .setColor(Colors.Red)
-                ]})
-            }
-
-            return m.edit({embeds: [embed
-                .setTitle("Alliance Created")
-                .setColor(Colors.DarkBlue)
-                .setDescription(`
-                    The alliance ${backtick(allianceName)} has been created.
-                    For future reference, this alliance exists at index ${backtick(index)} in the database.
-                `)
             ]})
+
+            // const allianceName = args[1] 
+            // if (isNumeric(allianceName)) {
+            //     return m.edit({embeds: [errorEmbed(message)
+            //         .setTitle("Error creating alliance")
+            //         .setDescription("Alliance names cannot be numbers! Please try again.")
+            //     ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+            // }
+            
+            // const alliances = await database.AuroraDB.getAlliances()
+
+            // const foundAlliance = alliances.some(a => a.allianceName.toLowerCase() == allianceName.toLowerCase())
+            // if (foundAlliance) return m.edit({embeds: [errorEmbed(message)
+            //     .setTitle("Error creating alliance")
+            //     .setDescription("The alliance you're trying to create already exists! Please use /alliance add.")
+            // ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+            
+            // const embed = new EmbedBuilder()
+            //     .setTimestamp()
+            //     .setAuthor({ 
+            //         name: message.author.username, 
+            //         iconURL: message.author.displayAvatarURL() 
+            //     })
+
+            // const index = alliances.push({
+            //     allianceName: allianceName,
+            //     leaderName: "None",
+            //     discordInvite: "No discord invite has been set for this alliance",
+            //     nations: [] as string[],
+            //     type: 'normal' as AllianceType,
+            //     lastUpdated: Timestamp.now()
+            //     //rank: alliances.length + 1
+            // })
+
+            // try {
+            //     await database.AuroraDB.setAlliances(alliances, null) // TODO: No need for lastUpdated. Implement createdAt instead?
+            // } catch(err: any) {
+            //     console.error(`[/a new] Error creating alliance: ${allianceName}\n${err}`)
+
+            //     return m.edit({embeds: [embed
+            //         .setTitle("Error creating alliance")
+            //         .setDescription(`Could not be create the alliance due to a database issue. Please check the logs.`)
+            //         .setColor(Colors.Red)
+            //     ]})
+            // }
+
+            // return m.edit({embeds: [embed
+            //     .setTitle("Alliance Created")
+            //     .setColor(Colors.DarkBlue)
+            //     .setDescription(`
+            //         The alliance ${backtick(allianceName)} has been created.
+            //         For future reference, this alliance exists at index ${backtick(index)} in the database.
+            //     `)
+            // ]})
         }
         
         if (arg1 == "wizard") {
@@ -483,42 +492,55 @@ export default {
         }
         
         if (arg1 == "delete" || arg1 == "disband" || arg1 == "nuke") {
-            if (!botDev && !isEditor) return sendDevsOnly(m)
-            if (isEditor && !seniorEditor) return m.edit({embeds: [successEmbed(message)
-                .setTitle("Silly editor!")
-                .setDescription("Only senior editors have permissions to delete alliances.")
+            return m.edit({embeds: [new EmbedBuilder()
+                .setTitle("The rewrite is upon us!")
                 .setColor(Colors.Orange)
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
-
-            const allianceNameArg = arg2
-            const alliances = await database.AuroraDB.getAlliances()
-
-            const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceNameArg)
-            if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
-                .setTitle("Error disbanding alliance")
-                .setDescription("The alliance you're trying to disband does not exist! Please try again.")
-            ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
-            
-            const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceNameArg)
-            const allianceName = getNameOrLabel(foundAlliance)
-
-            // Before overwriting the alliances, create a snapshot of current alliances and send it to the backup channel.
-            const backupChannel = await client.channels.fetch("1358787912946286844") as TextChannel
-            if (backupChannel) {
-                const reason = `Reason: **${message.author.username}** disbanded alliance ${backtick(allianceName)}.`
-                await backupChannel.send({
-                    content: "Successfully created a backup of alliances\n" + reason,
-                    files: [createAllianceBackupFile(alliances)]
+                .setDescription(
+                    "Deletion of alliances is no longer possible, use <@1145157780605501542> instead where you" +
+                    "can use the wizard you all asked for 🎉.\nPlease migrate any existing alliances in addition."
+                )
+                .setAuthor({ 
+                    name: message.author.username, 
+                    iconURL: message.author.displayAvatarURL() 
                 })
-            }
-
-            alliances.splice(allianceIndex, 1)
-            database.AuroraDB.setAlliances(alliances, null) // Disbanding, no need to set lastUpdated.
-
-            return m.edit({embeds: [successEmbed(message)
-                .setTitle("Alliance Disbanded")
-                .setDescription(`The alliance ${backtick(allianceName)} has been disbanded.`)
             ]})
+
+            // if (!botDev && !isEditor) return sendDevsOnly(m)
+            // if (isEditor && !seniorEditor) return m.edit({embeds: [successEmbed(message)
+            //     .setTitle("Silly editor!")
+            //     .setDescription("Only senior editors have permissions to delete alliances.")
+            //     .setColor(Colors.Orange)
+            // ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {})
+
+            // const allianceNameArg = arg2
+            // const alliances = await database.AuroraDB.getAlliances()
+
+            // const foundAlliance = alliances.find(a => a.allianceName.toLowerCase() == allianceNameArg)
+            // if (!foundAlliance) return m.edit({embeds: [errorEmbed(message)
+            //     .setTitle("Error disbanding alliance")
+            //     .setDescription("The alliance you're trying to disband does not exist! Please try again.")
+            // ]}).then(m => setTimeout(() => m.delete(), 10000)).catch(() => {}) 
+            
+            // const allianceIndex = alliances.findIndex(a => a.allianceName.toLowerCase() == allianceNameArg)
+            // const allianceName = getNameOrLabel(foundAlliance)
+
+            // // Before overwriting the alliances, create a snapshot of current alliances and send it to the backup channel.
+            // const backupChannel = await client.channels.fetch("1358787912946286844") as TextChannel
+            // if (backupChannel) {
+            //     const reason = `Reason: **${message.author.username}** disbanded alliance ${backtick(allianceName)}.`
+            //     await backupChannel.send({
+            //         content: "Successfully created a backup of alliances\n" + reason,
+            //         files: [createAllianceBackupFile(alliances)]
+            //     })
+            // }
+
+            // alliances.splice(allianceIndex, 1)
+            // database.AuroraDB.setAlliances(alliances, null) // Disbanding, no need to set lastUpdated.
+
+            // return m.edit({embeds: [successEmbed(message)
+            //     .setTitle("Alliance Disbanded")
+            //     .setDescription(`The alliance ${backtick(allianceName)} has been disbanded.`)
+            // ]})
         }
 
         if (arg1 == "rename") {
@@ -1331,11 +1353,11 @@ async function allianceLookup(client: Client, message: Message, foundAlliance: D
     }
 }
 
-function createAllianceBackupFile(alliances: DBAlliance[]) {
-    const json = JSON.stringify(alliances, null, 2) // Pretty print with 2 spaces
-    const buf = Buffer.from(json)
+// function createAllianceBackupFile(alliances: DBAlliance[]) {
+//     const json = JSON.stringify(alliances, null, 2) // Pretty print with 2 spaces
+//     const buf = Buffer.from(json)
 
-    return new AttachmentBuilder(buf, { 
-        name: `alliances-${new Date().toISOString()}.json` 
-    })
-}
+//     return new AttachmentBuilder(buf, { 
+//         name: `alliances-${new Date().toISOString()}.json` 
+//     })
+// }
