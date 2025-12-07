@@ -246,11 +246,11 @@ export default {
         // Creating an alliance
         if (arg1 == "create" || arg1 == "new") {      
             return m.edit({embeds: [new EmbedBuilder()
-                .setTitle("The rewrite is upon us!")
+                .setTitle("THE REWRITE IS UPON US!")
                 .setColor(Colors.Orange)
                 .setDescription(
-                    "Creation of any further alliances is no longer possible, use <@1145157780605501542> instead where" +
-                    "you can use the wizard you all asked for 🎉.\nPlease migrate any existing alliances in addition."
+                    "Creation of any further alliances is no longer possible, use <@1145157780605501542> instead where " +
+                    "you can use the wizard you all asked for. 🎉\n\nPlease migrate any existing alliances in addition."
                 )
                 .setAuthor({ 
                     name: message.author.username, 
@@ -315,16 +315,12 @@ export default {
         
         if (arg1 == "wizard") {
             return m.edit({embeds: [new EmbedBuilder()
-                .setTitle("The rewrite is upon us!")
+                .setTitle("THE REWRITE IS UPON US!")
                 .setColor(Colors.Orange)
                 .setDescription(
-                    "Creation of any further alliances is no longer possible, use <@1145157780605501542> instead where" +
-                    "you can use the wizard you all asked for 🎉.\nPlease migrate any existing alliances in addition."
+                    "Creation of any further alliances is no longer possible, use <@1145157780605501542> instead where " +
+                    "you can use the wizard you all asked for. 🎉\n\nPlease migrate any existing alliances in addition."
                 )
-                .setAuthor({ 
-                    name: message.author.username, 
-                    iconURL: message.author.displayAvatarURL() 
-                })
             ]})
 
             // // TODO: Use args we already have instead of splitting and slicing content again.
@@ -504,11 +500,11 @@ export default {
         
         if (arg1 == "delete" || arg1 == "disband" || arg1 == "nuke") {
             return m.edit({embeds: [new EmbedBuilder()
-                .setTitle("The rewrite is upon us!")
+                .setTitle("THE REWRITE IS UPON US!")
                 .setColor(Colors.Orange)
                 .setDescription(
-                    "Deletion of alliances is no longer possible, use <@1145157780605501542> instead where you" +
-                    "can use the wizard you all asked for 🎉.\nPlease migrate any existing alliances in addition."
+                    "Deletion of alliances is no longer possible, use <@1145157780605501542> instead where you " +
+                    "can use the wizard you all asked for. 🎉\n\nPlease migrate any existing alliances in addition."
                 )
                 .setAuthor({ 
                     name: message.author.username, 
